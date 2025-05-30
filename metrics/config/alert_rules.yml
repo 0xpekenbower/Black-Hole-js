@@ -1,0 +1,29 @@
+groups:
+  - name: container_alerts
+    rules:
+      - alert: ContainerHighMemoryUsage
+        expr: container_memory_usage_bytes{name!="", container_label_com_docker_swarm_service_name!=""} / container_spec_memory_limit_bytes{name!="", container_label_com_docker_swarm_service_name!=""} * 100 > 85
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Container high memory usage (instance {{ $labels.instance }})"
+          description: "Container memory usage is above 85%\n  VALUE = {{ $value }}\n  LABELS: {{ $labels }}"
+
+      - alert: ContainerHighCPUUsage
+        expr: sum by(name, instance) (rate(container_cpu_usage_seconds_total{name!=""}[5m])) * 100 > 85
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Container high CPU usage (instance {{ $labels.instance }})"
+          description: "Container CPU usage is above 85%\n  VALUE = {{ $value }}\n  LABELS: {{ $labels }}"
+
+      - alert: ContainerKilled
+        expr: time() - container_last_seen > 60
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Container killed (instance {{ $labels.instance }})"
+          description: "Container has disappeared\n  VALUE = {{ $value }}\n  LABELS: {{ $labels }}"

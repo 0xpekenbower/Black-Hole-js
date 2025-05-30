@@ -1,0 +1,98 @@
+services:
+
+  cadvisor:
+    image: gcr.io/cadvisor/cadvisor:v0.52.1
+    container_name: cadvisor
+    restart: on-failure
+    ports:
+      - "8080:8080"
+    volumes:
+      - /:/rootfs:ro
+      - /var/run:/var/run:ro
+      - /sys:/sys:ro
+      - /var/lib/docker/:/var/lib/docker:ro
+    networks:
+      - blackholejs
+
+  node_exporter:
+    image: prom/node-exporter:v1.9.1
+    container_name: node-exporter
+    restart: on-failure
+    ports:
+      - "9100:9100"
+    networks:
+      - blackholejs
+
+  redis_exporter:
+    container_name: redis-exporter
+    image: bitnami/redis-exporter:1.73.0
+    ports:
+      - "${REDIS_EXPORTER_PORT:-9121}:9121"
+    environment:
+      REDIS_ADDR: "redis://redis-hole:6379"
+    env_file:
+      - .env
+    restart: on-failure
+    networks:
+      - blackholejs
+
+  postgres_exporter:
+    container_name: postgres-exporter
+    image: bitnami/postgres-exporter:0.17.0
+    ports:
+      - "${POSTGRES_EXPORTER_PORT:-9187}:9187"
+    environment:
+      DATA_SOURCE_NAME: "${DATA_SOURCE_NAME}"
+    env_file:
+      - .env
+    restart: on-failure
+    networks:
+      - blackholejs
+    # volumes:
+      # - ./infra/config/postgres-exporter-config.yml:/opt/bitnami/postgres-exporter/config.yml:ro
+
+  prometheus:
+    image: prom/prometheus:v3.4.0
+    container_name: prometheus
+    restart: on-failure
+    ports:
+      - "9090:9090"
+    volumes:
+      - prometheus_data:/prometheus
+      - ./metrics/config/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - ./metrics/config/alert_rules.yml:/etc/prometheus/alert_rules.yml:ro
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/etc/prometheus/console_libraries'
+      - '--web.console.templates=/etc/prometheus/consoles'
+      - '--web.external-url=http://localhost/prometheus/'
+    networks:
+      - blackholejs
+
+  grafana:
+    image: grafana/grafana:12.0.1
+    container_name: grafana
+    restart: on-failure
+    ports:
+      - "7050:7050"
+    volumes:
+      - grafana_data:/var/lib/grafana
+    #   # - ./metrics/config/provisioning:/etc/grafana/provisioning:ro
+    #   # - ./metrics/config/datasources:/etc/grafana/datasources:ro 
+    #   # - ./metrics/config/dashboards:/var/lib/grafana/dashboards:ro
+    #   - ./metrics/config/grafana.ini:/etc/grafana/grafana.ini:ro
+    environment:
+
+    env_file:
+      - ./.env
+    networks:
+      - blackholejs
+
+volumes:
+  prometheus_data:
+  grafana_data:
+
+networks:
+  blackholejs:
+    external: true

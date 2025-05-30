@@ -1,0 +1,22 @@
+{
+  "name": "gateway",
+  "version": "1.0.0",
+  "description": "gateway service using fastify",
+  "main": "app.js",
+  "scripts": {
+    "start": "fastify start -l info app.js --port 8000",
+    "dev": "fastify start -w -l info app.js --port 8000"
+  },
+  "keywords": [],
+  "author": "0xpekenbower",
+  "license": "ISC",
+  "dependencies": {
+    "@fastify/autoload": "^6.3.0",
+    "@fastify/http-proxy": "^11.1.2",
+    "@fastify/sensible": "^6.0.3",
+    "fastify": "^5.3.3",
+    "fastify-cli": "^7.4.0",
+    "fastify-plugin": "^5.0.1",
+    "pino": "^9.7.0"
+  }
+}

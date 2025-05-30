@@ -1,0 +1,104 @@
+{
+  "templates": {
+    "gateway-logs-template": {
+      "template": {
+        "settings": {
+          "number_of_shards": 1,
+          "number_of_replicas": 0,
+          "index.refresh_interval": "5s",
+          "index.lifecycle.name": "gateway-logs-policy",
+          "index.lifecycle.rollover_alias": "gateway-logs"
+        },
+        "mappings": {
+          "properties": {
+            "@timestamp": { "type": "date" },
+            "time": { "type": "date" },
+            "level": { "type": "keyword" },
+            "service": { "type": "keyword" },
+            "message": { "type": "text" },
+            "source": { 
+              "type": "keyword",
+              "fields": {
+                "text": { "type": "text" }
+              }
+            },
+            "req": {
+              "properties": {
+                "method": { "type": "keyword" },
+                "url": { "type": "keyword" },
+                "source": { "type": "keyword" },
+                "user_id": { "type": "keyword" },
+                "ip": { "type": "ip" }
+              }
+            },
+            "res": {
+              "properties": {
+                "statusCode": { "type": "integer" },
+                "source": { "type": "keyword" },
+                "response_time": { "type": "float" },
+                "message": { "type": "keyword" }
+              }
+            },
+            "error": {
+              "properties": {
+                "message": { "type": "text" },
+                "stack": { "type": "text" }
+              }
+            }
+          }
+        }
+      },
+      "index_patterns": ["gateway-logs-*"]
+    }
+  },
+  "policies": {
+    "gateway-logs-policy": {
+      "policy": {
+        "phases": {
+          "hot": {
+            "min_age": "0ms",
+            "actions": {
+              "rollover": {
+                "max_age": "7d",
+                "max_size": "10gb"
+              },
+              "set_priority": {
+                "priority": 100
+              }
+            }
+          },
+          "warm": {
+            "min_age": "30d",
+            "actions": {
+              "shrink": {
+                "number_of_shards": 1
+              },
+              "forcemerge": {
+                "max_num_segments": 1
+              },
+              "set_priority": {
+                "priority": 50
+              }
+            }
+          },
+          "cold": {
+            "min_age": "60d",
+            "actions": {
+              "set_priority": {
+                "priority": 0
+              }
+            }
+          },
+          "delete": {
+            "min_age": "90d",
+            "actions": {
+              "delete": {
+                "delete_searchable_snapshot": true
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

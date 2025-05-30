@@ -1,0 +1,21 @@
+{
+  "name": "game",
+  "version": "1.0.0",
+  "description": "game service using fastify",
+  "main": "app.js",
+  "scripts": {
+    "start": "fastify start -l info app.js --port 8005",
+    "dev": "fastify start -w -l info app.js --port 8005"
+  },
+  "keywords": [],
+  "author": "0xpekenbower",
+  "license": "ISC",
+  "dependencies": {
+    "fastify": "^5.3.3",
+    "fastify-plugin": "^5.0.1",
+    "@fastify/autoload": "^6.3.0",
+    "@fastify/sensible": "^6.0.3",
+    "fastify-cli": "^7.4.0"
+  },
+  "devDependencies": {}
+}

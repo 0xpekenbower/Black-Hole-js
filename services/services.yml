@@ -1,0 +1,65 @@
+services:
+
+  auth:
+    container_name: auth
+    image: blackholejs-auth
+    build:
+      context: ./services/auth
+      dockerfile: Dockerfile
+    ports:
+      - "8002:8002"
+    env_file:
+      - .env
+    volumes:
+      - ./services/auth:/auth
+      - /auth/node_modules
+    networks:
+      - blackholejs
+
+  dashboard:
+    container_name: dashboard
+    image: blackholejs-dashboard
+    build:
+      context: ./services/dashboard
+      dockerfile: Dockerfile
+    ports:
+      - "8003:8003"
+    env_file:
+      - .env
+    volumes:
+      - ./services/dashboard:/dashboard
+      - /dashboard/node_modules
+    networks:
+      - blackholejs
+
+  chat:
+    container_name: chat
+    image: blackholejs-chat
+    build:
+      context: ./services/chat
+      dockerfile: Dockerfile
+    ports:
+      - "8004:8004"
+    env_file:
+      - .env
+    volumes:
+      - ./services/chat:/chat
+      - /chat/node_modules
+    networks:
+      - blackholejs
+
+  game:
+    container_name: game
+    image: blackholejs-game
+    build:
+      context: ./services/game
+      dockerfile: Dockerfile
+    ports:
+      - "8005:8005"
+    env_file:
+      - .env
+    volumes:
+      - ./services/game:/game
+      - /game/node_modules
+    networks:
+      - blackholejs

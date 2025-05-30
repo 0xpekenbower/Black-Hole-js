@@ -1,0 +1,35 @@
+---
+## Default Kibana configuration from Kibana base image.
+## https://github.com/elastic/kibana/blob/main/src/dev/build/tasks/os_packages/docker_generator/templates/kibana_yml.template.ts
+#
+server.name: kibana
+server.host: 0.0.0.0
+elasticsearch.hosts: [ http://elasticsearch:9200 ]
+
+monitoring.ui.container.elasticsearch.enabled: true
+monitoring.ui.container.logstash.enabled: true
+
+## Security credentials
+#
+elasticsearch.username: kibana_system
+elasticsearch.password: ${KIBANA_SYSTEM_PASSWORD}
+
+## Encryption keys (optional but highly recommended)
+##
+## Generate with either
+##  $ docker container run --rm docker.elastic.co/kibana/kibana:9.0.0 bin/kibana-encryption-keys generate
+##  $ openssl rand -hex 32
+##
+## https://www.elastic.co/docs/deploy-manage/security/self-setup
+## https://www.elastic.co/docs/reference/kibana/commands/kibana-encryption-keys
+#
+xpack.encryptedSavedObjects.encryptionKey: 006b50bf0027c88bcf02140fc4e8fed1
+xpack.reporting.encryptionKey: 74409111d0f5d9525da06ad4f342caee
+xpack.security.encryptionKey: dae17f24ff0ddcbc39980ad777d85628
+server.rewriteBasePath: true
+server.basePath: /kibana
+server.publicBaseUrl: http://localhost:5601/kibana
+
+
+
+
