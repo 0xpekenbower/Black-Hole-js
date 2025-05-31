@@ -1,0 +1,58 @@
+const auth = {
+  login: {
+    title: "Bienvenue",
+    subtitle: "Connectez-vous à votre compte",
+    emailLabel: "Email",
+    emailPlaceholder: "Email Ou Nom d'utilisateur",
+    passwordLabel: "Mot de passe",
+    passwordPlaceholder: "Entrez votre mot de passe",
+    forgotPassword: "Mot de passe oublié?",
+    loginButton: "Se connecter",
+    orContinueWith: "Ou continuer avec",
+    noAccount: "Pas encore de compte?",
+    signUp: "S'inscrire",
+    termsText: "En vous connectant, vous acceptez nos",
+    termsLink: "Conditions d'utilisation",
+    andText: "et",
+    privacyLink: "Politique de confidentialité",
+    loginWithApple: "Apple",
+    loginWithGoogle: "Google"
+  },
+  register: {
+    title: "Créer un compte",
+    subtitle: "Inscrivez-vous pour commencer",
+    nameLabel: "Nom complet",
+    namePlaceholder: "Entrez votre nom",
+    emailLabel: "Email",
+    emailPlaceholder: "Email Ou Nom d'utilisateur",
+    passwordLabel: "Mot de passe",
+    passwordPlaceholder: "Créez un mot de passe",
+    confirmPasswordLabel: "Confirmer le mot de passe",
+    confirmPasswordPlaceholder: "Confirmez votre mot de passe",
+    termsLabel: "J'accepte les conditions d'utilisation",
+    registerButton: "S'inscrire",
+    orContinueWith: "Ou continuer avec",
+    haveAccount: "Vous avez déjà un compte?",
+    signIn: "Se connecter",
+    termsText: "En vous inscrivant, vous acceptez nos",
+    termsLink: "Conditions d'utilisation",
+    andText: "et",
+    privacyLink: "Politique de confidentialité"
+  },
+  forgotPassword: {
+    title: "Réinitialiser le mot de passe",
+    subtitle: "Entrez votre email pour recevoir un lien de réinitialisation",
+    emailLabel: "Email",
+    emailPlaceholder: "Entrez votre adresse email",
+    resetButton: "Envoyer le lien",
+    backToLogin: "Retour à la connexion",
+    successTitle: "Vérifiez votre boîte de réception",
+    successMessage: "Nous avons envoyé un lien de réinitialisation à votre adresse email.",
+    otpTitle: "Vérifier le code",
+    otpSubtitle: "Entrez le code à 6 chiffres envoyé à votre email",
+    verifyButton: "Vérifier le code",
+    backButton: "Retour à l'email"
+  }
+}
+
+export default auth 

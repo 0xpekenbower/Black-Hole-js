@@ -1,0 +1,58 @@
+const auth = {
+  login: {
+    title: "Welcome Back",
+    subtitle: "Sign in to your account",
+    emailLabel: "Email",
+    emailPlaceholder: "Email Or Username",
+    passwordLabel: "Password",
+    passwordPlaceholder: "Enter your password",
+    forgotPassword: "Forgot password?",
+    loginButton: "Sign In",
+    orContinueWith: "Or continue with",
+    noAccount: "Don't have an account?",
+    signUp: "Sign up",
+    termsText: "By signing in, you agree to our",
+    termsLink: "Terms of Service",
+    andText: "and",
+    privacyLink: "Privacy Policy",
+    loginWithApple: "Apple",
+    loginWithGoogle: "Google"
+  },
+  register: {
+    title: "Create Account",
+    subtitle: "Sign up to get started",
+    nameLabel: "Full Name",
+    namePlaceholder: "Enter your name",
+    emailLabel: "Email",
+    emailPlaceholder: "Email Or Username",
+    passwordLabel: "Password",
+    passwordPlaceholder: "Create a password",
+    confirmPasswordLabel: "Confirm Password",
+    confirmPasswordPlaceholder: "Confirm your password",
+    termsLabel: "I agree to the terms and conditions",
+    registerButton: "Sign Up",
+    orContinueWith: "Or continue with",
+    haveAccount: "Already have an account?",
+    signIn: "Sign in",
+    termsText: "By registering, you agree to our",
+    termsLink: "Terms of Service",
+    andText: "and",
+    privacyLink: "Privacy Policy"
+  },
+  forgotPassword: {
+    title: "Reset Password",
+    subtitle: "Enter your email to receive a reset link",
+    emailLabel: "Email",
+    emailPlaceholder: "Enter your email address",
+    resetButton: "Send Reset Link",
+    backToLogin: "Back to login",
+    successTitle: "Check your inbox",
+    successMessage: "We've sent a password reset link to your email address.",
+    otpTitle: "Verify Code",
+    otpSubtitle: "Enter the 6-digit code sent to your email",
+    verifyButton: "Verify Code",
+    backButton: "Back to email"
+  }
+}
+
+export default auth 

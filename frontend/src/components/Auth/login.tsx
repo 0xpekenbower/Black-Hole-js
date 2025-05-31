@@ -1,0 +1,272 @@
+'use client'
+
+import { useState, useEffect } from "react"
+import { cn } from "@/utils"
+import { Button } from "@/components/ui/button"
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
+import { Input } from "@/components/ui/input"
+import { SocialButton } from "./social-button"
+import { useLang } from "@/context/langContext"
+import en from "@/i18n/en/auth"
+import fr from "@/i18n/fr/auth"
+import { z } from "zod"
+import { useForm } from "react-hook-form"
+import { zodResolver } from "@hookform/resolvers/zod"
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form"
+import Link from "next/link"
+
+// Schema definition
+const loginSchema = z.object({
+  email: z.string().email({ message: "Please enter a valid email address" }),
+  password: z.string().min(6, { message: "Password must be at least 6 characters" }),
+})
+
+type LoginFormValues = z.infer<typeof loginSchema>
+
+interface LoginFormProps extends React.ComponentProps<"div"> {
+  handleLogin?: (email: string, password: string) => Promise<void>
+  isLoading?: boolean
+  error?: string | null
+}
+
+export function LoginForm({
+  className,
+  handleLogin,
+  isLoading: externalIsLoading,
+  error: externalError,
+  ...props
+}: LoginFormProps) {
+  const { lang } = useLang()
+  const content = lang === 'fr' ? fr.login : en.login
+  
+  return (
+    <div className={cn("flex justify-center items-center min-h-screen w-full px-4 py-6", className)} {...props}>
+      <div className="w-full max-w-md">
+        <Card className="w-full shadow-md border-0">
+          <CardHeader className="pb-2 sm:pb-4 space-y-1">
+            <CardTitle className="text-lg sm:text-xl font-bold text-foreground text-center">{content.title}</CardTitle>
+            <CardDescription className="text-center text-muted-foreground text-xs sm:text-sm">{content.subtitle}</CardDescription>
+          </CardHeader>
+          <CardContent className="px-4 sm:px-6">
+            <LoginFormContent 
+              content={content} 
+              handleLogin={handleLogin}
+              externalIsLoading={externalIsLoading}
+              externalError={externalError}
+            />
+          </CardContent>
+          <CardFooter className="pt-0 pb-4 sm:pb-5 flex justify-center">
+            <LoginTerms content={content} />
+          </CardFooter>
+        </Card>
+      </div>
+    </div>
+  )
+}
+
+// Form content component
+interface LoginFormContentProps {
+  content: typeof en.login
+  handleLogin?: LoginFormProps['handleLogin']
+  externalIsLoading?: boolean
+  externalError?: string | null
+}
+
+function LoginFormContent({ content, handleLogin, externalIsLoading, externalError }: LoginFormContentProps) {
+  const [internalIsLoading, setInternalIsLoading] = useState(false)
+  const isLoading = externalIsLoading !== undefined ? externalIsLoading : internalIsLoading
+  
+  const form = useForm<LoginFormValues>({
+    resolver: zodResolver(loginSchema),
+    defaultValues: {
+      email: "",
+      password: "",
+    },
+  })
+
+  useEffect(() => {
+    if (externalError) {
+      form.setError("root", { message: externalError })
+    }
+  }, [externalError, form])
+
+  const onSubmit = async (values: LoginFormValues) => {
+    if (!handleLogin) return
+    
+    try {
+      if (externalIsLoading === undefined) {
+        setInternalIsLoading(true)
+      }
+      await handleLogin(values.email, values.password)
+    } catch (error) {
+      console.error("Login failed:", error)
+      form.setError("root", { 
+        message: "Login failed. Please check your credentials." 
+      })
+    } finally {
+      if (externalIsLoading === undefined) {
+        setInternalIsLoading(false)
+      }
+    }
+  }
+
+  return (
+    <Form {...form}>
+      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 w-full">
+        <div className="flex flex-col space-y-4">
+          <EmailField content={content} form={form} />
+          <PasswordField content={content} form={form} />
+          <LoginButton isLoading={isLoading} content={content} />
+
+          {form.formState.errors.root && (
+            <p className="text-destructive text-xs text-center">
+              {form.formState.errors.root.message}
+            </p>
+          )}
+
+          <SocialLoginSection content={content} />
+          <SignUpPrompt content={content} />
+        </div>
+      </form>
+    </Form>
+  )
+}
+
+// Email field component
+function EmailField({ content, form }: { content: typeof en.login, form: any }) {
+  return (
+    <FormField
+      control={form.control}
+      name="email"
+      render={({ field }: { field: any }) => (
+        <FormItem className="space-y-1 sm:space-y-2">
+          <FormLabel className="text-xs sm:text-sm">{content.emailLabel}</FormLabel>
+          <FormControl>
+            <Input
+              placeholder={content.emailPlaceholder}
+              type="email"
+              {...field}
+              className="h-8 sm:h-9 text-xs sm:text-sm"
+            />
+          </FormControl>
+          <FormMessage className="text-xs" />
+        </FormItem>
+      )}
+    />
+  )
+}
+
+// Password field component
+function PasswordField({ content, form }: { content: typeof en.login, form: any }) {
+  return (
+    <FormField
+      control={form.control}
+      name="password"
+      render={({ field }: { field: any }) => (
+        <FormItem className="space-y-1 sm:space-y-2">
+          <div className="flex items-center justify-between">
+            <FormLabel className="text-xs sm:text-sm">{content.passwordLabel}</FormLabel>
+            <Link
+              href="/forgot-password"
+              className="text-xs underline hover:underline text-foreground/80 hover:text-primary transition-colors"
+            >
+              {content.forgotPassword}
+            </Link>
+          </div>
+          <FormControl>
+            <Input
+              placeholder={content.passwordPlaceholder}
+            type="password" 
+            {...field} 
+            className="h-8 sm:h-9 text-xs sm:text-sm" />
+          </FormControl>
+          <FormMessage className="text-xs" />
+        </FormItem>
+      )}
+    />
+  )
+}
+
+// Login button component
+function LoginButton({ isLoading, content }: { isLoading: boolean, content: typeof en.login }) {
+  return (
+    <Button 
+      type="submit" 
+      className="w-full h-8 sm:h-9 text-xs font-medium bg-foreground text-background sm:text-sm" 
+      disabled={isLoading}
+    >
+      {isLoading ? (
+        <span className="flex items-center gap-2">
+          <svg className="animate-spin h-3 w-3" viewBox="0 0 24 24">
+            <circle 
+              className="opacity-25" 
+              cx="12" 
+              cy="12" 
+              r="10" 
+              stroke="currentColor" 
+              strokeWidth="4"
+            />
+            <path 
+              className="opacity-75" 
+              fill="currentColor" 
+              d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+            />
+          </svg>
+          {content.loginButton}
+        </span>
+      ) : content.loginButton}
+    </Button>
+  )
+}
+
+// Social login section component
+function SocialLoginSection({ content }: { content: typeof en.login }) {
+  return (
+    <>
+      <div className="relative text-center text-xs sm:text-sm after:absolute after:inset-0 after:top-1/2 after:z-0 after:flex after:items-center after:border-t after:border-border">
+        <span className="relative z-10 bg-card px-2 text-muted-foreground">
+          {content.orContinueWith}
+        </span>
+      </div>
+      <div className="grid grid-cols-2 gap-2 sm:gap-3">
+        <SocialButton 
+          provider="apple" 
+          className="h-8 sm:h-9 text-xs sm:text-sm"
+        />
+        <SocialButton 
+          provider="google" 
+          className="h-8 sm:h-9 text-xs sm:text-sm"
+        />
+      </div>
+    </>
+  )
+}
+
+// Sign up prompt component
+function SignUpPrompt({ content }: { content: typeof en.login }) {
+  return (
+    <div className="text-center text-xs sm:text-sm font-medium">
+      {content.noAccount}{" "}
+      <Link href="/register" className="text-forground underline underline-offset-2 hover:text-primary/80 transition-colors">
+        {content.signUp}
+      </Link>
+    </div>
+  )
+}
+
+// Terms and conditions component
+function LoginTerms({ content }: { content: typeof en.login }) {
+  return (
+    <div className="text-balance text-center text-[10px] sm:text-xs text-muted-foreground [&_a]:underline [&_a]:underline-offset-2 hover:[&_a]:text-primary">
+      {content.termsText} <a href="#">{content.termsLink}</a>{" "}
+      {content.andText} <a href="#">{content.privacyLink}</a>.
+    </div>
+  )
+}
