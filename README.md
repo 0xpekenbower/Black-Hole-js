@@ -6,12 +6,6 @@ A modern web application featuring a multiplayer game, real-time chat, authentic
 
 BlackHoleJs is a full-stack application built with Next.js for the frontend and a microservices architecture for the backend. The project includes features like user authentication, real-time chat, gaming, metrics, and more.
 
-## Architecture
-
-- **Frontend**: Next.js application with authentication, dashboard, and game interfaces
-- **Backend**: Microservices architecture with dedicated services for authentication, chat, dashboard, and game functionalities
-- **Infrastructure**: Nginx gateway, logging with Vector, metrics monitoring with Grafana/Prometheus
-
 ## Directory Structure
 
 ```
@@ -54,6 +48,16 @@ BlackHoleJs
   <img src="https://img.shields.io/badge/Cadvisor_0.52.1-00ADD8?style=for-the-badge&logo=google&logoColor=white" alt="Cadvisor" />
   <img src="https://img.shields.io/badge/Redis_Exporter_1.73.0-%23DD0031.svg?style=for-the-badge&logo=redis&logoColor=white" alt="Redis Exporter" />
   <img src="https://img.shields.io/badge/Postgres_Exporter_0.17.0-336791?style=for-the-badge&logo=postgresql&logoColor=white" alt="Postgres Exporter" />
+</div>
+
+## Architecture
+
+<div align="center">
+  <p><strong>Note:</strong> Please view the complete architecture diagram in your browser: <a href="doc/Architecture.pdf" target="_blank">View Architecture PDF</a></p>
+  
+  <a href="doc/Architecture.pdf" target="_blank">
+    <img src="https://img.shields.io/badge/View-Architecture_Diagram_(PDF)-blue?style=for-the-badge&logo=adobe-acrobat-reader" alt="View Architecture PDF">
+  </a>
 </div>
 
 ## How to run the project
