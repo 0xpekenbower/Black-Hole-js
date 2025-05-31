@@ -1,7 +1,7 @@
 {
   "__inputs": [
     {
-      "name": "DS_PROMETHEUS",
+      "name": "Prometheus",
       "label": "Prometheus",
       "description": "",
       "type": "datasource",
@@ -110,7 +110,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "${DS_PROMETHEUS}"
+            "uid": "Prometheus"
           },
           "description": "Start time of the container since unix epoch in seconds.",
           "fieldConfig": {
@@ -165,7 +165,7 @@
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "${DS_PROMETHEUS}"
+                "uid": "Prometheus"
               },
               "editorMode": "code",
               "exemplar": false,
@@ -184,7 +184,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "${DS_PROMETHEUS}"
+            "uid": "Prometheus"
           },
           "description": "Last time a container was seen by the exporter",
           "fieldConfig": {
@@ -239,7 +239,7 @@
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "${DS_PROMETHEUS}"
+                "uid": "Prometheus"
               },
               "editorMode": "code",
               "exemplar": false,
@@ -257,7 +257,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "${DS_PROMETHEUS}"
+            "uid": "Prometheus"
           },
           "description": "Number of tasks in given state\nnot working: https://github.com/google/cadvisor/issues/2739",
           "fieldConfig": {
@@ -337,7 +337,7 @@
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "${DS_PROMETHEUS}"
+                "uid": "Prometheus"
               },
               "editorMode": "code",
               "expr": "sum by (state)(container_tasks_state{instance=~\"$host_instance\", name=~\"$container_name\", container_label_com_docker_compose_project=~\"$compose_project\"})",
@@ -353,7 +353,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "${DS_PROMETHEUS}"
+            "uid": "Prometheus"
           },
           "description": "Count of out of memory events observed for the container",
           "fieldConfig": {
@@ -436,7 +436,7 @@
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "${DS_PROMETHEUS}"
+                "uid": "Prometheus"
               },
               "editorMode": "code",
               "expr": "max by (name) (rate(container_oom_events_total{instance=~\"$host_instance\", name=~\"$container_name\", container_label_com_docker_compose_project=~\"$compose_project\"}[$__rate_interval]))",
@@ -452,7 +452,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "${DS_PROMETHEUS}"
+            "uid": "Prometheus"
           },
           "description": "1 if there was an error while getting container metrics, 0 otherwise",
           "fieldConfig": {
@@ -535,7 +535,7 @@
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "${DS_PROMETHEUS}"
+                "uid": "Prometheus"
               },
               "editorMode": "code",
               "expr": "container_scrape_error",
@@ -565,7 +565,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "${DS_PROMETHEUS}"
+            "uid": "Prometheus"
           },
           "description": "Cumulative system cpu time consumed in seconds.",
           "fieldConfig": {
@@ -649,7 +649,7 @@
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "${DS_PROMETHEUS}"
+                "uid": "Prometheus"
               },
               "editorMode": "code",
               "expr": "max by (name) (rate(container_cpu_system_seconds_total{instance=~\"$host_instance\", name=~\"$container_name\", container_label_com_docker_compose_project=~\"$compose_project\"}[$__rate_interval]))",
@@ -665,7 +665,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "${DS_PROMETHEUS}"
+            "uid": "Prometheus"
           },
           "description": "Cumulative system cpu time consumed in seconds.",
           "fieldConfig": {
@@ -749,7 +749,7 @@
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "${DS_PROMETHEUS}"
+                "uid": "Prometheus"
               },
               "editorMode": "code",
               "expr": "max by (name) (rate(container_cpu_user_seconds_total{instance=~\"$host_instance\", name=~\"$container_name\", container_label_com_docker_compose_project=~\"$compose_project\"}[$__rate_interval]))",
@@ -765,7 +765,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "${DS_PROMETHEUS}"
+            "uid": "Prometheus"
           },
           "description": "Cumulative cpu time consumed in seconds.",
           "fieldConfig": {
@@ -849,7 +849,7 @@
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "${DS_PROMETHEUS}"
+                "uid": "Prometheus"
               },
               "editorMode": "code",
               "expr": "max by (name) (rate(container_cpu_usage_seconds_total{instance=~\"$host_instance\", name=~\"$container_name\", container_label_com_docker_compose_project=~\"$compose_project\"}[$__rate_interval]))",
@@ -865,7 +865,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "${DS_PROMETHEUS}"
+            "uid": "Prometheus"
           },
           "description": "Validate usage = user + system",
           "fieldConfig": {
@@ -948,7 +948,7 @@
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "${DS_PROMETHEUS}"
+                "uid": "Prometheus"
               },
               "editorMode": "code",
               "expr": "max by (name) (rate(container_cpu_usage_seconds_total{instance=~\"$host_instance\", name=~\"$container_name\", container_label_com_docker_compose_project=~\"$compose_project\"}[$__rate_interval])) - on (name) (max by (name) (rate(container_cpu_user_seconds_total{instance=~\"$host_instance\", name=~\"$container_name\", container_label_com_docker_compose_project=~\"$compose_project\"}[$__rate_interval])) + on (name) max by (name) (rate(container_cpu_system_seconds_total{instance=~\"$host_instance\", name=~\"$container_name\", container_label_com_docker_compose_project=~\"$compose_project\"}[$__rate_interval]))) ",
@@ -964,7 +964,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "${DS_PROMETHEUS}"
+            "uid": "Prometheus"
           },
           "description": " Number of elapsed enforcement period intervals.",
           "fieldConfig": {
@@ -1048,7 +1048,7 @@
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "${DS_PROMETHEUS}"
+                "uid": "Prometheus"
               },
               "editorMode": "code",
               "expr": "max by (name) (rate(container_cpu_cfs_periods_total{instance=~\"$host_instance\", name=~\"$container_name\", container_label_com_docker_compose_project=~\"$compose_project\"}[$__rate_interval]))",
@@ -1064,7 +1064,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "${DS_PROMETHEUS}"
+            "uid": "Prometheus"
           },
           "description": "Number of throttled period intervals.",
           "fieldConfig": {
@@ -1148,7 +1148,7 @@
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "${DS_PROMETHEUS}"
+                "uid": "Prometheus"
               },
               "editorMode": "code",
               "expr": "max by (name) (rate(container_cpu_cfs_throttled_periods_total{instance=~\"$host_instance\", name=~\"$container_name\", container_label_com_docker_compose_project=~\"$compose_project\"}[$__rate_interval]))",
@@ -1164,7 +1164,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "${DS_PROMETHEUS}"
+            "uid": "Prometheus"
           },
           "description": "Number of throttled period intervals.",
           "fieldConfig": {
@@ -1248,7 +1248,7 @@
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "${DS_PROMETHEUS}"
+                "uid": "Prometheus"
               },
               "editorMode": "code",
               "expr": "max by (name) (rate(container_cpu_cfs_throttled_seconds_total{instance=~\"$host_instance\", name=~\"$container_name\", container_label_com_docker_compose_project=~\"$compose_project\"}[$__rate_interval]))",
@@ -1264,7 +1264,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "${DS_PROMETHEUS}"
+            "uid": "Prometheus"
           },
           "description": "Not enabled\nhttps://github.com/google/cadvisor/issues/2529",
           "fieldConfig": {
@@ -1347,7 +1347,7 @@
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "${DS_PROMETHEUS}"
+                "uid": "Prometheus"
               },
               "editorMode": "code",
               "expr": "max by (name) (container_cpu_load_average_10s{instance=~\"$host_instance\", name=~\"$container_name\", container_label_com_docker_compose_project=~\"$compose_project\"})",
@@ -1376,7 +1376,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "${DS_PROMETHEUS}"
+            "uid": "Prometheus"
           },
           "description": "Number of memory usage hits limits",
           "fieldConfig": {
@@ -1460,7 +1460,7 @@
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "${DS_PROMETHEUS}"
+                "uid": "Prometheus"
               },
               "editorMode": "code",
               "expr": "max by (name) (rate(container_memory_failcnt{instance=~\"$host_instance\", name=~\"$container_name\", container_label_com_docker_compose_project=~\"$compose_project\"}[$__rate_interval]))",
@@ -1476,7 +1476,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "${DS_PROMETHEUS}"
+            "uid": "Prometheus"
           },
           "description": "Cumulative count of memory allocation failures.",
           "fieldConfig": {
@@ -1560,7 +1560,7 @@
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "${DS_PROMETHEUS}"
+                "uid": "Prometheus"
               },
               "editorMode": "code",
               "expr": "max by (name) (rate(container_memory_failures_total{instance=~\"$host_instance\", name=~\"$container_name\", container_label_com_docker_compose_project=~\"$compose_project\"}[$__rate_interval]))",
@@ -1576,7 +1576,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "${DS_PROMETHEUS}"
+            "uid": "Prometheus"
           },
           "description": " Maximum memory usage recorded in bytes",
           "fieldConfig": {
@@ -1660,7 +1660,7 @@
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "${DS_PROMETHEUS}"
+                "uid": "Prometheus"
               },
               "editorMode": "code",
               "expr": "max by (name) (container_memory_max_usage_bytes{instance=~\"$host_instance\", name=~\"$container_name\", container_label_com_docker_compose_project=~\"$compose_project\"})",
@@ -1676,7 +1676,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "${DS_PROMETHEUS}"
+            "uid": "Prometheus"
           },
           "description": "Current memory usage in bytes, including all memory regardless of when it was accessed",
           "fieldConfig": {
@@ -1760,7 +1760,7 @@
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "${DS_PROMETHEUS}"
+                "uid": "Prometheus"
               },
               "editorMode": "code",
               "expr": "max by (name) (container_memory_usage_bytes{instance=~\"$host_instance\", name=~\"$container_name\", container_label_com_docker_compose_project=~\"$compose_project\"})",
@@ -1776,7 +1776,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "${DS_PROMETHEUS}"
+            "uid": "Prometheus"
           },
           "description": "Current working set in bytes.",
           "fieldConfig": {
@@ -1860,7 +1860,7 @@
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "${DS_PROMETHEUS}"
+                "uid": "Prometheus"
               },
               "editorMode": "code",
               "expr": "max by (name) (container_memory_working_set_bytes{instance=~\"$host_instance\", name=~\"$container_name\", container_label_com_docker_compose_project=~\"$compose_project\"})",
@@ -1876,7 +1876,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "${DS_PROMETHEUS}"
+            "uid": "Prometheus"
           },
           "description": "Size of RSS in bytes.",
           "fieldConfig": {
@@ -1960,7 +1960,7 @@
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "${DS_PROMETHEUS}"
+                "uid": "Prometheus"
               },
               "editorMode": "code",
               "expr": "max by (name) (container_memory_rss{instance=~\"$host_instance\", name=~\"$container_name\", container_label_com_docker_compose_project=~\"$compose_project\"})",
@@ -1976,7 +1976,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "${DS_PROMETHEUS}"
+            "uid": "Prometheus"
           },
           "description": "Size of memory mapped files in bytes.",
           "fieldConfig": {
@@ -2060,7 +2060,7 @@
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "${DS_PROMETHEUS}"
+                "uid": "Prometheus"
               },
               "editorMode": "code",
               "expr": "max by (name) (container_memory_mapped_file{instance=~\"$host_instance\", name=~\"$container_name\", container_label_com_docker_compose_project=~\"$compose_project\"})",
@@ -2076,7 +2076,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "${DS_PROMETHEUS}"
+            "uid": "Prometheus"
           },
           "description": "Number of bytes of page cache memory.",
           "fieldConfig": {
@@ -2160,7 +2160,7 @@
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "${DS_PROMETHEUS}"
+                "uid": "Prometheus"
               },
               "editorMode": "code",
               "expr": "max by (name) (container_memory_cache{instance=~\"$host_instance\", name=~\"$container_name\", container_label_com_docker_compose_project=~\"$compose_project\"})",
@@ -2176,7 +2176,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "${DS_PROMETHEUS}"
+            "uid": "Prometheus"
           },
           "description": "Container swap usage in bytes.",
           "fieldConfig": {
@@ -2260,7 +2260,7 @@
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "${DS_PROMETHEUS}"
+                "uid": "Prometheus"
               },
               "editorMode": "code",
               "expr": "max by (name) (container_memory_swap{instance=~\"$host_instance\", name=~\"$container_name\", container_label_com_docker_compose_project=~\"$compose_project\"})",
@@ -2276,7 +2276,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "${DS_PROMETHEUS}"
+            "uid": "Prometheus"
           },
           "description": "Memory limit for the container.",
           "fieldConfig": {
@@ -2360,7 +2360,7 @@
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "${DS_PROMETHEUS}"
+                "uid": "Prometheus"
               },
               "editorMode": "code",
               "expr": "max by (name) (container_spec_memory_limit_bytes{instance=~\"$host_instance\", name=~\"$container_name\", container_label_com_docker_compose_project=~\"$compose_project\"})",
@@ -2376,7 +2376,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "${DS_PROMETHEUS}"
+            "uid": "Prometheus"
           },
           "description": "Memory reservation limit for the container.",
           "fieldConfig": {
@@ -2460,7 +2460,7 @@
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "${DS_PROMETHEUS}"
+                "uid": "Prometheus"
               },
               "editorMode": "code",
               "expr": "max by (name) (container_spec_memory_reservation_limit_bytes{instance=~\"$host_instance\", name=~\"$container_name\", container_label_com_docker_compose_project=~\"$compose_project\"})",
@@ -2472,7 +2472,7 @@
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "${DS_PROMETHEUS}"
+                "uid": "Prometheus"
               },
               "editorMode": "code",
               "expr": "",
@@ -2488,7 +2488,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "${DS_PROMETHEUS}"
+            "uid": "Prometheus"
           },
           "description": "Memory swap limit for the container.",
           "fieldConfig": {
@@ -2572,7 +2572,7 @@
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "${DS_PROMETHEUS}"
+                "uid": "Prometheus"
               },
               "editorMode": "code",
               "expr": "max by (name) (container_spec_memory_swap_limit_bytes{instance=~\"$host_instance\", name=~\"$container_name\", container_label_com_docker_compose_project=~\"$compose_project\"})",
@@ -2602,7 +2602,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "${DS_PROMETHEUS}"
+            "uid": "Prometheus"
           },
           "description": "Cumulative count of bytes received, Cumulative count of bytes transmitted",
           "fieldConfig": {
@@ -2685,7 +2685,7 @@
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "${DS_PROMETHEUS}"
+                "uid": "Prometheus"
               },
               "editorMode": "code",
               "expr": "max by (name) (rate(container_network_receive_bytes_total{instance=~\"$host_instance\", name=~\"$container_name\", container_label_com_docker_compose_project=~\"$compose_project\"}[$__rate_interval]))",
@@ -2697,7 +2697,7 @@
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "${DS_PROMETHEUS}"
+                "uid": "Prometheus"
               },
               "editorMode": "code",
               "expr": "- max by (name) (rate(container_network_transmit_bytes_total{instance=~\"$host_instance\", name=~\"$container_name\", container_label_com_docker_compose_project=~\"$compose_project\"}[$__rate_interval]))",
@@ -2713,7 +2713,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "${DS_PROMETHEUS}"
+            "uid": "Prometheus"
           },
           "description": "Cumulative count of packets received, Cumulative count of packets transmitted",
           "fieldConfig": {
@@ -2796,7 +2796,7 @@
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "${DS_PROMETHEUS}"
+                "uid": "Prometheus"
               },
               "editorMode": "code",
               "expr": "max by (name) (rate(container_network_receive_packets_total{instance=~\"$host_instance\", name=~\"$container_name\", container_label_com_docker_compose_project=~\"$compose_project\"}[$__rate_interval]))",
@@ -2808,7 +2808,7 @@
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "${DS_PROMETHEUS}"
+                "uid": "Prometheus"
               },
               "editorMode": "code",
               "expr": "- max by (name) (rate(container_network_transmit_packets_total{instance=~\"$host_instance\", name=~\"$container_name\", container_label_com_docker_compose_project=~\"$compose_project\"}[$__rate_interval]))",
@@ -2820,7 +2820,7 @@
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "${DS_PROMETHEUS}"
+                "uid": "Prometheus"
               },
               "editorMode": "code",
               "expr": "",
@@ -2836,7 +2836,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "${DS_PROMETHEUS}"
+            "uid": "Prometheus"
           },
           "description": "Cumulative count of errors encountered while receiving, Cumulative count of errors encountered while transmitting",
           "fieldConfig": {
@@ -2919,7 +2919,7 @@
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "${DS_PROMETHEUS}"
+                "uid": "Prometheus"
               },
               "editorMode": "code",
               "expr": "max by (name) (rate(container_network_receive_errors_total{instance=~\"$host_instance\", name=~\"$container_name\", container_label_com_docker_compose_project=~\"$compose_project\"}[$__rate_interval]))",
@@ -2931,7 +2931,7 @@
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "${DS_PROMETHEUS}"
+                "uid": "Prometheus"
               },
               "editorMode": "code",
               "expr": "- max by (name) (rate(container_network_transmit_errors_total{instance=~\"$host_instance\", name=~\"$container_name\", container_label_com_docker_compose_project=~\"$compose_project\"}[$__rate_interval]))",
@@ -2947,7 +2947,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "${DS_PROMETHEUS}"
+            "uid": "Prometheus"
           },
           "description": "Cumulative count of packets dropped while receiving, Cumulative count of packets dropped while transmitting",
           "fieldConfig": {
@@ -3030,7 +3030,7 @@
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "${DS_PROMETHEUS}"
+                "uid": "Prometheus"
               },
               "editorMode": "code",
               "expr": "max by (name) (rate(container_network_receive_packets_dropped_total{instance=~\"$host_instance\", name=~\"$container_name\", container_label_com_docker_compose_project=~\"$compose_project\"}[$__rate_interval]))",
@@ -3042,7 +3042,7 @@
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "${DS_PROMETHEUS}"
+                "uid": "Prometheus"
               },
               "editorMode": "code",
               "expr": "- max by (name) (rate(container_network_transmit_packets_dropped_total{instance=~\"$host_instance\", name=~\"$container_name\", container_label_com_docker_compose_project=~\"$compose_project\"}[$__rate_interval]))",
@@ -3072,7 +3072,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "${DS_PROMETHEUS}"
+            "uid": "Prometheus"
           },
           "description": "Blkio Device bytes usage",
           "fieldConfig": {
@@ -3156,7 +3156,7 @@
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "${DS_PROMETHEUS}"
+                "uid": "Prometheus"
               },
               "editorMode": "code",
               "expr": "max by (name) (rate(container_blkio_device_usage_total{instance=~\"$host_instance\", name=~\"$container_name\", container_label_com_docker_compose_project=~\"$compose_project\"}[$__rate_interval]))",
@@ -3185,7 +3185,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "${DS_PROMETHEUS}"
+            "uid": "Prometheus"
           },
           "description": "Number of available Inodes, Number of Inodes",
           "fieldConfig": {
@@ -3265,7 +3265,7 @@
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "${DS_PROMETHEUS}"
+                "uid": "Prometheus"
               },
               "editorMode": "code",
               "expr": "max by (name) (container_fs_inodes_free{instance=~\"$host_instance\", name=~\"$container_name\", container_label_com_docker_compose_project=~\"$compose_project\"})",
@@ -3277,7 +3277,7 @@
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "${DS_PROMETHEUS}"
+                "uid": "Prometheus"
               },
               "editorMode": "code",
               "expr": "max by (name) (container_fs_inodes_total{instance=~\"$host_instance\", name=~\"$container_name\", container_label_com_docker_compose_project=~\"$compose_project\"})",
@@ -3293,7 +3293,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "${DS_PROMETHEUS}"
+            "uid": "Prometheus"
           },
           "description": "Number of bytes that can be consumed by the container on this filesystem.",
           "fieldConfig": {
@@ -3376,7 +3376,7 @@
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "${DS_PROMETHEUS}"
+                "uid": "Prometheus"
               },
               "editorMode": "code",
               "expr": "max by (name) (container_fs_limit_bytes{instance=~\"$host_instance\", name=~\"$container_name\", container_label_com_docker_compose_project=~\"$compose_project\"})",
@@ -3392,7 +3392,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "${DS_PROMETHEUS}"
+            "uid": "Prometheus"
           },
           "description": "https://github.com/google/cadvisor/issues/1403#issuecomment-1752155206",
           "fieldConfig": {
@@ -3472,7 +3472,7 @@
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "${DS_PROMETHEUS}"
+                "uid": "Prometheus"
               },
               "editorMode": "code",
               "expr": "max by (name) (container_fs_io_current{instance=~\"$host_instance\", name=~\"$container_name\", container_label_com_docker_compose_project=~\"$compose_project\"})",
@@ -3487,7 +3487,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "${DS_PROMETHEUS}"
+            "uid": "Prometheus"
           },
           "description": "Cumulative count of seconds spent doing I/Os, Cumulative weighted I/O time in seconds",
           "fieldConfig": {
@@ -3571,7 +3571,7 @@
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "${DS_PROMETHEUS}"
+                "uid": "Prometheus"
               },
               "editorMode": "code",
               "expr": "max by (name) (rate(container_fs_usage_bytes{instance=~\"$host_instance\", name=~\"$container_name\", container_label_com_docker_compose_project=~\"$compose_project\"}[$__rate_interval]))",
@@ -3587,7 +3587,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "${DS_PROMETHEUS}"
+            "uid": "Prometheus"
           },
           "description": "Cumulative count of seconds spent doing I/Os, Cumulative weighted I/O time in seconds",
           "fieldConfig": {
@@ -3671,7 +3671,7 @@
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "${DS_PROMETHEUS}"
+                "uid": "Prometheus"
               },
               "editorMode": "code",
               "expr": "max by (name) (rate(container_fs_io_time_seconds_total{instance=~\"$host_instance\", name=~\"$container_name\", container_label_com_docker_compose_project=~\"$compose_project\"}[$__rate_interval]))",
@@ -3683,7 +3683,7 @@
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "${DS_PROMETHEUS}"
+                "uid": "Prometheus"
               },
               "editorMode": "code",
               "expr": "max by (name) (rate(container_fs_io_time_weighted_seconds_total{instance=~\"$host_instance\", name=~\"$container_name\", container_label_com_docker_compose_project=~\"$compose_project\"}[$__rate_interval]))",
@@ -3699,7 +3699,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "${DS_PROMETHEUS}"
+            "uid": "Prometheus"
           },
           "description": "Cumulative count of seconds spent reading or writing",
           "fieldConfig": {
@@ -3782,7 +3782,7 @@
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "${DS_PROMETHEUS}"
+                "uid": "Prometheus"
               },
               "editorMode": "code",
               "expr": "max by (name) (rate(container_fs_read_seconds_total{instance=~\"$host_instance\", name=~\"$container_name\", container_label_com_docker_compose_project=~\"$compose_project\"}[$__rate_interval]))",
@@ -3794,7 +3794,7 @@
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "${DS_PROMETHEUS}"
+                "uid": "Prometheus"
               },
               "editorMode": "code",
               "expr": "max by (name) (-rate(container_fs_write_seconds_total{instance=~\"$host_instance\", name=~\"$container_name\", container_label_com_docker_compose_project=~\"$compose_project\"}[$__rate_interval]))",
@@ -3810,7 +3810,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "${DS_PROMETHEUS}"
+            "uid": "Prometheus"
           },
           "description": "Cumulative count of sector reads or writes completed, ",
           "fieldConfig": {
@@ -3893,7 +3893,7 @@
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "${DS_PROMETHEUS}"
+                "uid": "Prometheus"
               },
               "editorMode": "code",
               "expr": "max by (name) (rate(container_fs_sector_reads_total{instance=~\"$host_instance\", name=~\"$container_name\", container_label_com_docker_compose_project=~\"$compose_project\"}[$__rate_interval]))",
@@ -3905,7 +3905,7 @@
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "${DS_PROMETHEUS}"
+                "uid": "Prometheus"
               },
               "editorMode": "code",
               "expr": "- max by (name) (rate(container_fs_sector_writes_total{instance=~\"$host_instance\", name=~\"$container_name\", container_label_com_docker_compose_project=~\"$compose_project\"}[$__rate_interval]))",
@@ -3921,7 +3921,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "${DS_PROMETHEUS}"
+            "uid": "Prometheus"
           },
           "description": "Cumulative count of reads or writes completed",
           "fieldConfig": {
@@ -4004,7 +4004,7 @@
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "${DS_PROMETHEUS}"
+                "uid": "Prometheus"
               },
               "editorMode": "code",
               "expr": "max by (name) (rate(container_fs_reads_total{instance=~\"$host_instance\", name=~\"$container_name\", container_label_com_docker_compose_project=~\"$compose_project\"}[$__rate_interval]))",
@@ -4016,7 +4016,7 @@
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "${DS_PROMETHEUS}"
+                "uid": "Prometheus"
               },
               "editorMode": "code",
               "expr": "- max by (name) (rate(container_fs_writes_total{instance=~\"$host_instance\", name=~\"$container_name\", container_label_com_docker_compose_project=~\"$compose_project\"}[$__rate_interval]))",
@@ -4032,7 +4032,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "${DS_PROMETHEUS}"
+            "uid": "Prometheus"
           },
           "description": "Cumulative count of reads or writes merged",
           "fieldConfig": {
@@ -4116,7 +4116,7 @@
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "${DS_PROMETHEUS}"
+                "uid": "Prometheus"
               },
               "editorMode": "code",
               "expr": "max by (name) (rate(container_fs_reads_merged_total{instance=~\"$host_instance\", name=~\"$container_name\", container_label_com_docker_compose_project=~\"$compose_project\"}[$__rate_interval]))",
@@ -4128,7 +4128,7 @@
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "${DS_PROMETHEUS}"
+                "uid": "Prometheus"
               },
               "editorMode": "code",
               "expr": "- max by (name) (rate(container_fs_writes_merged_total{instance=~\"$host_instance\", name=~\"$container_name\", container_label_com_docker_compose_project=~\"$compose_project\"}[$__rate_interval]))",
@@ -4158,7 +4158,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "${DS_PROMETHEUS}"
+            "uid": "Prometheus"
           },
           "description": "",
           "fieldConfig": {
@@ -4209,7 +4209,7 @@
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "${DS_PROMETHEUS}"
+                "uid": "Prometheus"
               },
               "editorMode": "code",
               "exemplar": false,
@@ -4228,7 +4228,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "${DS_PROMETHEUS}"
+            "uid": "Prometheus"
           },
           "description": "",
           "fieldConfig": {
@@ -4279,7 +4279,7 @@
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "${DS_PROMETHEUS}"
+                "uid": "Prometheus"
               },
               "editorMode": "code",
               "exemplar": false,
@@ -4298,7 +4298,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "${DS_PROMETHEUS}"
+            "uid": "Prometheus"
           },
           "description": "",
           "fieldConfig": {
@@ -4349,7 +4349,7 @@
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "${DS_PROMETHEUS}"
+                "uid": "Prometheus"
               },
               "editorMode": "code",
               "exemplar": false,
@@ -4368,7 +4368,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "${DS_PROMETHEUS}"
+            "uid": "Prometheus"
           },
           "description": "Number of tasks in given state\nnot working: https://github.com/google/cadvisor/issues/2739",
           "fieldConfig": {
@@ -4448,7 +4448,7 @@
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "${DS_PROMETHEUS}"
+                "uid": "Prometheus"
               },
               "editorMode": "code",
               "expr": "sum by (state)(container_tasks_state{instance=~\"$host_instance\", name=~\"$container_name\", container_label_com_docker_compose_project=~\"$compose_project\"})",
@@ -4464,7 +4464,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "${DS_PROMETHEUS}"
+            "uid": "Prometheus"
           },
           "description": "",
           "fieldConfig": {
@@ -4515,7 +4515,7 @@
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "${DS_PROMETHEUS}"
+                "uid": "Prometheus"
               },
               "editorMode": "code",
               "exemplar": false,
@@ -4534,7 +4534,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "${DS_PROMETHEUS}"
+            "uid": "Prometheus"
           },
           "description": "",
           "fieldConfig": {
@@ -4585,7 +4585,7 @@
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "${DS_PROMETHEUS}"
+                "uid": "Prometheus"
               },
               "editorMode": "code",
               "exemplar": false,
@@ -4604,7 +4604,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "${DS_PROMETHEUS}"
+            "uid": "Prometheus"
           },
           "description": "",
           "fieldConfig": {
@@ -4655,7 +4655,7 @@
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "${DS_PROMETHEUS}"
+                "uid": "Prometheus"
               },
               "editorMode": "code",
               "exemplar": false,
@@ -4674,7 +4674,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "${DS_PROMETHEUS}"
+            "uid": "Prometheus"
           },
           "description": "",
           "fieldConfig": {
@@ -4725,7 +4725,7 @@
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "${DS_PROMETHEUS}"
+                "uid": "Prometheus"
               },
               "editorMode": "code",
               "exemplar": false,
@@ -4744,7 +4744,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "${DS_PROMETHEUS}"
+            "uid": "Prometheus"
           },
           "description": "",
           "fieldConfig": {
@@ -4795,7 +4795,7 @@
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "${DS_PROMETHEUS}"
+                "uid": "Prometheus"
               },
               "editorMode": "code",
               "exemplar": false,
@@ -4814,7 +4814,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "${DS_PROMETHEUS}"
+            "uid": "Prometheus"
           },
           "description": "Start time of the container since unix epoch in seconds.",
           "fieldConfig": {
@@ -4865,7 +4865,7 @@
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "${DS_PROMETHEUS}"
+                "uid": "Prometheus"
               },
               "editorMode": "code",
               "expr": "max by (name) (container_start_time_seconds{instance=~\"$host_instance\", name=~\"$container_name\", container_label_com_docker_compose_project=~\"$compose_project\"}) * 1000",
@@ -4881,7 +4881,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "${DS_PROMETHEUS}"
+            "uid": "Prometheus"
           },
           "description": "Last time a container was seen by the exporter",
           "fieldConfig": {
@@ -4932,7 +4932,7 @@
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "${DS_PROMETHEUS}"
+                "uid": "Prometheus"
               },
               "editorMode": "code",
               "expr": "max by (name) (container_last_seen{instance=~\"$host_instance\", name=~\"$container_name\", container_label_com_docker_compose_project=~\"$compose_project\"}) * 1000",
@@ -4948,7 +4948,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "${DS_PROMETHEUS}"
+            "uid": "Prometheus"
           },
           "description": "",
           "fieldConfig": {
@@ -4999,7 +4999,7 @@
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "${DS_PROMETHEUS}"
+                "uid": "Prometheus"
               },
               "editorMode": "code",
               "exemplar": false,
@@ -5018,7 +5018,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "${DS_PROMETHEUS}"
+            "uid": "Prometheus"
           },
           "description": "",
           "fieldConfig": {
@@ -5069,7 +5069,7 @@
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "${DS_PROMETHEUS}"
+                "uid": "Prometheus"
               },
               "editorMode": "code",
               "exemplar": false,
@@ -5088,7 +5088,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "${DS_PROMETHEUS}"
+            "uid": "Prometheus"
           },
           "description": "",
           "fieldConfig": {
@@ -5139,7 +5139,7 @@
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "${DS_PROMETHEUS}"
+                "uid": "Prometheus"
               },
               "editorMode": "code",
               "exemplar": false,
@@ -5158,7 +5158,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "${DS_PROMETHEUS}"
+            "uid": "Prometheus"
           },
           "description": "",
           "fieldConfig": {
@@ -5209,7 +5209,7 @@
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "${DS_PROMETHEUS}"
+                "uid": "Prometheus"
               },
               "editorMode": "code",
               "exemplar": false,
@@ -5228,7 +5228,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "${DS_PROMETHEUS}"
+            "uid": "Prometheus"
           },
           "description": "Cumulative system cpu time consumed in seconds.",
           "fieldConfig": {
@@ -5327,7 +5327,7 @@
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "${DS_PROMETHEUS}"
+                "uid": "Prometheus"
               },
               "editorMode": "code",
               "expr": "max by (name) (rate(container_cpu_system_seconds_total{instance=~\"$host_instance\", name=~\"$container_name\", container_label_com_docker_compose_project=~\"$compose_project\"}[$__rate_interval]))",
@@ -5339,7 +5339,7 @@
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "${DS_PROMETHEUS}"
+                "uid": "Prometheus"
               },
               "editorMode": "code",
               "expr": "max by (name) (rate(container_cpu_user_seconds_total{instance=~\"$host_instance\", name=~\"$container_name\", container_label_com_docker_compose_project=~\"$compose_project\"}[$__rate_interval]))",
@@ -5351,7 +5351,7 @@
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "${DS_PROMETHEUS}"
+                "uid": "Prometheus"
               },
               "editorMode": "code",
               "expr": "max by (name) (rate(container_cpu_usage_seconds_total{instance=~\"$host_instance\", name=~\"$container_name\", container_label_com_docker_compose_project=~\"$compose_project\"}[$__rate_interval]))",
@@ -5368,7 +5368,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "${DS_PROMETHEUS}"
+            "uid": "Prometheus"
           },
           "description": " Number of elapsed enforcement period intervals.",
           "fieldConfig": {
@@ -5451,7 +5451,7 @@
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "${DS_PROMETHEUS}"
+                "uid": "Prometheus"
               },
               "editorMode": "code",
               "expr": "max by (name) (rate(container_cpu_cfs_periods_total{instance=~\"$host_instance\", name=~\"$container_name\", container_label_com_docker_compose_project=~\"$compose_project\"}[$__rate_interval]))",
@@ -5467,7 +5467,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "${DS_PROMETHEUS}"
+            "uid": "Prometheus"
           },
           "description": "Number of throttled period intervals.",
           "fieldConfig": {
@@ -5550,7 +5550,7 @@
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "${DS_PROMETHEUS}"
+                "uid": "Prometheus"
               },
               "editorMode": "code",
               "expr": "max by (name) (rate(container_cpu_cfs_throttled_periods_total{instance=~\"$host_instance\", name=~\"$container_name\", container_label_com_docker_compose_project=~\"$compose_project\"}[$__rate_interval]))",
@@ -5566,7 +5566,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "${DS_PROMETHEUS}"
+            "uid": "Prometheus"
           },
           "description": "Number of throttled period intervals.",
           "fieldConfig": {
@@ -5649,7 +5649,7 @@
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "${DS_PROMETHEUS}"
+                "uid": "Prometheus"
               },
               "editorMode": "code",
               "expr": "max by (name) (rate(container_cpu_cfs_throttled_seconds_total{instance=~\"$host_instance\", name=~\"$container_name\", container_label_com_docker_compose_project=~\"$compose_project\"}[$__rate_interval]))",
@@ -5665,7 +5665,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "${DS_PROMETHEUS}"
+            "uid": "Prometheus"
           },
           "description": "Not enabled\nhttps://github.com/google/cadvisor/issues/2529",
           "fieldConfig": {
@@ -5747,7 +5747,7 @@
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "${DS_PROMETHEUS}"
+                "uid": "Prometheus"
               },
               "editorMode": "code",
               "expr": "max by (name) (container_cpu_load_average_10s{instance=~\"$host_instance\", name=~\"$container_name\", container_label_com_docker_compose_project=~\"$compose_project\"})",
@@ -5762,7 +5762,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "${DS_PROMETHEUS}"
+            "uid": "Prometheus"
           },
           "description": "Number of memory usage hits limits",
           "fieldConfig": {
@@ -5870,7 +5870,7 @@
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "${DS_PROMETHEUS}"
+                "uid": "Prometheus"
               },
               "editorMode": "code",
               "expr": "max by (name) (rate(container_memory_failcnt{instance=~\"$host_instance\", name=~\"$container_name\", container_label_com_docker_compose_project=~\"$compose_project\"}[$__rate_interval]))",
@@ -5886,7 +5886,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "${DS_PROMETHEUS}"
+            "uid": "Prometheus"
           },
           "description": "Cumulative count of memory allocation failures.",
           "fieldConfig": {
@@ -5969,7 +5969,7 @@
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "${DS_PROMETHEUS}"
+                "uid": "Prometheus"
               },
               "editorMode": "code",
               "expr": "max by (name) (rate(container_memory_failures_total{instance=~\"$host_instance\", name=~\"$container_name\", container_label_com_docker_compose_project=~\"$compose_project\"}[$__rate_interval]))",
@@ -5985,7 +5985,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "${DS_PROMETHEUS}"
+            "uid": "Prometheus"
           },
           "description": " Maximum memory usage recorded in bytes",
           "fieldConfig": {
@@ -6068,7 +6068,7 @@
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "${DS_PROMETHEUS}"
+                "uid": "Prometheus"
               },
               "editorMode": "code",
               "expr": "max by (name) (container_memory_max_usage_bytes{instance=~\"$host_instance\", name=~\"$container_name\", container_label_com_docker_compose_project=~\"$compose_project\"})",
@@ -6084,7 +6084,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "${DS_PROMETHEUS}"
+            "uid": "Prometheus"
           },
           "description": "Current memory usage in bytes, including all memory regardless of when it was accessed",
           "fieldConfig": {
@@ -6167,7 +6167,7 @@
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "${DS_PROMETHEUS}"
+                "uid": "Prometheus"
               },
               "editorMode": "code",
               "expr": "max by (name) (container_memory_usage_bytes{instance=~\"$host_instance\", name=~\"$container_name\", container_label_com_docker_compose_project=~\"$compose_project\"})",
@@ -6183,7 +6183,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "${DS_PROMETHEUS}"
+            "uid": "Prometheus"
           },
           "description": "Current working set in bytes.",
           "fieldConfig": {
@@ -6266,7 +6266,7 @@
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "${DS_PROMETHEUS}"
+                "uid": "Prometheus"
               },
               "editorMode": "code",
               "expr": "max by (name) (container_memory_working_set_bytes{instance=~\"$host_instance\", name=~\"$container_name\", container_label_com_docker_compose_project=~\"$compose_project\"})",
@@ -6282,7 +6282,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "${DS_PROMETHEUS}"
+            "uid": "Prometheus"
           },
           "description": "Size of RSS in bytes.",
           "fieldConfig": {
@@ -6365,7 +6365,7 @@
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "${DS_PROMETHEUS}"
+                "uid": "Prometheus"
               },
               "editorMode": "code",
               "expr": "max by (name) (container_memory_rss{instance=~\"$host_instance\", name=~\"$container_name\", container_label_com_docker_compose_project=~\"$compose_project\"})",
@@ -6381,7 +6381,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "${DS_PROMETHEUS}"
+            "uid": "Prometheus"
           },
           "description": "Size of memory mapped files in bytes.",
           "fieldConfig": {
@@ -6464,7 +6464,7 @@
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "${DS_PROMETHEUS}"
+                "uid": "Prometheus"
               },
               "editorMode": "code",
               "expr": "max by (name) (container_memory_mapped_file{instance=~\"$host_instance\", name=~\"$container_name\", container_label_com_docker_compose_project=~\"$compose_project\"})",
@@ -6480,7 +6480,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "${DS_PROMETHEUS}"
+            "uid": "Prometheus"
           },
           "description": "Number of bytes of page cache memory.",
           "fieldConfig": {
@@ -6563,7 +6563,7 @@
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "${DS_PROMETHEUS}"
+                "uid": "Prometheus"
               },
               "editorMode": "code",
               "expr": "max by (name) (container_memory_cache{instance=~\"$host_instance\", name=~\"$container_name\", container_label_com_docker_compose_project=~\"$compose_project\"})",
@@ -6579,7 +6579,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "${DS_PROMETHEUS}"
+            "uid": "Prometheus"
           },
           "description": "Container swap usage in bytes.",
           "fieldConfig": {
@@ -6662,7 +6662,7 @@
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "${DS_PROMETHEUS}"
+                "uid": "Prometheus"
               },
               "editorMode": "code",
               "expr": "max by (name) (container_memory_swap{instance=~\"$host_instance\", name=~\"$container_name\", container_label_com_docker_compose_project=~\"$compose_project\"})",
@@ -6678,7 +6678,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "${DS_PROMETHEUS}"
+            "uid": "Prometheus"
           },
           "description": "Memory limit for the container.",
           "fieldConfig": {
@@ -6761,7 +6761,7 @@
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "${DS_PROMETHEUS}"
+                "uid": "Prometheus"
               },
               "editorMode": "code",
               "expr": "max by (name) (container_spec_memory_limit_bytes{instance=~\"$host_instance\", name=~\"$container_name\", container_label_com_docker_compose_project=~\"$compose_project\"})",
@@ -6777,7 +6777,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "${DS_PROMETHEUS}"
+            "uid": "Prometheus"
           },
           "description": "Memory reservation limit for the container.",
           "fieldConfig": {
@@ -6860,7 +6860,7 @@
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "${DS_PROMETHEUS}"
+                "uid": "Prometheus"
               },
               "editorMode": "code",
               "expr": "max by (name) (container_spec_memory_reservation_limit_bytes{instance=~\"$host_instance\", name=~\"$container_name\", container_label_com_docker_compose_project=~\"$compose_project\"})",
@@ -6872,7 +6872,7 @@
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "${DS_PROMETHEUS}"
+                "uid": "Prometheus"
               },
               "editorMode": "code",
               "expr": "",
@@ -6888,7 +6888,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "${DS_PROMETHEUS}"
+            "uid": "Prometheus"
           },
           "description": "Memory swap limit for the container.",
           "fieldConfig": {
@@ -6971,7 +6971,7 @@
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "${DS_PROMETHEUS}"
+                "uid": "Prometheus"
               },
               "editorMode": "code",
               "expr": "max by (name) (container_spec_memory_swap_limit_bytes{instance=~\"$host_instance\", name=~\"$container_name\", container_label_com_docker_compose_project=~\"$compose_project\"})",
@@ -6987,7 +6987,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "${DS_PROMETHEUS}"
+            "uid": "Prometheus"
           },
           "description": "Cumulative count of bytes received, Cumulative count of bytes transmitted",
           "fieldConfig": {
@@ -7070,7 +7070,7 @@
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "${DS_PROMETHEUS}"
+                "uid": "Prometheus"
               },
               "editorMode": "code",
               "expr": "max by (name) (rate(container_network_receive_bytes_total{instance=~\"$host_instance\", name=~\"$container_name\", container_label_com_docker_compose_project=~\"$compose_project\"}[$__rate_interval]))",
@@ -7082,7 +7082,7 @@
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "${DS_PROMETHEUS}"
+                "uid": "Prometheus"
               },
               "editorMode": "code",
               "expr": "- max by (name) (rate(container_network_transmit_bytes_total{instance=~\"$host_instance\", name=~\"$container_name\", container_label_com_docker_compose_project=~\"$compose_project\"}[$__rate_interval]))",
@@ -7098,7 +7098,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "${DS_PROMETHEUS}"
+            "uid": "Prometheus"
           },
           "description": "Cumulative count of packets received, Cumulative count of packets transmitted",
           "fieldConfig": {
@@ -7181,7 +7181,7 @@
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "${DS_PROMETHEUS}"
+                "uid": "Prometheus"
               },
               "editorMode": "code",
               "expr": "max by (name) (rate(container_network_receive_packets_total{instance=~\"$host_instance\", name=~\"$container_name\", container_label_com_docker_compose_project=~\"$compose_project\"}[$__rate_interval]))",
@@ -7193,7 +7193,7 @@
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "${DS_PROMETHEUS}"
+                "uid": "Prometheus"
               },
               "editorMode": "code",
               "expr": "- max by (name) (rate(container_network_transmit_packets_total{instance=~\"$host_instance\", name=~\"$container_name\", container_label_com_docker_compose_project=~\"$compose_project\"}[$__rate_interval]))",
@@ -7205,7 +7205,7 @@
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "${DS_PROMETHEUS}"
+                "uid": "Prometheus"
               },
               "editorMode": "code",
               "expr": "",
@@ -7221,7 +7221,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "${DS_PROMETHEUS}"
+            "uid": "Prometheus"
           },
           "description": "Cumulative count of errors encountered while receiving, Cumulative count of errors encountered while transmitting",
           "fieldConfig": {
@@ -7304,7 +7304,7 @@
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "${DS_PROMETHEUS}"
+                "uid": "Prometheus"
               },
               "editorMode": "code",
               "expr": "max by (name) (rate(container_network_receive_errors_total{instance=~\"$host_instance\", name=~\"$container_name\", container_label_com_docker_compose_project=~\"$compose_project\"}[$__rate_interval]))",
@@ -7316,7 +7316,7 @@
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "${DS_PROMETHEUS}"
+                "uid": "Prometheus"
               },
               "editorMode": "code",
               "expr": "- max by (name) (rate(container_network_transmit_errors_total{instance=~\"$host_instance\", name=~\"$container_name\", container_label_com_docker_compose_project=~\"$compose_project\"}[$__rate_interval]))",
@@ -7332,7 +7332,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "${DS_PROMETHEUS}"
+            "uid": "Prometheus"
           },
           "description": "Cumulative count of packets dropped while receiving, Cumulative count of packets dropped while transmitting",
           "fieldConfig": {
@@ -7415,7 +7415,7 @@
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "${DS_PROMETHEUS}"
+                "uid": "Prometheus"
               },
               "editorMode": "code",
               "expr": "max by (name) (rate(container_network_receive_packets_dropped_total{instance=~\"$host_instance\", name=~\"$container_name\", container_label_com_docker_compose_project=~\"$compose_project\"}[$__rate_interval]))",
@@ -7427,7 +7427,7 @@
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "${DS_PROMETHEUS}"
+                "uid": "Prometheus"
               },
               "editorMode": "code",
               "expr": "- max by (name) (rate(container_network_transmit_packets_dropped_total{instance=~\"$host_instance\", name=~\"$container_name\", container_label_com_docker_compose_project=~\"$compose_project\"}[$__rate_interval]))",
@@ -7443,7 +7443,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "${DS_PROMETHEUS}"
+            "uid": "Prometheus"
           },
           "description": "Blkio Device bytes usage",
           "fieldConfig": {
@@ -7526,7 +7526,7 @@
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "${DS_PROMETHEUS}"
+                "uid": "Prometheus"
               },
               "editorMode": "code",
               "expr": "max by (name) (rate(container_blkio_device_usage_total{instance=~\"$host_instance\", name=~\"$container_name\", container_label_com_docker_compose_project=~\"$compose_project\"}[$__rate_interval]))",
@@ -7541,7 +7541,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "${DS_PROMETHEUS}"
+            "uid": "Prometheus"
           },
           "description": "Number of available Inodes, Number of Inodes",
           "fieldConfig": {
@@ -7620,7 +7620,7 @@
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "${DS_PROMETHEUS}"
+                "uid": "Prometheus"
               },
               "editorMode": "code",
               "expr": "max by (name) (container_fs_inodes_free{instance=~\"$host_instance\", name=~\"$container_name\", container_label_com_docker_compose_project=~\"$compose_project\"})",
@@ -7632,7 +7632,7 @@
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "${DS_PROMETHEUS}"
+                "uid": "Prometheus"
               },
               "editorMode": "code",
               "expr": "max by (name) (container_fs_inodes_total{instance=~\"$host_instance\", name=~\"$container_name\", container_label_com_docker_compose_project=~\"$compose_project\"})",
@@ -7648,7 +7648,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "${DS_PROMETHEUS}"
+            "uid": "Prometheus"
           },
           "description": "Number of bytes that can be consumed by the container on this filesystem.",
           "fieldConfig": {
@@ -7731,7 +7731,7 @@
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "${DS_PROMETHEUS}"
+                "uid": "Prometheus"
               },
               "editorMode": "code",
               "expr": "max by (name) (container_fs_limit_bytes{instance=~\"$host_instance\", name=~\"$container_name\", container_label_com_docker_compose_project=~\"$compose_project\"})",
@@ -7747,7 +7747,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "${DS_PROMETHEUS}"
+            "uid": "Prometheus"
           },
           "description": "https://github.com/google/cadvisor/issues/1403#issuecomment-1752155206",
           "fieldConfig": {
@@ -7826,7 +7826,7 @@
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "${DS_PROMETHEUS}"
+                "uid": "Prometheus"
               },
               "editorMode": "code",
               "expr": "max by (name) (container_fs_io_current{instance=~\"$host_instance\", name=~\"$container_name\", container_label_com_docker_compose_project=~\"$compose_project\"})",
@@ -7841,7 +7841,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "${DS_PROMETHEUS}"
+            "uid": "Prometheus"
           },
           "description": "Cumulative count of seconds spent doing I/Os, Cumulative weighted I/O time in seconds",
           "fieldConfig": {
@@ -7924,7 +7924,7 @@
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "${DS_PROMETHEUS}"
+                "uid": "Prometheus"
               },
               "editorMode": "code",
               "expr": "max by (name) (rate(container_fs_usage_bytes{instance=~\"$host_instance\", name=~\"$container_name\", container_label_com_docker_compose_project=~\"$compose_project\"}[$__rate_interval]))",
@@ -7940,7 +7940,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "${DS_PROMETHEUS}"
+            "uid": "Prometheus"
           },
           "description": "Cumulative count of seconds spent doing I/Os, Cumulative weighted I/O time in seconds",
           "fieldConfig": {
@@ -8023,7 +8023,7 @@
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "${DS_PROMETHEUS}"
+                "uid": "Prometheus"
               },
               "editorMode": "code",
               "expr": "max by (name) (rate(container_fs_io_time_seconds_total{instance=~\"$host_instance\", name=~\"$container_name\", container_label_com_docker_compose_project=~\"$compose_project\"}[$__rate_interval]))",
@@ -8035,7 +8035,7 @@
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "${DS_PROMETHEUS}"
+                "uid": "Prometheus"
               },
               "editorMode": "code",
               "expr": "max by (name) (rate(container_fs_io_time_weighted_seconds_total{instance=~\"$host_instance\", name=~\"$container_name\", container_label_com_docker_compose_project=~\"$compose_project\"}[$__rate_interval]))",
@@ -8051,7 +8051,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "${DS_PROMETHEUS}"
+            "uid": "Prometheus"
           },
           "description": "Cumulative count of seconds spent reading or writing",
           "fieldConfig": {
@@ -8134,7 +8134,7 @@
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "${DS_PROMETHEUS}"
+                "uid": "Prometheus"
               },
               "editorMode": "code",
               "expr": "max by (name) (rate(container_fs_read_seconds_total{instance=~\"$host_instance\", name=~\"$container_name\", container_label_com_docker_compose_project=~\"$compose_project\"}[$__rate_interval]))",
@@ -8146,7 +8146,7 @@
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "${DS_PROMETHEUS}"
+                "uid": "Prometheus"
               },
               "editorMode": "code",
               "expr": "max by (name) (-rate(container_fs_write_seconds_total{instance=~\"$host_instance\", name=~\"$container_name\", container_label_com_docker_compose_project=~\"$compose_project\"}[$__rate_interval]))",
@@ -8162,7 +8162,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "${DS_PROMETHEUS}"
+            "uid": "Prometheus"
           },
           "description": "Cumulative count of sector reads or writes completed, ",
           "fieldConfig": {
@@ -8245,7 +8245,7 @@
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "${DS_PROMETHEUS}"
+                "uid": "Prometheus"
               },
               "editorMode": "code",
               "expr": "max by (name) (rate(container_fs_sector_reads_total{instance=~\"$host_instance\", name=~\"$container_name\", container_label_com_docker_compose_project=~\"$compose_project\"}[$__rate_interval]))",
@@ -8257,7 +8257,7 @@
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "${DS_PROMETHEUS}"
+                "uid": "Prometheus"
               },
               "editorMode": "code",
               "expr": "- max by (name) (rate(container_fs_sector_writes_total{instance=~\"$host_instance\", name=~\"$container_name\", container_label_com_docker_compose_project=~\"$compose_project\"}[$__rate_interval]))",
@@ -8273,7 +8273,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "${DS_PROMETHEUS}"
+            "uid": "Prometheus"
           },
           "description": "Cumulative count of reads or writes completed",
           "fieldConfig": {
@@ -8356,7 +8356,7 @@
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "${DS_PROMETHEUS}"
+                "uid": "Prometheus"
               },
               "editorMode": "code",
               "expr": "max by (name) (rate(container_fs_reads_total{instance=~\"$host_instance\", name=~\"$container_name\", container_label_com_docker_compose_project=~\"$compose_project\"}[$__rate_interval]))",
@@ -8368,7 +8368,7 @@
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "${DS_PROMETHEUS}"
+                "uid": "Prometheus"
               },
               "editorMode": "code",
               "expr": "- max by (name) (rate(container_fs_writes_total{instance=~\"$host_instance\", name=~\"$container_name\", container_label_com_docker_compose_project=~\"$compose_project\"}[$__rate_interval]))",
@@ -8384,7 +8384,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "${DS_PROMETHEUS}"
+            "uid": "Prometheus"
           },
           "description": "Cumulative count of reads or writes merged",
           "fieldConfig": {
@@ -8467,7 +8467,7 @@
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "${DS_PROMETHEUS}"
+                "uid": "Prometheus"
               },
               "editorMode": "code",
               "expr": "max by (name) (rate(container_fs_reads_merged_total{instance=~\"$host_instance\", name=~\"$container_name\", container_label_com_docker_compose_project=~\"$compose_project\"}[$__rate_interval]))",
@@ -8479,7 +8479,7 @@
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "${DS_PROMETHEUS}"
+                "uid": "Prometheus"
               },
               "editorMode": "code",
               "expr": "- max by (name) (rate(container_fs_writes_merged_total{instance=~\"$host_instance\", name=~\"$container_name\", container_label_com_docker_compose_project=~\"$compose_project\"}[$__rate_interval]))",
@@ -8515,7 +8515,7 @@
         "includeAll": false,
         "label": "datasource",
         "multi": false,
-        "name": "DS_PROMETHEUS",
+        "name": "prometheus",
         "options": [],
         "query": "prometheus",
         "refresh": 1,
@@ -8527,7 +8527,7 @@
         "current": {},
         "datasource": {
           "type": "prometheus",
-          "uid": "${DS_PROMETHEUS}"
+          "uid": "Prometheus"
         },
         "definition": "label_values({__name__=~\"container.*\"},instance)",
         "hide": 0,
@@ -8551,7 +8551,7 @@
         "current": {},
         "datasource": {
           "type": "prometheus",
-          "uid": "${DS_PROMETHEUS}"
+          "uid": "Prometheus"
         },
         "definition": "label_values({__name__=~\"container.*\", instance=~\"$host_instance\"},container_label_com_docker_compose_project)",
         "description": "",
@@ -8575,7 +8575,7 @@
         "current": {},
         "datasource": {
           "type": "prometheus",
-          "uid": "${DS_PROMETHEUS}"
+          "uid": "Prometheus"
         },
         "definition": "label_values({__name__=~\"container.*\", instance=~\"$host_instance\", container_label_com_docker_compose_project=~\"$compose_project\"},name)",
         "hide": 0,

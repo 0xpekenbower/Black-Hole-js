@@ -1,0 +1,10 @@
+apiVersion: 1
+
+providers:
+  - name: BlackHoleJS Dashboards # A uniquely identifiable name for the provider
+    folder: BlackHoleJS Dashboards # The folder where to place the dashboards
+    type: file
+    updateIntervalSeconds: 60
+    options:
+      path:
+        /etc/grafana/provisioning/dashboards/
