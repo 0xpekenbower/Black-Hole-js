@@ -7,23 +7,37 @@ const AutoLoad = require('@fastify/autoload')
 const options = {}
 
 module.exports = async function (fastify, opts) {
-  // Place here your custom code!
+  fastify.get('/api', async function (request, reply) {
+    return {
+      gateway: 'BlackHoleJs API Gateway',
+      version: '1.0.0',
+      message: 'API Gateway is running',
+      docs: '/api/services',
+      health: '/api/health',
+      ping: '/api/ping',
+      timestamp: new Date().toISOString()
+    }
+  })
 
-  // Do not touch the following lines
-
-  // This loads all plugins defined in plugins
-  // those should be support plugins that are reused
-  // through your application
+  fastify.get('/api/', async function (request, reply) {
+    return {
+      gateway: 'BlackHoleJs API Gateway',
+      version: '1.0.0',
+      message: 'API Gateway is running',
+      docs: '/api/services',
+      health: '/api/health',
+      ping: '/api/ping',
+      timestamp: new Date().toISOString()
+    }
+  })
   fastify.register(AutoLoad, {
     dir: path.join(__dirname, 'plugins'),
     options: Object.assign({}, opts)
   })
-
-  // This loads all plugins defined in routes
-  // define your routes in one of these
   fastify.register(AutoLoad, {
     dir: path.join(__dirname, 'routes'),
-    options: Object.assign({}, opts)
+    options: Object.assign({}, opts),
+    routeParams: true  // Enable route parameters
   })
 }
 

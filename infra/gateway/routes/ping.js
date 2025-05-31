@@ -53,4 +53,30 @@ module.exports = async function (fastify, opts) {
       }
     }
   })
+
+  fastify.get('/api/ping', async function (request, reply) {
+    const serviceStatuses = {}
+    const pingPromises = services.map(async (service) => {
+      const url = `${service.target}/ping`
+      const status = await request(url)
+      serviceStatuses[service.name] = status
+    })
+    
+    try {
+      await Promise.all(pingPromises)
+      return {
+        gateway: { status: 'up', code: 200 },
+        services: serviceStatuses,
+        timestamp: new Date().toISOString()
+      }
+    } catch (err) {
+      request.log.error({ error: err })
+      return {
+        gateway: { status: 'up', code: 200 },
+        services: serviceStatuses,
+        timestamp: new Date().toISOString(),
+        error: 'Some services could not be reached'
+      }
+    }
+  })
 }
