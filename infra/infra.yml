@@ -7,14 +7,11 @@ services:
       - "${REDIS_PORT:-6379}:6379"
     volumes:
       - redis_data:/data
-      # - ./infra/config/redis.conf:/usr/local/etc/redis/redis.conf:ro
     env_file:
       - .env
     restart: on-failure
     networks:
       - blackholejs
-
-
 
   postgres_db:
     container_name: postgres_db
@@ -23,15 +20,11 @@ services:
       - "${POSTGRES_PORT:-5432}:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
-      # - ./infra/config/postgres/postgres.conf:/etc/postgresql/postgresql.conf:ro
-      # - ./infra/config/postgres/init-db.sh:/docker-entrypoint-initdb.d/init-db.sh:ro
     env_file:
       - .env
     restart: on-failure
     networks:
       - blackholejs
-
-
 
 #https://betterstack.com/community/guides/logging/how-to-view-and-configure-nginx-access-and-error-logs/#step-4-structuring-nginx-access-logs
   nginx:
@@ -40,10 +33,9 @@ services:
     ports:
       - "${NGINX_HTTP_PORT:-80}:80"
     volumes:
-      # - ./infra/config/nginx/default.conf:/etc/nginx/conf.d/default.conf:ro
       - ./infra/config/default.conf:/etc/nginx/conf.d/default.conf:ro
-      # - ./infra/config/proxy_params:/etc/nginx/proxy_params:ro
       - ./infra/config/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./infra/config/502.html:/etc/nginx/conf.d/502.html:ro
       - ./infra/logs/nginx:/var/log/nginx
     environment:
       - NGINX_ENTRYPOINT_QUIET_LOGS=1
@@ -52,21 +44,6 @@ services:
     restart: on-failure
     networks:
       - blackholejs
-
-  # nginx_proxy_manager:
-  #   container_name: nginx_proxy_manager
-  #   image: 'jc21/nginx-proxy-manager:latest'
-  #   restart: unless-stopped
-  #   ports:
-  #     - '80:80'
-  #     - '81:81'
-  #   volumes:
-  #     - ./infra/data:/data
-  #   env_file:
-  #     - .env
-  #   networks:
-  #     - blackholejs
-
 
   gateway:
     container_name: gateway
@@ -82,14 +59,6 @@ services:
     env_file:
       - .env
     restart: on-failure
-    # depends_on:
-    #   - nginx
-    #   - postgres_db
-    #   - redis
-    #   - auth
-    #   - chat
-    #   - dashboard
-    #   - game
     networks:
       - blackholejs
 
