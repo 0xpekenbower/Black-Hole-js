@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-require('dotenv').config();
+// Using environment variables directly instead of loading from .env file
 const axios = require('axios');
 
 const GRAFANA_URL = process.env.GRAFANA_URL || 'http://localhost:7050/grafana';

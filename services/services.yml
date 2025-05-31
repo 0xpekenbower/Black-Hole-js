@@ -63,3 +63,7 @@ services:
       - /game/node_modules
     networks:
       - blackholejs
+
+networks:
+  blackholejs:
+    external: true

@@ -1,5 +1,4 @@
 #!/usr/bin/env node
-require('dotenv').config();
 const fs = require('fs/promises');
 const path = require('path');
 const axios = require('axios');
@@ -9,7 +8,7 @@ const LOGSTASH_ROLE_FILE = path.join(CONFIG_DIR, 'logstash_writer.json');
 const GATEWAY_TEMPLATE_FILE = path.join(CONFIG_DIR, 'gateway.json');
 const VECTOR_TEMPLATE_FILE = path.join(CONFIG_DIR, 'vector-logs.json');
 
-const ES_HOST = 'http://localhost:9200';
+const ES_HOST = 'http://elasticsearch:9200';
 const REQUIRED_ENV_VARS = ['ELASTIC_PASSWORD', 'KIBANA_SYSTEM_PASSWORD', 'LOGSTASH_INTERNAL_PASSWORD'];
 
 for (const varName of REQUIRED_ENV_VARS) {

@@ -1,38 +1,36 @@
-create_network:
-	docker network create --driver bridge blackholejs || true
+MINIMAL_STACK = frontend gateway nginx postgres_db redis auth dashboard chat game
+METRICS_STACK = grafana prometheus node_exporter cadvisor redis_exporter postgres_exporter
+LOGS_STACK = elasticsearch kibana logstash vector
+ALL_STACK = $(MINIMAL_STACK) $(METRICS_STACK) $(LOGS_STACK)
+DC = docker compose -f ./docker-compose.yml -f ./infra/infra.yml -f ./services/services.yml -f ./metrics/metrics.yml -f ./logs/logs.yml -p blackholejs
 
-slogs_up: create_network
-	docker compose -f ./docker-compose.yml -f ./logs/logs.yml -p blackholejs up -d
+all: build minimal_stack metrics_stack logs_stack
 
-smetrics_up: create_network
-	docker compose -f ./docker-compose.yml -f ./metrics/metrics.yml -p blackholejs up -d
+build:
+	$(DC) build setup
+	$(DC) build
 
-sinfra_up: create_network
-	docker compose -f ./docker-compose.yml -f ./infra/infra.yml -p blackholejs up -d
+logs_stack:
+	$(DC) up -d elasticsearch
+	$(DC) up -d setup
+	@echo "Waiting for setup to complete..."
+	@until [ "$$(docker inspect -f '{{.State.Status}}' setup 2>/dev/null)" = "exited" ] || [ "$$(docker inspect -f '{{.State.Status}}' setup 2>/dev/null)" = "dead" ]; do \
+		echo "Setup still running, waiting..."; \
+		sleep 5; \
+	done
+	$(DC) up -d kibana logstash vector
 
-slogs_down:
-	docker compose -f ./docker-compose.yml -f ./logs/logs.yml -p blackholejs down -v
-
-smetrics_down:
-	docker compose -f ./docker-compose.yml -f ./metrics/metrics.yml -p blackholejs down -v
-
-sinfra_down:
-	docker compose -f ./docker-compose.yml -f ./infra/infra.yml -p blackholejs down -v
+metrics_stack:
+	$(DC) up -d $(METRICS_STACK)
 
 
-up: create_network
-	make sinfra_up
-	make slogs_up
-	make smetrics_up
+minimal_stack:
+	$(DC) up -d $(MINIMAL_STACK)
 
 down:
-	sinfra_down
-	slogs_down
-	smetrics_down
+	$(DC) down $(MINIMAL_STACK) $(METRICS_STACK) $(LOGS_STACK)
 
-clean:
-	sinfra_down -v
-	slogs_down -v
-	smetrics_down -v
+fdown: 
+	$(DC) down -v $(MINIMAL_STACK) $(METRICS_STACK) $(LOGS_STACK)
 
-.PHONY: up down clean slogs_up smetrics_up sinfra_up slogs_down smetrics_down sinfra_down create_network
+.PHONY: minimal_up minimal_down metrics_up metrics_down logs_up logs_down setup setup_postgres setup_elasticsearch setup_kibana up down fdown

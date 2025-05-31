@@ -1,4 +1,21 @@
 services:
+
+  setup:
+    container_name: setup
+    build:
+      context: ./setup
+      dockerfile: Dockerfile
+    volumes:
+      - ./setup:/setup
+    env_file:
+      - .env
+    restart: on-failure
+    init: true
+    profiles:
+      - setup
+    networks:
+      - blackholejs
+
   frontend:
     container_name: frontend
     build:
@@ -12,6 +29,8 @@ services:
     env_file:
       - .env
     restart: on-failure
+    environment:
+      - GATEWAY_API=http://localhost/api
     networks:
       - blackholejs
 
