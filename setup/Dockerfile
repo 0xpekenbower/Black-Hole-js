@@ -3,4 +3,4 @@ WORKDIR /setup
 
 COPY . .
 USER node
-CMD ["npm", "run", "elasticsearch"]
+CMD ["npm", "run", "start"]

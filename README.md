@@ -62,4 +62,12 @@ BlackHoleJs
 
 ## How to run the project
 
-COMING SOON ...
+```shell
+make # build and run all services
+make up # run all services without build (if you already have the services running)
+make down # stop and remove all services (without removing volumes and networks , avoid deleting data)
+make fdown # stop and remove all services and volumes and networks (delete all data fresh start without deleting the images)
+make logs_stack # run only logs services (elasticsearch, kibana, logstash, vector)
+make metrics_stack # run only metrics services (prometheus, grafana, node_exporter, cadvisor, redis_exporter, postgres_exporter)
+make minimal_stack # run only minimal services (frontend, gateway, nginx, redis, postgres_db, auth, dashboard, chat, game)
+```

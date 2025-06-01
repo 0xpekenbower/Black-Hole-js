@@ -69,10 +69,11 @@ services:
     image: timberio/vector:0.47.0-alpine
     volumes:
       - ./logs/config/vector.yaml:/etc/vector/vector.yaml:ro
-      - ./infra/logs/nginx:/var/log/nginx:ro
-      - ./logs/vector:/var/log/vector
+      - logs_data_nginx:/var/log/nginx:ro
+      - logs_data_vector:/var/lib/vector:rw
+    # Command to ensure Vector waits for log files and then starts
     depends_on:
-      - nginx
+      - logstash
     restart: on-failure
     networks:
       - blackholejs

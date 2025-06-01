@@ -1,14 +1,12 @@
 {
-  "name": "setup",
+  "name": "blackholejs-setup",
   "version": "1.0.0",
+  "description": "Setup scripts for BlackHoleJS",
   "scripts": {
-    "elasticsearch": "node src/elasticsearch.js",
-    "postgres": "node src/postgres.js",
-    "grafana": "node src/grafana.js"
+    "start": "node src/index.js"
   },
   "author": "0xpekenbower",
   "license": "ISC",
-  "description": "",
   "dependencies": {
     "axios": "^1.9.0",
     "express": "^5.1.0",
