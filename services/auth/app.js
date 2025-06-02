@@ -1,30 +1,29 @@
-'use strict'
+import Fastify from 'fastify'
+import setupdb from './config/setupDB.js';
 
-const path = require('node:path')
-const AutoLoad = require('@fastify/autoload')
+const appBuilder = async () => {
 
-// Pass --options via CLI arguments in command to enable these options.
-const options = {}
+    // Initialize the database
+    await setupdb()
 
-module.exports = async function (fastify, opts) {
-  // Place here your custom code!
+    const fastify = Fastify({
+        logger: {
+            transport: { target: 'pino-pretty',
+            options: { translateTime: 'HH:MM:ss Z', ignore: 'pid,hostname,reqId',
+                messageFormat: '{msg} {req.method} {req.url}',
+                levelFirst: true, colorize: true,singleLine: true,}}}})
 
-  // Do not touch the following lines
+    fastify.register(import ('@fastify/swagger'))
+    fastify.register(import ('@fastify/swagger-ui'), {routePrefix: '/docs',})
+    fastify.register(import ('./routes/login_verify.js'))
+    fastify.register(import ('./routes/registerR.js'))
+    fastify.register(import ('./routes/loginR.js'))
+    fastify.register(import ('./routes/intraR.js'))
+    fastify.register(import ('./routes/googleR.js'))
+    fastify.register(import ('./routes/passwordR.js'))
+    fastify.register(import ('./routes/forgetPassR.js'))
 
-  // This loads all plugins defined in plugins
-  // those should be support plugins that are reused
-  // through your application
-  fastify.register(AutoLoad, {
-    dir: path.join(__dirname, 'plugins'),
-    options: Object.assign({}, opts)
-  })
-
-  // This loads all plugins defined in routes
-  // define your routes in one of these
-  fastify.register(AutoLoad, {
-    dir: path.join(__dirname, 'routes'),
-    options: Object.assign({}, opts)
-  })
+    return fastify
 }
 
-module.exports.options = options
+export default appBuilder

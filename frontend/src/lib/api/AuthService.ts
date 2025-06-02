@@ -79,7 +79,7 @@ export class AuthService {
       old_pass: oldPassword,
       new_pass: newPassword
     };
-    return this.client.post<ChangePasswordResponse>('/api/auth/change-password/', data);
+    return this.client.post<ChangePasswordResponse>(Endpoints.Dashboard.Change_password, data);
   }
 
   /**
@@ -89,7 +89,7 @@ export class AuthService {
    * @returns Promise with response containing token
    */
   async handleOAuthCallback(code: string, provider: 'google' | '42'): Promise<ApiResponse<OAuthResponse>> {
-    const endpoint = provider === 'google' ? '/oauth/google/' : '/oauth/';
+    const endpoint = provider === 'google' ? Endpoints.OAuth.Google : Endpoints.OAuth.FortyTwo;
     return this.client.get<OAuthResponse>(`${endpoint}?code=${code}`);
   }
 

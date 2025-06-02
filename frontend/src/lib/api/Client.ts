@@ -29,7 +29,9 @@ export class ApiClient {
    * Create a new API client instance
    */
   constructor() {
-    this.baseUrl = process.env.NEXT_PUBLIC_API_URL || '';
+    // Use empty base URL since endpoints already include /api prefix
+    // Next.js will handle the rewrites to the actual API server
+    this.baseUrl = '';
     this.defaultHeaders = {
       'Content-Type': 'application/json',
       'Accept': 'application/json',

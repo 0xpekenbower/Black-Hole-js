@@ -4,7 +4,7 @@ module.exports = [
   {
     name: 'Auth Service',
     prefix: '/auth',
-    target: 'http://auth:8002',
+    target: 'http://auth:8002/api/auth',
     description: 'Authentication and authorization service'
   },
   {

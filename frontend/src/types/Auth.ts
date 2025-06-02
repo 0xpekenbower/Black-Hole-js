@@ -19,7 +19,7 @@ export interface ResponseStatus {
 
 // Register
 export interface RegisterRequest {
-  username: string;
+  username?: string;
   email: string;
   password: string;
   repassword: string;

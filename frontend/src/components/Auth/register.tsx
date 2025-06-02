@@ -26,7 +26,9 @@ import Link from "next/link"
 const registerSchema = z.object({
   name: z.string().min(2, { message: "Name must be at least 2 characters" }),
   email: z.string().email({ message: "Please enter a valid email address" }),
-  password: z.string().min(8, { message: "Password must be at least 8 characters" })
+  password: z.string()
+    .min(8, { message: "Password must be at least 8 characters" })
+    .max(25, { message: "Password must not exceed 25 characters" })
 })
 
 type RegisterFormValues = z.infer<typeof registerSchema>

@@ -4,7 +4,8 @@ const { setupElasticsearch } = require('./elasticsearch');
 
 // List of setup scripts to run
 const setupScripts = [
-  'kibana.js'
+  'kibana.js',
+  'postgres.js'
 ];
 
 const runScript = (scriptPath) => {

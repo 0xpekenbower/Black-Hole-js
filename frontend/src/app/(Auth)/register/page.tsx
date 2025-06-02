@@ -11,15 +11,16 @@ export default function RegisterPage() {
   const { register, isLoading, error } = useAuth()
 
   const handleRegister = async (name: string, email: string, password: string) => {
+    // Split the full name into first and last name
     const nameParts = name.trim().split(' ')
     const firstName = nameParts[0]
     const lastName = nameParts.length > 1 ? nameParts.slice(1).join(' ') : ''
     
+    // Make sure to use the correct values in the correct fields
     await register({
-      username: email,
-      email,
-      password,
-      repassword: password,
+      email: email, // Use the email from the form
+      password: password, // Use the password from the form
+      repassword: password, // Use the password from the form
       first_name: firstName,
       last_name: lastName
     })

@@ -82,12 +82,18 @@ const main = async () => {
     for (const dataView of dataViews) {
       await createDataView(dataView);
     }
-    
     console.log('All data views created successfully!');
   } catch (error) {
+    // if the error is 400, then the data view already exists
+    if (error.response?.status === 400) {
+      console.log('Data view already exists, skipping...');
+      return;
+    }
     console.error('Setup failed:', error);
     process.exit(1);
   }
+  console.log('Setup completed successfully!');
+  process.exit(0);
 };
 
 main();

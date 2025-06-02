@@ -19,85 +19,170 @@ module.exports = fp(async function (fastify, opts) {
   })
 
   for (const service of services) {
-    fastify.register(httpProxy, {
-      upstream: service.target,
-      prefix: service.prefix,
-      rewritePrefix: '',
-      httpMethods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
-      proxyPayloads: true,
-      replyOptions: {
-        rewriteRequestHeaders: (req, headers) => {
-          return {
-            ...headers,
-            'x-forwarded-host': req.headers.host,
-            'x-service-name': service.name,
-            'x-original-url': req.url,
-            'x-request-id': req.id || '',
-            'x-real-ip': req.ip || ''
+    // Special handling for Auth Service to preserve paths
+    if (service.name === 'Auth Service') {
+      fastify.register(httpProxy, {
+        upstream: service.target.split('/api/auth')[0],
+        prefix: service.prefix,
+        rewritePrefix: '/api/auth',
+        httpMethods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+        proxyPayloads: true,
+        replyOptions: {
+          rewriteRequestHeaders: (req, headers) => {
+            return {
+              ...headers,
+              'x-forwarded-host': req.headers.host,
+              'x-service-name': service.name,
+              'x-original-url': req.url,
+              'x-request-id': req.id || '',
+              'x-real-ip': req.ip || ''
+            }
+          },
+          onResponse: (request, reply, res) => {
+            reply.header('Access-Control-Allow-Origin', '*')
+            reply.header('Access-Control-Allow-Methods', 'GET,POST,PUT,DELETE,OPTIONS')
+            reply.header('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With')
+            reply.send(res)
           }
         },
-        onResponse: (request, reply, res) => {
-          reply.header('Access-Control-Allow-Origin', '*')
-          reply.header('Access-Control-Allow-Methods', 'GET,POST,PUT,DELETE,OPTIONS')
-          reply.header('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With')
-          reply.send(res)
-        }
-      },
-      onError: (reply, error) => {
-        fastify.log.error({ 
-          error: error.message,
-          service: service.name,
-          path: reply.request.url
-        })
-        
-        reply.code(502).send({
-          statusCode: 502,
-          error: 'Bad Gateway',
-          message: `Service ${service.name} is unavailable`,
-          timestamp: new Date().toISOString()
-        })
-      }
-    })
-
-    fastify.register(httpProxy, {
-      upstream: service.target,
-      prefix: `/api${service.prefix}`,
-      rewritePrefix: '',
-      httpMethods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
-      proxyPayloads: true,
-      replyOptions: {
-        rewriteRequestHeaders: (req, headers) => {
-          return {
-            ...headers,
-            'x-forwarded-host': req.headers.host,
-            'x-service-name': service.name,
-            'x-original-url': req.url,
-            'x-request-id': req.id || '',
-            'x-real-ip': req.ip || ''
-          }
-        },
-        onResponse: (request, reply, res) => {
-          reply.header('Access-Control-Allow-Origin', '*')
-          reply.header('Access-Control-Allow-Methods', 'GET,POST,PUT,DELETE,OPTIONS')
-          reply.header('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With')
+        onError: (reply, error) => {
+          fastify.log.error({ 
+            error: error.message,
+            service: service.name,
+            path: reply.request.url
+          })
           
-          reply.send(res)
+          reply.code(502).send({
+            statusCode: 502,
+            error: 'Bad Gateway',
+            message: `Service ${service.name} is unavailable`,
+            timestamp: new Date().toISOString()
+          })
         }
-      },
-      onError: (reply, error) => {
-        fastify.log.error({ 
-          error: error.message,
-          service: service.name,
-          path: reply.request.url
-        })
-        
-        reply.code(502).send({
-          statusCode: 502,
-          error: 'Bad Gateway',
-          message: `Service ${service.name} is unavailable`,
-          timestamp: new Date().toISOString()
-        })
-      }
-    })
+      })
+
+      fastify.register(httpProxy, {
+        upstream: service.target.split('/api/auth')[0],
+        prefix: `/api${service.prefix}`,
+        rewritePrefix: '/api/auth',
+        httpMethods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+        proxyPayloads: true,
+        replyOptions: {
+          rewriteRequestHeaders: (req, headers) => {
+            return {
+              ...headers,
+              'x-forwarded-host': req.headers.host,
+              'x-service-name': service.name,
+              'x-original-url': req.url,
+              'x-request-id': req.id || '',
+              'x-real-ip': req.ip || ''
+            }
+          },
+          onResponse: (request, reply, res) => {
+            reply.header('Access-Control-Allow-Origin', '*')
+            reply.header('Access-Control-Allow-Methods', 'GET,POST,PUT,DELETE,OPTIONS')
+            reply.header('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With')
+            
+            reply.send(res)
+          }
+        },
+        onError: (reply, error) => {
+          fastify.log.error({ 
+            error: error.message,
+            service: service.name,
+            path: reply.request.url
+          })
+          
+          reply.code(502).send({
+            statusCode: 502,
+            error: 'Bad Gateway',
+            message: `Service ${service.name} is unavailable`,
+            timestamp: new Date().toISOString()
+          })
+        }
+      })
+    } else {
+      // Normal handling for other services
+      fastify.register(httpProxy, {
+        upstream: service.target,
+        prefix: service.prefix,
+        rewritePrefix: '',
+        httpMethods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+        proxyPayloads: true,
+        replyOptions: {
+          rewriteRequestHeaders: (req, headers) => {
+            return {
+              ...headers,
+              'x-forwarded-host': req.headers.host,
+              'x-service-name': service.name,
+              'x-original-url': req.url,
+              'x-request-id': req.id || '',
+              'x-real-ip': req.ip || ''
+            }
+          },
+          onResponse: (request, reply, res) => {
+            reply.header('Access-Control-Allow-Origin', '*')
+            reply.header('Access-Control-Allow-Methods', 'GET,POST,PUT,DELETE,OPTIONS')
+            reply.header('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With')
+            reply.send(res)
+          }
+        },
+        onError: (reply, error) => {
+          fastify.log.error({ 
+            error: error.message,
+            service: service.name,
+            path: reply.request.url
+          })
+          
+          reply.code(502).send({
+            statusCode: 502,
+            error: 'Bad Gateway',
+            message: `Service ${service.name} is unavailable`,
+            timestamp: new Date().toISOString()
+          })
+        }
+      })
+
+      fastify.register(httpProxy, {
+        upstream: service.target,
+        prefix: `/api${service.prefix}`,
+        rewritePrefix: '',
+        httpMethods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+        proxyPayloads: true,
+        replyOptions: {
+          rewriteRequestHeaders: (req, headers) => {
+            return {
+              ...headers,
+              'x-forwarded-host': req.headers.host,
+              'x-service-name': service.name,
+              'x-original-url': req.url,
+              'x-request-id': req.id || '',
+              'x-real-ip': req.ip || ''
+            }
+          },
+          onResponse: (request, reply, res) => {
+            reply.header('Access-Control-Allow-Origin', '*')
+            reply.header('Access-Control-Allow-Methods', 'GET,POST,PUT,DELETE,OPTIONS')
+            reply.header('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With')
+            
+            reply.send(res)
+          }
+        },
+        onError: (reply, error) => {
+          fastify.log.error({ 
+            error: error.message,
+            service: service.name,
+            path: reply.request.url
+          })
+          
+          reply.code(502).send({
+            statusCode: 502,
+            error: 'Bad Gateway',
+            message: `Service ${service.name} is unavailable`,
+            timestamp: new Date().toISOString()
+          })
+        }
+      })
+    }
   }
 }) 

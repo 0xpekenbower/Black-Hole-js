@@ -10,6 +10,10 @@ const Endpoints = {
     Send_mail: "/api/auth/send-mail/",
     Forget_pass: "/api/auth/forget-pass/",
   },
+  OAuth: {
+    Google: "/api/oauth/google/",
+    FortyTwo: "/api/oauth/",
+  },
   Dashboard: {
 
       Add_achievements:'/api/dash/add-achievements/', 
