@@ -29,6 +29,8 @@ export default async function RootLayout({
   const headersList = await headers()
   const acceptLang = headersList.get('accept-language') || 'en'
   const initialLang = acceptLang.startsWith('fr') ? 'fr' : 'en'
+  const pathname = headersList.get('x-pathname') || ''
+  const isDashboard = pathname.startsWith('/dashboard') || pathname.startsWith('/Dashboard')
 
   return (
     <html lang={initialLang} className="no-scrollbar" suppressHydrationWarning>
@@ -40,7 +42,7 @@ export default async function RootLayout({
         <ThemeProvider>
           <LangProviderSSR initialLang={initialLang}>
             <AuthProvider>
-              <Header />
+              {!isDashboard && <Header />}
               {children}
             </AuthProvider>
           </LangProviderSSR>

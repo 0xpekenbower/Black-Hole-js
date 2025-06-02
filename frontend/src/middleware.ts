@@ -10,9 +10,19 @@ import type { NextRequest } from 'next/server';
  * Middleware handler for Next.js requests
  * @param {NextRequest} request - The incoming request
  */
-export async function middleware(request: NextRequest) {
-  // Simply pass through requests now that logger is removed
-  return NextResponse.next();
+export function middleware(request: NextRequest) {
+  // Clone the request headers
+  const requestHeaders = new Headers(request.headers);
+  
+  // Add the current pathname to the headers
+  requestHeaders.set('x-pathname', request.nextUrl.pathname);
+
+  // Return the response with the modified headers
+  return NextResponse.next({
+    request: {
+      headers: requestHeaders,
+    },
+  });
 }
 
 // Configure middleware to run on all routes
@@ -25,6 +35,6 @@ export const config = {
      * - favicon.ico (favicon file)
      * - public files (public assets)
      */
-    '/((?!_next/static|_next/image|favicon.ico|public/).*)',
+    '/((?!api|_next/static|_next/image|favicon.ico).*)',
   ],
 };

@@ -1,6 +1,7 @@
 'use client'
 
 import { ProtectedRoute } from "@/lib/auth/ProtectedRoute"
+import DashboardHeader from "@/components/DashboardHeader"
 
 /**
  * Dashboard layout with authentication protection
@@ -12,7 +13,10 @@ export default function DashboardLayout({
 }: Readonly<{ children: React.ReactNode }>) {
   return (
     <ProtectedRoute>
-      {children}
+      <DashboardHeader />
+      <div className="pt-16">
+        {children}
+      </div>
     </ProtectedRoute>
   )
 } 

@@ -9,6 +9,9 @@ import { useEffect } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
 
+// Dev mode flag - set to true to bypass authentication
+const DEV_BYPASS_AUTH = true;
+
 /**
  * Protected route props
  */
@@ -31,6 +34,11 @@ export function ProtectedRoute({
   const pathname = usePathname();
 
   useEffect(() => {
+    // Skip authentication check in dev mode
+    if (DEV_BYPASS_AUTH) {
+      return;
+    }
+    
     // Skip redirection during initial loading
     if (isLoading) return;
 
@@ -43,6 +51,11 @@ export function ProtectedRoute({
       router.push(fallbackUrl);
     }
   }, [isAuthenticated, isLoading, router, fallbackUrl, pathname]);
+
+  // In dev mode, always render children regardless of auth status
+  if (DEV_BYPASS_AUTH) {
+    return children;
+  }
 
   // Show nothing while loading or redirecting
   if (isLoading || !isAuthenticated) {
@@ -73,6 +86,11 @@ export function PublicRoute({
   const router = useRouter();
 
   useEffect(() => {
+    // Skip authentication check in dev mode
+    if (DEV_BYPASS_AUTH) {
+      return;
+    }
+    
     // Skip redirection during initial loading
     if (isLoading) return;
 
@@ -92,6 +110,11 @@ export function PublicRoute({
       }
     }
   }, [isAuthenticated, isLoading, router, redirectAuthenticatedTo]);
+
+  // In dev mode, always render children regardless of auth status
+  if (DEV_BYPASS_AUTH) {
+    return children;
+  }
 
   // Show nothing while loading or redirecting
   if (isLoading || isAuthenticated) {

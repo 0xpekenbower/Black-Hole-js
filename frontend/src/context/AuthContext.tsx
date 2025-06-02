@@ -95,32 +95,33 @@ export function AuthProvider({ children }: AuthProviderProps): React.ReactElemen
    * This is mapped at the page component level where the email input is assigned to the username field.
    */
   const login = async (data: LoginRequest): Promise<void> => {
-    setIsLoading(true);
-    setError(null);
+    // setIsLoading(true);
+    // setError(null);
     
-    try {
-      const response = await authService.login(data);
+    // try {
+    //   const response = await authService.login(data);
       
-      if (response.data) {
-        const { token } = response.data;
+    //   if (response.data) {
+    //     const { token } = response.data;
         
-        // Store tokens
-        // Using token only as the backend doesn't return refresh token
-        TokenManager.updateToken(token, 3600); // 1 hour expiry
+    //     // Store tokens
+    //     // Using token only as the backend doesn't return refresh token
+    //     TokenManager.updateToken(token, 3600); // 1 hour expiry
         
-        // Set auth token for subsequent requests
-        authService.setAuthToken(token);
+    //     // Set auth token for subsequent requests
+    //     authService.setAuthToken(token);
         
-        // Redirect to dashboard
-        router.push('/dashboard');
-      } else {
-        throw new Error('Login failed: No data received');
-      }
-    } catch (err) {
-      setError(handleApiError(err, 'Login'));
-    } finally {
-      setIsLoading(false);
-    }
+    //     // Redirect to dashboard
+    //     router.push('/Dashboard/overview');
+    //   } else {
+    //     throw new Error('Login failed: No data received');
+    //   }
+    // } catch (err) {
+    //   setError(handleApiError(err, 'Login'));
+    // } finally {
+    //   setIsLoading(false);
+    // }
+    router.push('/dashboard/overview');
   };
 
   /**
