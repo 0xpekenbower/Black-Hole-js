@@ -1,48 +1,28 @@
 /**
- * Enhanced authentication service with Redis cache integration
+ * Authentication service for handling user authentication operations
  * @module lib/api/AuthService
  */
 
 import { ApiClient, ApiResponse } from './Client';
-import * as authCache from '../cache/AuthCache';
-import * as redis from '../cache/RedisClient';
-import { AUTH_CONFIG, FEATURES } from '../config';
-
-// Type definitions for OTP data
-interface OTPTokenData {
-  email: string;
-  code: number;
-  retry: number;
-  expiresAt: Date;
-}
+import Endpoints from '@/constants/endpoints';
 import {
   RegisterRequest,
+  RegisterResponse,
   LoginRequest,
   LoginResponse,
-  VerifyEmailExistRequest,
-  GetOTPRequest,
-  GetOTPResponse,
-  VerifyOTPRequest,
-  VerifyOTPResponse,
+  ForgotPasswordResponse,
+  ResetPasswordRequest,
+  ResetPasswordResponse,
   ChangePasswordRequest,
   ChangePasswordResponse,
+  OAuthResponse
 } from '@/types/Auth';
 
 /**
- * Enhanced authentication service for handling user authentication operations with Redis cache
+ * Authentication service for handling user authentication operations
  */
 export class AuthService {
   private client: ApiClient;
-  private readonly AUTH_ENDPOINTS = {
-    REGISTER: '/auth/register',
-    LOGIN: '/auth/login',
-    LOGOUT: '/auth/logout',
-    VERIFY_EMAIL: '/auth/verify-email',
-    GET_OTP: '/auth/get-otp',
-    VERIFY_OTP: '/auth/verify-otp',
-    CHANGE_PASSWORD: '/auth/change-password',
-    REFRESH_TOKEN: '/auth/refresh',
-  };
 
   /**
    * Create a new AuthService instance
@@ -57,236 +37,60 @@ export class AuthService {
    * @param data - User registration data
    * @returns Promise with registration response
    */
-  async register(data: RegisterRequest): Promise<ApiResponse<void>> {
-    try {
-      const response = await this.client.post<void>(this.AUTH_ENDPOINTS.REGISTER, data);
-      return response;
-    } catch (error) {
-      throw error;
-    }
+  async register(data: RegisterRequest): Promise<ApiResponse<RegisterResponse>> {
+    return this.client.post<RegisterResponse>(Endpoints.Auth.Register, data);
   }
 
   /**
    * Login a user
    * @param data - User login credentials
-   * @returns Promise with login response containing user data and tokens
+   * @returns Promise with login response containing token
    */
-  async login(data: LoginRequest): Promise<ApiResponse<LoginResponse['data']>> {
-    try {
-      const response = await this.client.post<LoginResponse['data']>(this.AUTH_ENDPOINTS.LOGIN, data);
-      
-      // If login successful and we have user data, store session in cache if enabled
-      if (FEATURES.ENABLE_SESSION_TRACKING && response.data && response.data.user) {
-        await authCache.storeUserSession(
-          response.data.user.id,
-          {
-            userId: response.data.user.id,
-            email: response.data.user.email,
-            lastLogin: new Date(),
-          },
-          response.data.expiresIn
-        );
-      }
-      
-      return response;
-    } catch (error) {
-      throw error;
-    }
+  async login(data: LoginRequest): Promise<ApiResponse<LoginResponse>> {
+    return this.client.post<LoginResponse>(Endpoints.Auth.Login, data);
   }
 
   /**
-   * Logout the current user
-   * @param userId - User ID to invalidate session
-   * @returns Promise with logout response
+   * Send email for password reset
+   * @param email - User email
+   * @returns Promise with response
    */
-  async logout(userId?: string): Promise<ApiResponse<void>> {
-    try {
-      const response = await this.client.post<void>(this.AUTH_ENDPOINTS.LOGOUT);
-      
-      // If session tracking is enabled and user ID is provided, invalidate their session in cache
-      if (FEATURES.ENABLE_SESSION_TRACKING && userId) {
-        await authCache.invalidateUserSession(userId);
-      }
-      
-      return response;
-    } catch (error) {
-      throw error;
-    }
+  async sendResetEmail(email: string): Promise<ApiResponse<ForgotPasswordResponse>> {
+    return this.client.post<ForgotPasswordResponse>(Endpoints.Auth.Send_mail, { email });
   }
 
   /**
-   * Verify if an email exists in the system
-   * @param data - Email verification request
-   * @returns Promise with email verification response
+   * Reset password with verification code
+   * @param data - Password reset data including email, code, and new password
+   * @returns Promise with response
    */
-  async verifyEmailExists(data: VerifyEmailExistRequest): Promise<ApiResponse<boolean>> {
-    try {
-      const response = await this.client.post<boolean>(this.AUTH_ENDPOINTS.VERIFY_EMAIL, data);
-      return response;
-    } catch (error) {
-      throw error;
-    }
+  async resetPassword(data: ResetPasswordRequest): Promise<ApiResponse<ResetPasswordResponse>> {
+    return this.client.post<ResetPasswordResponse>(Endpoints.Auth.Forget_pass, data);
   }
 
   /**
-   * Request a one-time password for password reset
-   * @param data - OTP request data
-   * @returns Promise with OTP response
+   * Change password (requires authentication)
+   * @param oldPassword - Current password
+   * @param newPassword - New password
+   * @returns Promise with response
    */
-  async getOTP(data: GetOTPRequest): Promise<ApiResponse<GetOTPResponse['data']>> {
-    try {
-      // Make API request to send OTP
-      const response = await this.client.post<GetOTPResponse['data']>(this.AUTH_ENDPOINTS.GET_OTP, data);
-      
-      // If Redis cache is enabled and we have response data
-      if (FEATURES.ENABLE_REDIS_CACHE && response.data) {
-        // Generate a random 6-digit OTP code for testing/development
-        const otpCode = Math.floor(100000 + Math.random() * 900000);
-        
-        // Store OTP data in Redis with token as key
-        const otpData: OTPTokenData = {
-          email: data.email,
-          code: otpCode,
-          retry: 3, // 3 attempts allowed
-          expiresAt: new Date(response.data.expiresAt),
-        };
-        
-        // Store in Redis with expiration based on token expiry
-        await redis.set(
-          `otp:${response.data.token}`,
-          JSON.stringify(otpData),
-          60 * 30 // 30 minutes expiry
-        );
-      }
-      
-      return response;
-    } catch (error) {
-      throw error;
-    }
+  async changePassword(oldPassword: string, newPassword: string): Promise<ApiResponse<ChangePasswordResponse>> {
+    const data: ChangePasswordRequest = {
+      old_pass: oldPassword,
+      new_pass: newPassword
+    };
+    return this.client.post<ChangePasswordResponse>('/api/auth/change-password/', data);
   }
 
   /**
-   * Verify a one-time password
-   * @param data - OTP verification data
-   * @returns Promise with OTP verification response
+   * Handle OAuth callback
+   * @param code - Authorization code from OAuth provider
+   * @param provider - OAuth provider ('google' or '42')
+   * @returns Promise with response containing token
    */
-  async verifyOTP(data: VerifyOTPRequest): Promise<ApiResponse<VerifyOTPResponse['data']>> {
-    try {
-      // If using Redis cache in development/testing
-      if (FEATURES.ENABLE_REDIS_CACHE) {
-        // Get OTP data from Redis
-        const otpDataString = await redis.get<string>(`otp:${data.token}`);
-        
-        if (otpDataString) {
-          // Parse the stored OTP data
-          const otpData: OTPTokenData = JSON.parse(otpDataString);
-          
-          // Verify the submitted code against stored code
-          if (otpData.code === data.code) {
-            // If matches, make API request to verify OTP
-            const response = await this.client.post<VerifyOTPResponse['data']>(
-              this.AUTH_ENDPOINTS.VERIFY_OTP,
-              data
-            );
-            
-            // Update Redis entry with new expiration time from response
-            if (response.data) {
-              // Create updated OTP data
-              const updatedOtpData: OTPTokenData = {
-                ...otpData,
-                retry: response.data.retry,
-                expiresAt: new Date(response.data.expiresAt),
-              };
-              
-              // Calculate seconds until expiry for Redis TTL
-              const secondsUntilExpiry = Math.floor(
-                (new Date(response.data.expiresAt).getTime() - Date.now()) / 1000
-              );
-              
-              // Store updated data in Redis
-              await redis.set(
-                `otp:${response.data.token}`,
-                JSON.stringify(updatedOtpData),
-                secondsUntilExpiry > 0 ? secondsUntilExpiry : 60 * 5 // default 5min if calculation is off
-              );
-            }
-            
-            return response;
-          } else {
-            // If code doesn't match, decrement retry count
-            otpData.retry--;
-            
-            if (otpData.retry > 0) {
-              // Update Redis with decremented retry count
-              await redis.set(
-                `otp:${data.token}`,
-                JSON.stringify(otpData),
-                60 * 30 // 30 minutes
-              );
-            } else {
-              // If no retries left, delete the OTP data
-              await redis.del(`otp:${data.token}`);
-            }
-            
-            // Return API response
-            return this.client.post<VerifyOTPResponse['data']>(
-              this.AUTH_ENDPOINTS.VERIFY_OTP,
-              data
-            );
-          }
-        }
-      }
-      
-      // If not using Redis or no data found, proceed with normal API verification
-      return this.client.post<VerifyOTPResponse['data']>(
-        this.AUTH_ENDPOINTS.VERIFY_OTP,
-        data
-      );
-    } catch (error) {
-      throw error;
-    }
-  }
-
-  /**
-   * Change a user's password
-   * @param data - Password change data
-   * @returns Promise with password change response
-   */
-  async changePassword(data: ChangePasswordRequest): Promise<ApiResponse<ChangePasswordResponse['data']>> {
-    try {
-      // Make API request to change password
-      const response = await this.client.post<ChangePasswordResponse['data']>(
-        this.AUTH_ENDPOINTS.CHANGE_PASSWORD,
-        data
-      );
-      
-      // Clean up OTP token from Redis if we were using it
-      if (FEATURES.ENABLE_REDIS_CACHE) {
-        await redis.del(`otp:${data.token}`);
-      }
-      
-      return response;
-    } catch (error) {
-      throw error;
-    }
-  }
-
-  /**
-   * Refresh the authentication token
-   * @param refreshToken - Refresh token
-   * @returns Promise with new tokens
-   */
-  async refreshToken(refreshToken: string): Promise<ApiResponse<{ token: string; expiresIn: number }>> {
-    try {
-      const response = await this.client.post<{ token: string; expiresIn: number }>(
-        this.AUTH_ENDPOINTS.REFRESH_TOKEN,
-        { refreshToken }
-      );
-      
-      return response;
-    } catch (error) {
-      throw error;
-    }
+  async handleOAuthCallback(code: string, provider: 'google' | '42'): Promise<ApiResponse<OAuthResponse>> {
+    const endpoint = provider === 'google' ? '/oauth/google/' : '/oauth/';
+    return this.client.get<OAuthResponse>(`${endpoint}?code=${code}`);
   }
 
   /**

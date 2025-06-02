@@ -10,7 +10,6 @@ import { useRouter } from 'next/navigation';
 import { AuthService } from '@/lib/api/AuthService';
 import { TokenManager } from '@/lib/api/TokenManager';
 import { LoginRequest, RegisterRequest } from '@/types/Auth';
-import { ApiError } from '@/lib/api/Client';
 import { handleApiError } from '@/utils/errorHandler';
 import { FEATURES } from '@/lib/config';
 import { ROUTES } from '@/lib/config';
@@ -40,9 +39,8 @@ interface AuthContextState {
   login: (data: LoginRequest) => Promise<void>;
   register: (data: RegisterRequest) => Promise<void>;
   logout: () => Promise<void>;
-  getOTP: (email: string) => Promise<{ token: string; expiresAt: Date } | null>;
-  verifyOTP: (token: string, code: number) => Promise<{ token: string; retry: number; expiresAt: Date } | null>;
-  changePassword: (token: string, newPassword: string) => Promise<void>;
+  getOTP: (email: string) => Promise<boolean>;
+  changePassword: (email: string, code: string, newPassword: string) => Promise<void>;
   error: string | null;
   clearError: () => void;
 }
@@ -93,6 +91,8 @@ export function AuthProvider({ children }: AuthProviderProps): React.ReactElemen
 
   /**
    * Handle user login
+   * Note: The LoginRequest interface uses 'username' field, but our login form collects 'email'.
+   * This is mapped at the page component level where the email input is assigned to the username field.
    */
   const login = async (data: LoginRequest): Promise<void> => {
     setIsLoading(true);
@@ -102,16 +102,14 @@ export function AuthProvider({ children }: AuthProviderProps): React.ReactElemen
       const response = await authService.login(data);
       
       if (response.data) {
-        const { token, refreshToken, expiresIn, user } = response.data;
+        const { token } = response.data;
         
         // Store tokens
-        TokenManager.storeTokens(token, refreshToken, expiresIn);
+        // Using token only as the backend doesn't return refresh token
+        TokenManager.updateToken(token, 3600); // 1 hour expiry
         
         // Set auth token for subsequent requests
         authService.setAuthToken(token);
-        
-        // Set user data
-        setUser(user);
         
         // Redirect to dashboard
         router.push('/dashboard');
@@ -127,6 +125,13 @@ export function AuthProvider({ children }: AuthProviderProps): React.ReactElemen
 
   /**
    * Handle user registration
+   * Note: The RegisterRequest interface requires specific field names:
+   * - username: typically the same as email
+   * - email: user's email address
+   * - password: user's password
+   * - repassword: confirmation of password
+   * - first_name: user's first name (optional)
+   * - last_name: user's last name (optional)
    */
   const register = async (data: RegisterRequest): Promise<void> => {
     setIsLoading(true);
@@ -150,12 +155,8 @@ export function AuthProvider({ children }: AuthProviderProps): React.ReactElemen
     setIsLoading(true);
     
     try {
-      // Pass user ID to invalidate session in cache
-      if (user) {
-        await authService.logout(user.id);
-      } else {
-        await authService.logout();
-      }
+      // No need to call API for logout as we're just clearing tokens
+      console.log('Logging out user');
     } catch (err) {
       console.error('Logout error:', err);
     } finally {
@@ -171,70 +172,28 @@ export function AuthProvider({ children }: AuthProviderProps): React.ReactElemen
   /**
    * Request a one-time password for password reset
    */
-  const getOTP = async (email: string): Promise<{ token: string; expiresAt: Date } | null> => {
+  const getOTP = async (email: string): Promise<boolean> => {
     try {
       setIsLoading(true);
       
       // If Redis cache is disabled, we'll use a simpler approach
       if (!FEATURES.ENABLE_REDIS_CACHE) {
         // Mock response for development
-        return {
-          token: 'mock-token-' + Date.now(),
-          expiresAt: new Date(Date.now() + 5 * 60 * 1000) // 5 minutes from now
-        };
+        return true;
       }
       
-      const response = await authService.getOTP({ email });
+      const response = await authService.sendResetEmail(email);
       
       if (response.status.code !== 200 || !response.data) {
         throw new Error(response.status.message || 'Failed to get OTP');
       }
       
-      return {
-        token: response.data.token,
-        expiresAt: new Date(response.data.expiresAt)
-      };
+      // Return success status
+      return true;
     } catch (err) {
       const errorMessage = handleApiError(err, 'OTP Request');
       setError(errorMessage);
-      return null;
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  /**
-   * Verify a one-time password
-   */
-  const verifyOTP = async (token: string, code: number): Promise<{ token: string; retry: number; expiresAt: Date } | null> => {
-    try {
-      setIsLoading(true);
-      
-      // If Redis cache is disabled, we'll use a simpler approach
-      if (!FEATURES.ENABLE_REDIS_CACHE) {
-        // Mock response for development
-        return {
-          token: token,
-          retry: 3,
-          expiresAt: new Date(Date.now() + 3 * 60 * 1000) // 3 minutes from now
-        };
-      }
-      
-      const response = await authService.verifyOTP({ token, code });
-      
-      if (response.status.code !== 200 || !response.data) {
-        throw new Error(response.status.message || 'Failed to verify OTP');
-      }
-      
-      return {
-        token: response.data.token,
-        retry: response.data.retry,
-        expiresAt: new Date(response.data.expiresAt)
-      };
-    } catch (err) {
-      const errorMessage = handleApiError(err, 'OTP Verification');
-      setError(errorMessage);
-      return null;
+      return false;
     } finally {
       setIsLoading(false);
     }
@@ -243,9 +202,10 @@ export function AuthProvider({ children }: AuthProviderProps): React.ReactElemen
   /**
    * Change user password
    */
-  const changePassword = async (token: string, newPassword: string): Promise<void> => {
+  const changePassword = async (email: string, code: string, newPassword: string): Promise<void> => {
     try {
       setIsLoading(true);
+      setError(null);
       
       // If Redis cache is disabled, we'll use a simpler approach
       if (!FEATURES.ENABLE_REDIS_CACHE) {
@@ -255,9 +215,11 @@ export function AuthProvider({ children }: AuthProviderProps): React.ReactElemen
         return;
       }
       
-      const response = await authService.changePassword({
-        token,
-        newpassword: newPassword
+      const response = await authService.resetPassword({
+        email: email,
+        code: code,
+        password: newPassword,
+        repassword: newPassword
       });
       
       if (response.status.code !== 200) {
@@ -289,7 +251,6 @@ export function AuthProvider({ children }: AuthProviderProps): React.ReactElemen
     register,
     logout,
     getOTP,
-    verifyOTP,
     changePassword,
     error,
     clearError,

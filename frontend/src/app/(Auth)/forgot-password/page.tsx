@@ -1,5 +1,6 @@
 'use client'
 
+import { useState } from 'react'
 import { ForgotPasswordForm } from '@/components/Auth/forgot-password'
 import { useAuth } from '@/hooks/useAuth'
 
@@ -8,28 +9,53 @@ import { useAuth } from '@/hooks/useAuth'
  * @returns Forgot password page UI
  */
 export default function ForgotPasswordPage() {
-  const { getOTP, verifyOTP, changePassword, isLoading, error } = useAuth()
+  const { getOTP, changePassword, isLoading, error } = useAuth()
+  const [verificationStep, setVerificationStep] = useState<'email' | 'otp' | 'password'>('email')
+  const [email, setEmail] = useState('')
+  const [otpCode, setOtpCode] = useState('')
 
   const handleForgotPassword = async (email: string) => {
-    const response = await getOTP(email)
-    
-    if (response?.token) {
-      localStorage.setItem('otp_token', response.token)
+    try {
+      const success = await getOTP(email)
+      
+      if (success) {
+        setEmail(email)
+        setVerificationStep('otp')
+        return true
+      }
+      return false
+    } catch (error) {
+      console.error('Error requesting OTP:', error)
+      return false
     }
   }
 
   const handleVerifyOtp = async (otp: string) => {
-    const otpNumber = parseInt(otp, 10)
-    if (isNaN(otpNumber)) {
-      throw new Error('Invalid OTP format')
+    try {
+      // Validate OTP is 6 digits
+      if (!/^\d{6}$/.test(otp)) {
+        throw new Error('OTP must be 6 digits')
+      }
+      
+      // Store the OTP code for later use in password reset
+      setOtpCode(otp)
+      setVerificationStep('password')
+      return true
+    } catch (error) {
+      console.error('Error verifying OTP:', error)
+      return false
     }
-    
-    const token = localStorage.getItem('otp_token')
-    if (!token) {
-      throw new Error('OTP token not found')
+  }
+
+  const handleResetPassword = async (password: string) => {
+    try {
+      // Pass email, OTP code, and password to the changePassword function
+      await changePassword(email, otpCode, password)
+      return true
+    } catch (error) {
+      console.error('Error resetting password:', error)
+      return false
     }
-    
-    await verifyOTP(token, otpNumber)
   }
 
   return (
@@ -37,6 +63,10 @@ export default function ForgotPasswordPage() {
       <ForgotPasswordForm 
         handleForgotPassword={handleForgotPassword}
         handleVerifyOtp={handleVerifyOtp}
+        handleResetPassword={handleResetPassword}
+        verificationStep={verificationStep}
+        setVerificationStep={setVerificationStep}
+        email={email}
         isLoading={isLoading}
         error={error}
       />

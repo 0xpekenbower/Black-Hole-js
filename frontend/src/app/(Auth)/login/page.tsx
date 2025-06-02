@@ -12,7 +12,7 @@ export default function LoginPage() {
 
   const handleLogin = async (email: string, password: string) => {
     await login({
-      email,
+      username: email,
       password
     })
   }

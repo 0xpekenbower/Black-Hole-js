@@ -86,6 +86,7 @@ function RegisterFormContent({ content, handleRegister, externalIsLoading, exter
   const [internalIsLoading, setInternalIsLoading] = useState(false)
   // Use external loading state if provided, otherwise use internal
   const isLoading = externalIsLoading !== undefined ? externalIsLoading : internalIsLoading
+  const [showPassword, setShowPassword] = useState(false)
   
   const form = useForm<RegisterFormValues>({
     resolver: zodResolver(registerSchema),
@@ -99,7 +100,36 @@ function RegisterFormContent({ content, handleRegister, externalIsLoading, exter
   // Set form error if external error is provided
   useEffect(() => {
     if (externalError) {
-      form.setError("root", { message: externalError })
+      // Handle specific registration error cases
+      if (externalError.includes('Email already exists') || 
+          externalError.includes('email already in use')) {
+        form.setError("email", { 
+          message: "Email already in use. Please use a different email." 
+        })
+      } else if (externalError.includes('Username already exists') || 
+                externalError.includes('username already in use')) {
+        form.setError("name", { 
+          message: "Username already in use. Please choose a different one." 
+        })
+      } else if (externalError.includes('Password must contain')) {
+        form.setError("password", { 
+          message: externalError 
+        })
+      } else if (externalError.includes('Email does not comply')) {
+        form.setError("email", { 
+          message: "Please enter a valid email address." 
+        })
+      } else if (externalError.includes('Passwords do not match')) {
+        form.setError("password", { 
+          message: "Passwords do not match." 
+        })
+      } else if (externalError.includes('Network error')) {
+        form.setError("root", { 
+          message: "Network error. Please check your internet connection and try again." 
+        })
+      } else {
+        form.setError("root", { message: externalError })
+      }
     }
   }, [externalError, form])
 
@@ -125,13 +155,22 @@ function RegisterFormContent({ content, handleRegister, externalIsLoading, exter
     }
   }
 
+  const togglePasswordVisibility = () => {
+    setShowPassword(!showPassword)
+  }
+
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 w-full">
         <div className="flex flex-col space-y-4">
           <NameField content={content} form={form} />
           <EmailField content={content} form={form} />
-          <PasswordField content={content} form={form} />
+          <PasswordField 
+            content={content} 
+            form={form} 
+            showPassword={showPassword} 
+            togglePasswordVisibility={togglePasswordVisibility} 
+          />
           <RegisterButton isLoading={isLoading} content={content} />
 
           {form.formState.errors.root && (
@@ -197,7 +236,17 @@ function EmailField({ content, form }: { content: typeof en.register, form: any 
 }
 
 // Password field component
-function PasswordField({ content, form }: { content: typeof en.register, form: any }) {
+function PasswordField({ 
+  content, 
+  form, 
+  showPassword = false, 
+  togglePasswordVisibility 
+}: { 
+  content: typeof en.register, 
+  form: any, 
+  showPassword?: boolean, 
+  togglePasswordVisibility?: () => void 
+}) {
   return (
     <FormField
       control={form.control}
@@ -206,14 +255,69 @@ function PasswordField({ content, form }: { content: typeof en.register, form: a
         <FormItem className="space-y-1 sm:space-y-2">
           <FormLabel className="text-xs sm:text-sm">{content?.passwordLabel || "Password"}</FormLabel>
           <FormControl>
-            <Input 
-              type="password" 
-              placeholder={content?.passwordPlaceholder || "Create a password"} 
-              {...field} 
-              className="h-8 sm:h-9 text-xs sm:text-sm" 
-            />
+            <div className="relative">
+              <Input 
+                type={showPassword ? "text" : "password"} 
+                placeholder={content?.passwordPlaceholder || "Create a password"} 
+                {...field} 
+                className="h-8 sm:h-9 text-xs sm:text-sm pr-10" 
+              />
+              {togglePasswordVisibility && (
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  className="absolute right-0 top-0 h-full px-3 py-1 text-muted-foreground"
+                  onClick={togglePasswordVisibility}
+                >
+                  {showPassword ? (
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4">
+                      <path d="M9.88 9.88a3 3 0 1 0 4.24 4.24"></path>
+                      <path d="M10.73 5.08A10.43 10.43 0 0 1 12 5c7 0 10 7 10 7a13.16 13.16 0 0 1-1.67 2.68"></path>
+                      <path d="M6.61 6.61A13.526 13.526 0 0 0 2 12s3 7 10 7a9.74 9.74 0 0 0 5.39-1.61"></path>
+                      <line x1="2" x2="22" y1="2" y2="22"></line>
+                    </svg>
+                  ) : (
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4">
+                      <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"></path>
+                      <circle cx="12" cy="12" r="3"></circle>
+                    </svg>
+                  )}
+                </Button>
+              )}
+            </div>
           </FormControl>
           <FormMessage className="text-xs" />
+          
+          {/* Password strength indicator */}
+          <div className="space-y-1">
+            <div className="h-1 flex gap-1">
+              <div className={`h-full flex-1 rounded-sm transition-colors ${
+                field.value.length > 0 ? 'bg-red-500' : 'bg-muted'
+              }`}></div>
+              <div className={`h-full flex-1 rounded-sm transition-colors ${
+                field.value.length >= 8 ? 'bg-orange-500' : 'bg-muted'
+              }`}></div>
+              <div className={`h-full flex-1 rounded-sm transition-colors ${
+                field.value.length >= 8 && 
+                /[A-Z]/.test(field.value) && 
+                /[a-z]/.test(field.value) ? 'bg-yellow-500' : 'bg-muted'
+              }`}></div>
+              <div className={`h-full flex-1 rounded-sm transition-colors ${
+                field.value.length >= 8 && 
+                /[A-Z]/.test(field.value) && 
+                /[a-z]/.test(field.value) && 
+                /[0-9]/.test(field.value) ? 'bg-green-500' : 'bg-muted'
+              }`}></div>
+            </div>
+            <p className="text-[10px] text-muted-foreground">
+              {field.value.length === 0 && "Password strength"}
+              {field.value.length > 0 && field.value.length < 8 && "Weak password"}
+              {field.value.length >= 8 && !(/[A-Z]/.test(field.value) && /[a-z]/.test(field.value)) && "Fair password"}
+              {field.value.length >= 8 && /[A-Z]/.test(field.value) && /[a-z]/.test(field.value) && !(/[0-9]/.test(field.value)) && "Good password"}
+              {field.value.length >= 8 && /[A-Z]/.test(field.value) && /[a-z]/.test(field.value) && /[0-9]/.test(field.value) && "Strong password"}
+            </p>
+          </div>
         </FormItem>
       )}
     />

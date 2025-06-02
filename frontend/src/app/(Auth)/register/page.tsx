@@ -16,10 +16,12 @@ export default function RegisterPage() {
     const lastName = nameParts.length > 1 ? nameParts.slice(1).join(' ') : ''
     
     await register({
-      firstName,
-      lastName,
+      username: email,
       email,
-      password
+      password,
+      repassword: password,
+      first_name: firstName,
+      last_name: lastName
     })
   }
 

@@ -82,6 +82,7 @@ interface LoginFormContentProps {
 function LoginFormContent({ content, handleLogin, externalIsLoading, externalError }: LoginFormContentProps) {
   const [internalIsLoading, setInternalIsLoading] = useState(false)
   const isLoading = externalIsLoading !== undefined ? externalIsLoading : internalIsLoading
+  const [showPassword, setShowPassword] = useState(false)
   
   const form = useForm<LoginFormValues>({
     resolver: zodResolver(loginSchema),
@@ -93,7 +94,27 @@ function LoginFormContent({ content, handleLogin, externalIsLoading, externalErr
 
   useEffect(() => {
     if (externalError) {
-      form.setError("root", { message: externalError })
+      // Handle specific login error cases
+      if (externalError.includes('Invalid username or password') || 
+          externalError.includes('User does not exist') || 
+          externalError.includes('Incorrect Password')) {
+        form.setError("email", { message: "Invalid email or password" })
+        form.setError("password", { message: "Invalid email or password" })
+      } else if (externalError.includes('locked')) {
+        form.setError("root", { 
+          message: "Your account has been locked. Please reset your password." 
+        })
+      } else if (externalError.includes('too many attempts')) {
+        form.setError("root", { 
+          message: "Too many failed login attempts. Please try again later." 
+        })
+      } else if (externalError.includes('Network error')) {
+        form.setError("root", { 
+          message: "Network error. Please check your internet connection and try again." 
+        })
+      } else {
+        form.setError("root", { message: externalError })
+      }
     }
   }, [externalError, form])
 
@@ -117,12 +138,16 @@ function LoginFormContent({ content, handleLogin, externalIsLoading, externalErr
     }
   }
 
+  const togglePasswordVisibility = () => {
+    setShowPassword(!showPassword)
+  }
+
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 w-full">
         <div className="flex flex-col space-y-4">
           <EmailField content={content} form={form} />
-          <PasswordField content={content} form={form} />
+          <PasswordField content={content} form={form} showPassword={showPassword} togglePasswordVisibility={togglePasswordVisibility} />
           <LoginButton isLoading={isLoading} content={content} />
 
           {form.formState.errors.root && (
@@ -164,7 +189,17 @@ function EmailField({ content, form }: { content: typeof en.login, form: any }) 
 }
 
 // Password field component
-function PasswordField({ content, form }: { content: typeof en.login, form: any }) {
+function PasswordField({ 
+  content, 
+  form, 
+  showPassword = false, 
+  togglePasswordVisibility 
+}: { 
+  content: typeof en.login, 
+  form: any, 
+  showPassword?: boolean, 
+  togglePasswordVisibility?: () => void 
+}) {
   return (
     <FormField
       control={form.control}
@@ -181,11 +216,37 @@ function PasswordField({ content, form }: { content: typeof en.login, form: any 
             </Link>
           </div>
           <FormControl>
-            <Input
-              placeholder={content.passwordPlaceholder}
-            type="password" 
-            {...field} 
-            className="h-8 sm:h-9 text-xs sm:text-sm" />
+            <div className="relative">
+              <Input
+                placeholder={content.passwordPlaceholder}
+                type={showPassword ? "text" : "password"}
+                {...field}
+                className="h-8 sm:h-9 text-xs sm:text-sm pr-10"
+              />
+              {togglePasswordVisibility && (
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  className="absolute right-0 top-0 h-full px-3 py-1 text-muted-foreground"
+                  onClick={togglePasswordVisibility}
+                >
+                  {showPassword ? (
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4">
+                      <path d="M9.88 9.88a3 3 0 1 0 4.24 4.24"></path>
+                      <path d="M10.73 5.08A10.43 10.43 0 0 1 12 5c7 0 10 7 10 7a13.16 13.16 0 0 1-1.67 2.68"></path>
+                      <path d="M6.61 6.61A13.526 13.526 0 0 0 2 12s3 7 10 7a9.74 9.74 0 0 0 5.39-1.61"></path>
+                      <line x1="2" x2="22" y1="2" y2="22"></line>
+                    </svg>
+                  ) : (
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4">
+                      <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"></path>
+                      <circle cx="12" cy="12" r="3"></circle>
+                    </svg>
+                  )}
+                </Button>
+              )}
+            </div>
           </FormControl>
           <FormMessage className="text-xs" />
         </FormItem>

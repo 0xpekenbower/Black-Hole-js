@@ -51,7 +51,14 @@ const auth = {
     otpTitle: "Verify Code",
     otpSubtitle: "Enter the 6-digit code sent to your email",
     verifyButton: "Verify Code",
-    backButton: "Back to email"
+    backButton: "Back to email",
+    passwordTitle: "Create New Password",
+    passwordSubtitle: "Enter your new password",
+    passwordLabel: "New Password",
+    passwordPlaceholder: "Enter your new password",
+    confirmPasswordLabel: "Confirm Password",
+    confirmPasswordPlaceholder: "Confirm your new password",
+    resetPasswordButton: "Reset Password"
   }
 }
 
