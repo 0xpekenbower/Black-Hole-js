@@ -65,6 +65,28 @@ services:
     # volumes:
       # - ./infra/config/postgres-exporter-config.yml:/opt/bitnami/postgres-exporter/config.yml:ro
 
+  kafka-exporter:
+    container_name: kafka-exporter
+    image: danielqsj/kafka-exporter 
+    command: ["--kafka.server=kafka:9092"]
+    ports:
+      - 9308:9308
+    environment:
+      - KAFKA_BROKERS=kafka:9092
+    networks:
+      - blackholejs
+
+  nginx-exporter:
+    container_name: nginx-exporter
+    image: nginx/nginx-prometheus-exporter:1.4
+    ports:
+      - "9113:9113"
+    networks:
+      - blackholejs
+    restart: on-failure
+    command:
+      - --nginx.scrape-uri=http://nginx:80/stub_status
+
   prometheus:
     image: prom/prometheus:v3.4.0
     container_name: prometheus
