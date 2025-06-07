@@ -1,44 +1,14 @@
-'use strict'
+import Fastify from 'fastify';
+import cors from '@fastify/cors';
+import { cors as corsConfig } from './config/index.js';
+import logger from './logger/index.js';
+import { registerLoggerHooks } from './logger/hooks.js';
 
-const path = require('node:path')
-const AutoLoad = require('@fastify/autoload')
-
-// Pass --options via CLI arguments in command to enable these options.
-const options = {}
-
-module.exports = async function (fastify, opts) {
-  fastify.get('/api', async function (request, reply) {
-    return {
-      gateway: 'BlackHoleJs API Gateway',
-      version: '1.0.0',
-      message: 'API Gateway is running',
-      docs: '/api/services',
-      health: '/api/health',
-      ping: '/api/ping',
-      timestamp: new Date().toISOString()
-    }
-  })
-
-  fastify.get('/api/', async function (request, reply) {
-    return {
-      gateway: 'BlackHoleJs API Gateway',
-      version: '1.0.0',
-      message: 'API Gateway is running',
-      docs: '/api/services',
-      health: '/api/health',
-      ping: '/api/ping',
-      timestamp: new Date().toISOString()
-    }
-  })
-  fastify.register(AutoLoad, {
-    dir: path.join(__dirname, 'plugins'),
-    options: Object.assign({}, opts)
-  })
-  fastify.register(AutoLoad, {
-    dir: path.join(__dirname, 'routes'),
-    options: Object.assign({}, opts),
-    routeParams: true  // Enable route parameters
-  })
+export async function createApp() {
+  const app = Fastify({ 
+    logger: logger
+  });  
+  registerLoggerHooks(app);  
+  await app.register(cors, corsConfig);
+  return app;
 }
-
-module.exports.options = options
