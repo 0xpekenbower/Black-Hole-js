@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "start": "node server",
-    "dev": "cross-env db_name=authdb nodemon  server",
+    "dev" : "nodemon server",
     "test": "cross-env db_name=testdb node --experimental-vm-modules node_modules/jest/bin/jest.js",
     "lint": "eslint ."
   },

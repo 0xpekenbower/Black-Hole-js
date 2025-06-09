@@ -475,7 +475,7 @@ function SocialLoginSection({ content }: { content: typeof en.register }) {
       </div>
       <div className="grid grid-cols-2 gap-2 sm:gap-3">
         <SocialButton 
-          provider="apple" 
+          provider="42" 
           className="h-8 sm:h-9 text-xs sm:text-sm"
         />
         <SocialButton 

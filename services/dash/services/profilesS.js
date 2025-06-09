@@ -70,7 +70,14 @@ export default {
             return fr.receiver
         })
         // console.log(friends)
-
+        console.log(
+            "User", user_data,
+            "Level", level_data.rows[0],
+            "Rank", rank_data.rows[0],
+            "Friends", fr_list,
+            "is_self", id == req_id,
+            "Friendship", relation
+        );
         return {
             "User": user_data,
             "Level": level_data.rows[0],

@@ -73,6 +73,7 @@ export function FriendsComponent() {
           <FriendsList 
             friends={friends}
             onRemove={removeFriend}
+            onBlock={blockUser}
             isLoading={isLoading}
           />
         );
@@ -162,6 +163,7 @@ export function FriendsComponent() {
                 <FriendsList 
                   friends={friends}
                   onRemove={removeFriend}
+                  onBlock={blockUser}
                   isLoading={isLoading}
                 />
               </TabsContent>

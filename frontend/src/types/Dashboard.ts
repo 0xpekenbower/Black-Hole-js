@@ -35,12 +35,29 @@ export interface Rank {
   icon_path: string;
 }
 
+// export enum FriendshipStatus {
+//   BLOCKED = -1,
+//   NO_RELATION = 0,
+//   FRIENDS = 1,
+//   REQUEST_SENT = 2,
+//   REQUEST_RECEIVED = 3
+// }
+// const status_types = {
+//   HE_SENT: 3,
+//   HE_FR: 2,
+//   HE_BLK: 1,
+
+//   I_SENT: -3,
+//   I_FR: -2,
+//   I_BLK: -1
+// }
 export enum FriendshipStatus {
-  BLOCKED = -1,
-  NO_RELATION = 0,
-  FRIENDS = 1,
-  REQUEST_SENT = 2,
-  REQUEST_RECEIVED = 3
+  HE_SENT = 3, // he sent a request to me
+  HE_FR = 2, // he is a friend
+  HE_BLK = 1, // he blocked me
+  I_SENT = -3, // i sent a request to him
+  I_FR = -2, // he is a friend
+  I_BLK = -1 // i blocked him
 }
 
 // User Card
@@ -99,8 +116,8 @@ export interface FriendRequest {
 export interface RelationshipsResponse {
   friends: UserRelation[];
   blacklist: UserRelation[];
-  receivedReq: FriendRequest[];
-  sentReq: FriendRequest[];
+  receivedReq: UserRelation[];
+  sentReq: UserRelation[];
 }
 
 export type LogoutResponse = ApiResponse<ApiResponse>;

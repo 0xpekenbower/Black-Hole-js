@@ -3,4 +3,4 @@ WORKDIR /auth
 
 COPY . .
 USER node
-CMD ["npm", "run", "start"]
+CMD ["npm", "run", "dev"]

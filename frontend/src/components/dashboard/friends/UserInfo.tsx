@@ -9,7 +9,7 @@ interface UserInfoProps {
   minimal?: boolean
 }
 
-export function UserInfo({ user, minimal = false }: UserInfoProps) {
+export function UserInfo({ user }: UserInfoProps) {
   const isMinimal = 'userId' in user
   const userId = isMinimal ? user.userId : user.id
   const username = isMinimal ? user.username : user.username

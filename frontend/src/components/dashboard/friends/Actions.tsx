@@ -1,14 +1,14 @@
-import { Button } from "@/components/ui/button"
-import { 
-  UserPlus, 
-  UserX, 
-  UserMinus, 
-  Shield, 
-  Loader2,
-  MessageSquare
-} from "lucide-react"
-import Link from 'next/link'
 import { FriendshipStatus } from '@/types/Dashboard'
+import { 
+  AddButton, 
+  CancelButton, 
+  AcceptButton, 
+  RejectButton, 
+  RemoveButton, 
+  BlockButton, 
+  UnblockButton, 
+  MessageButton 
+} from './ActionButtons'
 
 interface FriendActionsProps {
   userId: number
@@ -41,167 +41,77 @@ export function FriendActions({
   showMessage = false,
   compact = false
 }: FriendActionsProps) {
-  
-  const renderIcon = (Icon: React.ElementType) => {
-    return isLoading ? <Loader2 className={`${compact ? 'h-3 w-3' : 'h-4 w-4'} animate-spin`} /> : <Icon className={`${compact ? 'h-3 w-3' : 'h-4 w-4'}`} />
-  }  
-  const renderText = (text: string) => {
-    if (compact) {
-      return <span className="hidden sm:inline">{text}</span>
-    }
-    return text
-  }
-
   switch (friendshipStatus) {
-    case FriendshipStatus.NO_RELATION:
+    case 0 as unknown as FriendshipStatus: // No relation (no enum value for this in new system)
       return (
-        <Button 
-          variant={compact ? "outline" : "default"}
-          size={compact ? "sm" : "default"}
-          className={`${compact ? 'h-8' : ''} gap-1 bg-foreground text-background`}
+        <AddButton
           onClick={() => onSendRequest?.(userId)}
-          disabled={isLoading}
-        >
-          {renderIcon(UserPlus)}
-          {renderText("Add")}
-        </Button>
+          isLoading={isLoading}
+          compact={compact}
+        />
       )
     
-    case FriendshipStatus.REQUEST_SENT:
+    case FriendshipStatus.I_SENT: // I sent request (previously REQUEST_SENT)
       return (
-        <Button 
-          variant="outline" 
-          size={compact ? "sm" : "default"}
-          className={`${compact ? 'h-8' : ''} gap-1 bg-warning-1 text-warning-1-foreground hover:bg-warning-1 hover:text-warning-1-foreground`}
+        <CancelButton
           onClick={() => onCancelRequest?.(userId)}
-          disabled={isLoading}
-        >
-          {renderIcon(UserX)}
-          {renderText("Cancel")}
-        </Button>
+          isLoading={isLoading}
+          compact={compact}
+        />
       )
     
-    case FriendshipStatus.REQUEST_RECEIVED:
+    case FriendshipStatus.HE_SENT: // He sent request (previously REQUEST_RECEIVED)
       return (
         <div className="flex gap-2">
-          <Button 
-            variant={compact ? "outline" : "default"}
-            size={compact ? "sm" : "default"}
-            className={`${compact ? 'h-8' : ''} gap-1 bg-primary-1 text-primary-1-foreground hover:bg-primary-1 hover:text-primary-1-foreground`}
+          <AcceptButton
             onClick={() => onAcceptRequest?.(userId)}
-            disabled={isLoading}
-          >
-            {renderIcon(UserPlus)}
-            {renderText("Accept")}
-          </Button>
-          <Button 
-            variant="outline"
-            size={compact ? "sm" : "default"}
-            className={`${compact ? 'h-8' : ''} gap-1 bg-error-1 text-error-1-foreground hover:bg-error-1 hover:text-error-1-foreground`}
+            isLoading={isLoading}
+            compact={compact}
+          />
+          <RejectButton
             onClick={() => onRejectRequest?.(userId)}
-            disabled={isLoading}
-          >
-            {renderIcon(UserX)}
-            {renderText("Reject")}
-          </Button>
+            isLoading={isLoading}
+            compact={compact}
+          />
         </div>
       )
     
-    case FriendshipStatus.FRIENDS:
+    case FriendshipStatus.I_FR: // I am friend (previously FRIENDS)
+    case FriendshipStatus.HE_FR: // He is friend
       return (
         <div className="flex gap-2">
-          <Button 
-            variant="outline" 
-            size={compact ? "sm" : "default"}
-            className={`${compact ? 'h-8' : ''} gap-1 bg-error-1 text-error-1-foreground hover:bg-error-1 hover:text-error-1-foreground`}
+          <RemoveButton
             onClick={() => onRemoveFriend?.(userId)}
-            disabled={isLoading}
-          >
-            {renderIcon(UserMinus)}
-            {renderText("Remove")}
-          </Button>
+            isLoading={isLoading}
+            compact={compact}
+          />
+          
+          <BlockButton
+            onClick={() => onBlockUser?.(userId)}
+            isLoading={isLoading}
+            compact={compact}
+          />
           
           {showMessage && (
-            <Button 
-              variant="secondary"
-              size={compact ? "sm" : "default"}
-              className={`${compact ? 'h-8' : ''} gap-1`}
-              asChild
-            >
-              <Link href={`/dashboard/chat?user=${userId}`}>
-                {renderIcon(MessageSquare)}
-                {renderText("Message")}
-              </Link>
-            </Button>
+            <MessageButton userId={userId} compact={compact} />
           )}
         </div>
       )
     
-    case FriendshipStatus.BLOCKED:
+    case FriendshipStatus.I_BLK: // I blocked (previously BLOCKED)
       return (
-        <Button 
-          variant="outline" 
-          size={compact ? "sm" : "default"}
-          className={`${compact ? 'h-8' : ''} gap-1`}
+        <UnblockButton
           onClick={() => onUnblockUser?.(userId)}
-          disabled={isLoading}
-        >
-          {renderIcon(Shield)}
-          {renderText("Unblock")}
-        </Button>
+          isLoading={isLoading}
+          compact={compact}
+        />
       )
+    
+    case FriendshipStatus.HE_BLK: // He blocked me
+      // When someone blocks you, you shouldn't see any action buttons
+      return null;
     
     default:
       return null
   }
-}
-
-export function BlockUserButton({
-  userId,
-  isBlocked = false,
-  isLoading = false,
-  onBlockUser,
-  onUnblockUser,
-  compact = false
-}: {
-  userId: number
-  isBlocked?: boolean
-  isLoading?: boolean
-  onBlockUser?: (userId: number) => void
-  onUnblockUser?: (userId: number) => void
-  compact?: boolean
-}) {
-  const renderIcon = () => {
-    return isLoading ? 
-      <Loader2 className={`${compact ? 'h-3 w-3' : 'h-4 w-4'} animate-spin`} /> : 
-      <Shield className={`${compact ? 'h-3 w-3' : 'h-4 w-4'}`} />
-  }
-  
-  if (isBlocked) {
-    return (
-      <Button 
-        variant="outline"
-        size={compact ? "sm" : "default"}
-        className={`${compact ? 'h-8' : ''} gap-1`}
-        onClick={() => onUnblockUser?.(userId)}
-        disabled={isLoading}
-      >
-        {renderIcon()}
-        {compact ? <span className="hidden sm:inline">Unblock</span> : "Unblock"}
-      </Button>
-    )
-  }
-  
-  return (
-    <Button 
-      variant="ghost"
-      size={compact ? "sm" : "default"}
-      className={`${compact ? 'h-8' : ''} gap-1 bg-error-1 text-error-1-foreground hover:bg-error-1 hover:text-error-1-foreground`}
-      onClick={() => onBlockUser?.(userId)}
-      disabled={isLoading}
-    >
-      {renderIcon()}
-      {compact ? <span className="hidden sm:inline">Block</span> : "Block"}
-    </Button>
-  )
 }

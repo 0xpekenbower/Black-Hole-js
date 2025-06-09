@@ -94,10 +94,10 @@ export default function ResetPasswordPage() {
         <Card className="w-full shadow-md border-0">
           <CardHeader className="pb-2 sm:pb-4 space-y-1">
             <CardTitle className="text-lg sm:text-xl font-bold text-foreground text-center">
-              {content?.resetPasswordTitle || "Reset Your Password"}
+              {content?.passwordTitle || "Reset Your Password"}
             </CardTitle>
             <CardDescription className="text-center text-muted-foreground text-xs sm:text-sm">
-              {content?.resetPasswordSubtitle || "Enter your new password below"}
+              {content?.passwordSubtitle || "Enter your new password below"}
             </CardDescription>
           </CardHeader>
           <CardContent className="px-4 sm:px-6">
@@ -109,12 +109,12 @@ export default function ResetPasswordPage() {
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel className="text-xs sm:text-sm">
-                        {content?.newPasswordLabel || "New Password"}
+                        {content?.passwordLabel || "New Password"}
                       </FormLabel>
                       <FormControl>
                         <Input 
                           type="password" 
-                          placeholder={content?.newPasswordPlaceholder || "Enter new password"} 
+                          placeholder={content?.passwordPlaceholder || "Enter new password"} 
                           {...field} 
                         />
                       </FormControl>

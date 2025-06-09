@@ -5,7 +5,7 @@ export interface FriendData {
   username: string;
   first_name: string;
   last_name: string;
-  avatar: string;
+  avatar: string | null;
   is_online: boolean;
   friendship_status: FriendshipStatus;
 }

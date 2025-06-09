@@ -43,7 +43,6 @@ const providerIcons = {
   )
 }
 
-// Provider labels for accessibility
 const providerLabels = {
   42: "Sign in with Intra",
   google: "Sign in with Google"

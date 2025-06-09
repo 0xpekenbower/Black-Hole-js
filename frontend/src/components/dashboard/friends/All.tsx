@@ -1,13 +1,12 @@
 import { useState } from 'react'
-import { Loader2, UserMinus, MessageSquare } from 'lucide-react'
-import { Button } from "@/components/ui/button"
 import { FriendData } from '@/types/friends'
 import { UserInfo } from './UserInfo'
-import Link from 'next/link'
+import { RemoveButton, BlockButton, MessageButton } from './ActionButtons'
 
 interface FriendItemProps {
   friend: FriendData
   onRemove?: (userId: number) => void
+  onBlock?: (userId: number) => void
   showMessage?: boolean
   isLoading?: boolean
 }
@@ -15,6 +14,7 @@ interface FriendItemProps {
 export function FriendItem({
   friend,
   onRemove,
+  onBlock,
   showMessage = true,
   isLoading = false
 }: FriendItemProps) {
@@ -29,6 +29,15 @@ export function FriendItem({
     }
   }
   
+  const handleBlock = async () => {
+    setLocalLoading(true)
+    try {
+      await onBlock?.(friend.id)
+    } finally {
+      setLocalLoading(false)
+    }
+  }
+  
   const isDisabled = isLoading || localLoading
   
   return (
@@ -36,35 +45,20 @@ export function FriendItem({
       <UserInfo user={friend} />
       
       <div className="flex gap-2">
-        <Button 
-          variant="outline"
-          size="sm"
-          className="h-8 gap-1 bg-error-1 text-error-1-foreground hover:bg-error-1 hover:text-error-1-foreground"
+        <RemoveButton
           onClick={handleRemove}
+          isLoading={localLoading}
           disabled={isDisabled}
-        >
-          {localLoading ? (
-            <Loader2 className="h-3 w-3 animate-spin" />
-          ) : (
-            <UserMinus className="h-3 w-3" />
-          )}
-          <span className="hidden sm:inline">Remove</span>
-          <span className="sm:hidden">✕</span>
-        </Button>
+        />
+        
+        <BlockButton
+          onClick={handleBlock}
+          isLoading={localLoading}
+          disabled={isDisabled}
+        />
         
         {showMessage && (
-          <Button 
-            variant="secondary"
-            size="sm"
-            className="h-8 gap-1"
-            asChild
-          >
-            <Link href={`/dashboard/chat?user=${friend.id}`}>
-              <MessageSquare className="h-3 w-3" />
-              <span className="hidden sm:inline">Message</span>
-              <span className="sm:hidden">💬</span>
-            </Link>
-          </Button>
+          <MessageButton userId={friend.id} />
         )}
       </div>
     </div>
@@ -74,11 +68,13 @@ export function FriendItem({
 export function FriendsList({
   friends,
   onRemove,
+  onBlock,
   showMessage = true,
   isLoading = false
 }: {
   friends: FriendData[]
   onRemove?: (userId: number) => void
+  onBlock?: (userId: number) => void
   showMessage?: boolean
   isLoading?: boolean
 }) {
@@ -95,6 +91,7 @@ export function FriendsList({
               key={friend.id}
               friend={friend}
               onRemove={onRemove}
+              onBlock={onBlock}
               showMessage={showMessage}
               isLoading={isLoading}
             />

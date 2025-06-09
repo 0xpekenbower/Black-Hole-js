@@ -22,7 +22,7 @@ const fr = {
   },
   footer: {
     thanks: 'Merci de votre visite',
-    rights: '© 2023 BlackHole.Js. Tous droits réservés.',
+    rights: '© 2025 BlackHole.Js. Tous droits réservés.',
     contact: 'Contactez-Nous'
   },
   documentation: {

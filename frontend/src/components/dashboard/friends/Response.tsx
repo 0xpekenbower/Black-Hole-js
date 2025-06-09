@@ -1,8 +1,7 @@
 import { useState } from 'react'
-import { Loader2 } from 'lucide-react'
-import { Button } from "@/components/ui/button"
 import { FriendData, MinimalFriendData } from '@/types/friends'
 import { UserInfo } from './UserInfo'
+import { CancelButton } from './ActionButtons'
 
 interface SentRequestProps {
   request: FriendData
@@ -39,17 +38,11 @@ export function SentRequest({
       <UserInfo user={request} />
       
       <div className="flex gap-2">
-        <Button 
-          variant="outline"
-          size="sm"
-          className="h-8 gap-1 bg-error-1 text-error-1-foreground hover:bg-error-1 hover:text-error-1-foreground"
+        <CancelButton
           onClick={handleCancel}
+          isLoading={localLoading}
           disabled={isDisabled}
-        >
-          {localLoading ? <Loader2 className="h-3 w-3 animate-spin" /> : null}
-          <span className="hidden sm:inline">Cancel</span>
-          <span className="sm:hidden">✕</span>
-        </Button>
+        />
       </div>
     </div>
   )
@@ -78,17 +71,11 @@ export function MinimalSentRequest({
       <UserInfo user={request} minimal />
       
       <div className="flex gap-2">
-        <Button 
-          variant="outline"
-          size="sm"
-          className="h-8 gap-1 bg-error-1 text-error-1-foreground hover:bg-error-1 hover:text-error-1-foreground"
+        <CancelButton
           onClick={handleCancel}
+          isLoading={localLoading}
           disabled={isDisabled}
-        >
-          {localLoading ? <Loader2 className="h-3 w-3 animate-spin" /> : null}
-          <span className="hidden sm:inline">Cancel</span>
-          <span className="sm:hidden">✕</span>
-        </Button>
+        />
       </div>
     </div>
   )

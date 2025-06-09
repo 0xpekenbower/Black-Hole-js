@@ -17,7 +17,7 @@ export function useFriends() {
       const response = await dashboardService.getAllRelations()
       if (response.status.success && response.data) {
         setRelationsData(response.data)
-        await fetchUserDetails(response.data)
+        processRelationsData(response.data)
       } else {
         console.error("Failed to fetch relationships")
       }
@@ -28,108 +28,63 @@ export function useFriends() {
     }
   }
 
-  const fetchUserDetails = async (relations: RelationshipsResponse) => {
-    const friendIds = Array.isArray(relations.friends) 
-      ? relations.friends.map(f => typeof f === 'number' ? f : f.id).filter(Boolean) as number[]
-      : []
-      
-    const blacklistIds = Array.isArray(relations.blacklist)
-      ? relations.blacklist.map(b => typeof b === 'number' ? b : b.id).filter(Boolean) as number[]
-      : []
-      
-    const receivedReqIds = Array.isArray(relations.receivedReq)
-      ? relations.receivedReq.map(req => req.sender).filter(Boolean) as number[]
-      : []
-      
-    const sentReqIds = Array.isArray(relations.sentReq)
-      ? relations.sentReq.map(req => req.receiver).filter(Boolean) as number[]
-      : []
-
-    const friendsData: FriendData[] = []
-    const receivedData: FriendData[] = []
-    const sentData: FriendData[] = []
-    const blockedData: FriendData[] = []
-
-    await Promise.all(friendIds.map(async (id) => {
-      try {
-        const userCard = await fetchUserCard(id)
-        if (userCard) {
-          friendsData.push({
-            ...userCard,
-            friendship_status: FriendshipStatus.FRIENDS
-          })
-        }
-      } catch (error) {
-        console.error(`Error fetching friend card for user ${id}:`, error)
-      }
-    }))
-
-    await Promise.all(receivedReqIds.map(async (id) => {
-      try {
-        const userCard = await fetchUserCard(id)
-        if (userCard) {
-          receivedData.push({
-            ...userCard,
-            friendship_status: FriendshipStatus.REQUEST_RECEIVED
-          })
-        }
-      } catch (error) {
-        console.error(`Error fetching request card for user ${id}:`, error)
-      }
-    }))
-
-    await Promise.all(sentReqIds.map(async (id) => {
-      try {
-        const userCard = await fetchUserCard(id)
-        if (userCard) {
-          sentData.push({
-            ...userCard,
-            friendship_status: FriendshipStatus.REQUEST_SENT
-          })
-        }
-      } catch (error) {
-        console.error(`Error fetching sent request card for user ${id}:`, error)
-      }
-    }))
-
-    await Promise.all(blacklistIds.map(async (id) => {
-      try {
-        const userCard = await fetchUserCard(id)
-        if (userCard) {
-          blockedData.push({
-            ...userCard,
-            friendship_status: FriendshipStatus.BLOCKED
-          })
-        }
-      } catch (error) {
-        console.error(`Error fetching blocked user card for user ${id}:`, error)
-      }
-    }))
+  const processRelationsData = (relations: RelationshipsResponse) => {
+    // Process friends
+    const friendsData: FriendData[] = Array.isArray(relations.friends) 
+      ? relations.friends.map(user => ({
+        id: user.id || 0,
+        username: user.username || '',
+        first_name: user.first_name || '',
+        last_name: user.last_name || '',
+        avatar: user.avatar || null,
+        is_online: user.is_online || false,
+        friendship_status: FriendshipStatus.I_FR
+      }))
+      : [];
+    
+    // Process blacklist
+    const blockedData: FriendData[] = Array.isArray(relations.blacklist)
+      ? relations.blacklist.map(user => ({
+        id: user.id || 0,
+        username: user.username || '',
+        first_name: user.first_name || '',
+        last_name: user.last_name || '',
+        avatar: user.avatar || null,
+        is_online: user.is_online || false,
+        friendship_status: FriendshipStatus.I_BLK
+      }))
+      : [];
+    
+    // Process received requests
+    const receivedData: FriendData[] = Array.isArray(relations.receivedReq)
+      ? relations.receivedReq.map(user => ({
+        id: user.id || 0,
+        username: user.username || '',
+        first_name: user.first_name || '',
+        last_name: user.last_name || '',
+        avatar: user.avatar || null,
+        is_online: false,
+        friendship_status: FriendshipStatus.HE_SENT
+      }))
+      : [];
+    
+    // Process sent requests
+    const sentData: FriendData[] = Array.isArray(relations.sentReq)
+      ? relations.sentReq.map(user => ({
+        id: user.id || 0,
+        username: user.username || '',
+        first_name: user.first_name || '',
+        last_name: user.last_name || '',
+        avatar: user.avatar || null,
+        is_online: false,
+        friendship_status: FriendshipStatus.I_SENT
+      }))
+      : [];
 
     setFriends(friendsData)
     setReceivedRequests(receivedData)
     setSentRequests(sentData)
     setBlockedUsers(blockedData)
-  }
-
-  const fetchUserCard = async (userId: number): Promise<Omit<FriendData, 'friendship_status'> | null> => {
-    try {
-      const response = await dashboardService.getCard(userId.toString())
-      if (response.status.success && response.data?.User) {
-        const userData = response.data.User
-        return {
-          id: userData.id,
-          username: userData.username,
-          first_name: userData.first_name || "",
-          last_name: userData.last_name || "",
-          avatar: userData.avatar || "",
-          is_online: userData.is_online || false
-        }
-      }
-    } catch (error) {
-      console.error(`Error fetching user card for ${userId}:`, error)
-    }
-    return null
   }
 
   // Friend actions
@@ -168,7 +123,7 @@ export function useFriends() {
       if (response.status.success) {
         const acceptedRequest = receivedRequests.find(req => req.id === userId)
         if (acceptedRequest) {
-          setFriends(prev => [...prev, { ...acceptedRequest, friendship_status: FriendshipStatus.FRIENDS }])
+          setFriends(prev => [...prev, { ...acceptedRequest, friendship_status: FriendshipStatus.I_FR }])
           setReceivedRequests(prev => prev.filter(req => req.id !== userId))
         }
       }
@@ -212,15 +167,7 @@ export function useFriends() {
     try {
       const response = await dashboardService.blockUser(userId.toString())
       if (response.status.success) {
-        setReceivedRequests(prev => prev.filter(req => req.id !== userId))
-        const userToBlock = receivedRequests.find(req => req.id === userId) || 
-                          friends.find(friend => friend.id === userId)
-        
-        if (userToBlock) {
-          setBlockedUsers(prev => [...prev, { ...userToBlock, friendship_status: FriendshipStatus.BLOCKED }])
-        }
-        
-        setFriends(prev => prev.filter(friend => friend.id !== userId))
+        await fetchAllRelations()
       }
     } catch (error) {
       console.error("Error blocking user:", error)
@@ -234,7 +181,7 @@ export function useFriends() {
     try {
       const response = await dashboardService.unblockUser(userId.toString())
       if (response.status.success) {
-        setBlockedUsers(prev => prev.filter(user => user.id !== userId))
+        await fetchAllRelations()
       }
     } catch (error) {
       console.error("Error unblocking user:", error)
@@ -259,7 +206,6 @@ export function useFriends() {
     rejectFriendRequest,
     removeFriend,
     blockUser,
-    unblockUser,
-    refreshRelations: fetchAllRelations
+    unblockUser
   }
 }

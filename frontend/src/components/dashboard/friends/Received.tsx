@@ -1,8 +1,7 @@
 import { useState } from 'react'
-import { Loader2 } from 'lucide-react'
-import { Button } from "@/components/ui/button"
 import { FriendData, MinimalFriendData } from '@/types/friends'
 import { UserInfo } from './UserInfo'
+import { AcceptButton, RejectButton } from './ActionButtons'
 
 interface FriendRequestProps {
   request: FriendData
@@ -47,15 +46,6 @@ export function FriendRequest({
     }
   }
   
-  const handleBlock = async () => {
-    setLocalLoading(true)
-    try {
-      await onBlock?.(request.id)
-    } finally {
-      setLocalLoading(false)
-    }
-  }
-  
   const isDisabled = isLoading || localLoading
   
   return (
@@ -63,41 +53,17 @@ export function FriendRequest({
       <UserInfo user={request} />
       
       <div className="flex gap-2">
-        <Button 
-          variant="outline"
-          size="sm"
-          className="h-8 gap-1 bg-primary-1 text-primary-1-foreground hover:bg-primary-1 hover:text-primary-1-foreground"
+        <AcceptButton 
           onClick={handleAccept}
+          isLoading={localLoading}
           disabled={isDisabled}
-        >
-          {localLoading ? <Loader2 className="h-3 w-3 animate-spin" /> : null}
-          <span className="hidden sm:inline">Accept</span>
-          <span className="sm:hidden">✓</span>
-        </Button>
+        />
         
-        <Button 
-          variant="outline"
-          size="sm"
-          className="h-8 gap-1 bg-error-1 text-error-1-foreground hover:bg-error-1 hover:text-error-1-foreground"
+        <RejectButton
           onClick={handleReject}
+          isLoading={localLoading}
           disabled={isDisabled}
-        >
-          {localLoading ? <Loader2 className="h-3 w-3 animate-spin" /> : null}
-          <span className="hidden sm:inline">Reject</span>
-          <span className="sm:hidden">✕</span>
-        </Button>
-        
-        <Button 
-          variant="outline"
-          size="sm"
-          className="h-8 gap-1"
-          onClick={handleBlock}
-          disabled={isDisabled}
-        >
-          {localLoading ? <Loader2 className="h-3 w-3 animate-spin" /> : null}
-          <span className="hidden sm:inline">Block</span>
-          <span className="sm:hidden">⛔</span>
-        </Button>
+        />
       </div>
     </div>
   )
@@ -130,15 +96,6 @@ export function MinimalFriendRequest({
     }
   }
   
-  const handleBlock = async () => {
-    setLocalLoading(true)
-    try {
-      await onBlock?.(request.userId)
-    } finally {
-      setLocalLoading(false)
-    }
-  }
-  
   const isDisabled = isLoading || localLoading
   
   return (
@@ -146,41 +103,17 @@ export function MinimalFriendRequest({
       <UserInfo user={request} minimal />
       
       <div className="flex gap-2">
-        <Button 
-          variant="outline"
-          size="sm"
-          className="h-8 gap-1 bg-primary-1 text-primary-1-foreground hover:bg-primary-1 hover:text-primary-1-foreground"
+        <AcceptButton 
           onClick={handleAccept}
+          isLoading={localLoading}
           disabled={isDisabled}
-        >
-          {localLoading ? <Loader2 className="h-3 w-3 animate-spin" /> : null}
-          <span className="hidden sm:inline">Accept</span>
-          <span className="sm:hidden">✓</span>
-        </Button>
+        />
         
-        <Button 
-          variant="outline"
-          size="sm"
-          className="h-8 gap-1 bg-error-1 text-error-1-foreground hover:bg-error-1 hover:text-error-1-foreground"
+        <RejectButton
           onClick={handleReject}
+          isLoading={localLoading}
           disabled={isDisabled}
-        >
-          {localLoading ? <Loader2 className="h-3 w-3 animate-spin" /> : null}
-          <span className="hidden sm:inline">Reject</span>
-          <span className="sm:hidden">✕</span>
-        </Button>
-        
-        <Button 
-          variant="outline"
-          size="sm"
-          className="h-8 gap-1"
-          onClick={handleBlock}
-          disabled={isDisabled}
-        >
-          {localLoading ? <Loader2 className="h-3 w-3 animate-spin" /> : null}
-          <span className="hidden sm:inline">Block</span>
-          <span className="sm:hidden">⛔</span>
-        </Button>
+        />
       </div>
     </div>
   )

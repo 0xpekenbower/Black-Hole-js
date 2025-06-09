@@ -14,48 +14,18 @@ import {
   Award,
   Star,
   Loader2,
-  UserX,
 } from "lucide-react"
 import Image from 'next/image'
 import Link from 'next/link'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Progress } from "@/components/ui/progress"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { Avatar, AvatarImage } from "@/components/ui/avatar"
 import { dashboardService } from '@/lib/api'
 import { handleApiError } from '@/utils/errorHandler'
 import { UserCard, FriendshipStatus } from '@/types/Dashboard'
-import { FriendActions, BlockUserButton } from './friends/Actions'
+import { FriendActions } from './friends/Actions'
 import { useFriends } from '@/hooks/useFriends'
 
-interface RankData {
-  name: string;
-  min_exp: number;
-  max_exp: number;
-  reward: number;
-  icon_path: string;
-}
-
-interface LevelData {
-  id: number;
-  min_exp: number;
-  max_exp: number;
-  reward: number;
-}
-
-interface UserData {
-  id: number;
-  username: string;
-  first_name: string | null;
-  last_name: string | null;
-  avatar: string | null;
-  background: string | null;
-  bio: string | null;
-  is_online: boolean;
-  is_oauth: boolean;
-  exp: number;
-  rank: number;
-  level: number;
-}
 
 export function ProfileComponent({ userId }: { userId?: string }) {
   const [profileData, setProfileData] = useState<UserCard | null>(null);
@@ -87,7 +57,12 @@ export function ProfileComponent({ userId }: { userId?: string }) {
           throw new Error(response.status.message);
         }
         
-        setProfileData(response.data);
+        const cleanedData = {
+          ...response.data,
+          Friends: response.data.Friends.filter(friend => friend !== undefined)
+        };
+        
+        setProfileData(cleanedData);
       } catch (err) {
         const errorMessage = handleApiError(err, 'Profile');
         setError(errorMessage);
@@ -104,7 +79,12 @@ export function ProfileComponent({ userId }: { userId?: string }) {
     try {
       const response = await dashboardService.getCard(userId);
       if (response.status.success && response.data) {
-        setProfileData(response.data);
+        const cleanedData = {
+          ...response.data,
+          Friends: response.data.Friends.filter(friend => friend !== undefined)
+        };
+        
+        setProfileData(cleanedData);
       }
     } catch (err) {
       console.error(handleApiError(err, 'Profile Refresh'));
@@ -140,10 +120,10 @@ export function ProfileComponent({ userId }: { userId?: string }) {
   
   console.log('Friendship status:', Friendship);
   console.log('Friendship type:', typeof Friendship);
-  console.log('REQUEST_SENT enum value:', FriendshipStatus.REQUEST_SENT);
+  console.log('REQUEST_SENT enum value:', FriendshipStatus.I_SENT);
   
   const friendshipValue = Number(Friendship);
-  const isRequestSent = friendshipValue === 2 || friendshipValue === -3;
+  const isRequestSent = friendshipValue === -3;
   console.log('isRequestSent:', isRequestSent);
   
   const displayName = UserInfo.first_name && UserInfo.last_name 
@@ -164,6 +144,8 @@ export function ProfileComponent({ userId }: { userId?: string }) {
 
   const nextRank = getNextRankName(Rank.name);
   const rankProgress = ((UserInfo.exp - Rank.min_exp) / (Rank.max_exp - Rank.min_exp)) * 100;
+
+  const validFriends = profileData.Friends.filter(friend => friend !== undefined);
 
   return (
     <div className="container mx-auto w-full space-y-6 mt-16 items-center justify-center">
@@ -213,42 +195,20 @@ export function ProfileComponent({ userId }: { userId?: string }) {
               {/* Friend Actions Mkayn lach if we can call it form friends dir  */}
               {!is_self && (
                 <div className="flex gap-2">
-                  {friendshipValue === -3 ? (
-                    <Button 
-                      variant="ghost"
-                      size="sm"
-                      className="h-9  gap-2 bg-warning-1 text-warning-1-foreground hover:bg-warning-1 hover:text-warning-1-foreground"
-                      onClick={() => handleFriendAction(cancelFriendRequest, UserInfo.id)}
-                      disabled={friendsLoading}
-                    >
-                      {friendsLoading ? <Loader2 className="h-3 w-3 animate-spin" /> : <UserX className="h-3 w-3" />}
-                      <span className="hidden sm:inline">Cancel</span>
-                      <span className="sm:hidden">✕</span>
-                    </Button>
-                  ) : (
-                    <FriendActions
-                      userId={UserInfo.id}
-                      username={UserInfo.username}
-                      friendshipStatus={isRequestSent && friendshipValue !== -3 ? FriendshipStatus.REQUEST_SENT : Friendship}
-                      isLoading={friendsLoading}
-                      onSendRequest={(id) => handleFriendAction(sendFriendRequest, id)}
-                      onCancelRequest={(id) => handleFriendAction(cancelFriendRequest, id)}
-                      onAcceptRequest={(id) => handleFriendAction(acceptFriendRequest, id)}
-                      onRejectRequest={(id) => handleFriendAction(rejectFriendRequest, id)}
-                      onRemoveFriend={(id) => handleFriendAction(removeFriend, id)}
-                      onUnblockUser={(id) => handleFriendAction(unblockUser, id)}
-                      showMessage={Friendship === FriendshipStatus.FRIENDS}
-                    />
-                  )}
-                  
-                  {Friendship !== FriendshipStatus.BLOCKED  && (
-                    <BlockUserButton
-                      userId={UserInfo.id}
-                      isBlocked={false}
-                      isLoading={friendsLoading}
-                      onBlockUser={(id) => handleFriendAction(blockUser, id)}
-                    />
-                  )}
+                  <FriendActions
+                    userId={UserInfo.id}
+                    username={UserInfo.username}
+                    friendshipStatus={Friendship}
+                    isLoading={friendsLoading}
+                    onSendRequest={(id) => handleFriendAction(sendFriendRequest, id)}
+                    onCancelRequest={(id) => handleFriendAction(cancelFriendRequest, id)}
+                    onAcceptRequest={(id) => handleFriendAction(acceptFriendRequest, id)}
+                    onRejectRequest={(id) => handleFriendAction(rejectFriendRequest, id)}
+                    showMessage={Friendship === FriendshipStatus.I_FR || Friendship === FriendshipStatus.HE_FR}
+                    onRemoveFriend={(id) => handleFriendAction(removeFriend, id)}
+                    onBlockUser={(id) => handleFriendAction(blockUser, id)}
+                    onUnblockUser={(id) => handleFriendAction(unblockUser, id)}
+                  />
                 </div>
               )}
             </div>
@@ -326,8 +286,8 @@ export function ProfileComponent({ userId }: { userId?: string }) {
                     </CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <div className="text-2xl font-bold">{profileData.Friends.length}</div>
-                    {profileData.Friends.length > 0 && (
+                    <div className="text-2xl font-bold">{validFriends.length}</div>
+                    {validFriends.length > 0 && (
                       <Button 
                         variant="link" 
                         className="p-0 h-auto"

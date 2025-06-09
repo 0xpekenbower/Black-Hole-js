@@ -1,6 +1,28 @@
 import pool from '../config/pooling.js'
 import add_notif from '../utils/add_notif.js'
 
+const idToMiniData = async(accountID, relationrows) => {
+    const fr_list = await Promise.all(relationrows.map(async (fr) => {
+
+        const fr_id = fr.receiver == accountID ? fr.sender : fr.receiver
+
+        const data = await pool.query('SELECT first_name, last_name, username, avatar \
+            FROM player WHERE id = $1', [fr_id])
+        
+        if (!data.rowCount) return {}
+
+        return {id: fr_id,
+            username: data.rows[0].username,
+            first_name: data.rows[0].first_name,
+            last_name: data.rows[0].last_name,
+            avatar: data.rows[0].avatar,
+            sender: fr.sender,
+            receiver: fr.receiver
+        }
+    }))
+    return fr_list
+}
+
 export default {
     async SendReq(accountID, otherID) {
 
@@ -93,33 +115,47 @@ export default {
 
     async ReceivedReq(accountID)
     {
-        const relation = await pool.query('SELECT sender FROM friends WHERE     \
+        const relation = await pool.query('SELECT sender, receiver FROM friends WHERE     \
             receiver = $1 AND status = $2', [accountID, 0])
 
-        return (relation.rows)
+        return (await idToMiniData(accountID, relation.rows))
     },
 
     async SentReq(accountID)
     {
-        const relation = await pool.query('SELECT receiver FROM friends     \
+        const relation = await pool.query('SELECT sender, receiver FROM friends     \
             WHERE sender = $1 AND status = $2', [accountID, 0])
         
-        return (relation.rows)
+        return (await idToMiniData(accountID, relation.rows))
+    },
+
+    async FriendListID(accountID)
+    {
+        const relation = await pool.query('SELECT sender, receiver FROM friends     \
+            WHERE (sender = $1 OR receiver = $1) AND status = $2', [accountID, 1])
+
+        const fr_list = relation.rows.map((fr) => {
+            if (fr.receiver == accountID)
+                return fr.sender
+            return fr.receiver
+        })
+        return (fr_list)
     },
 
     async FriendList(accountID)
     {
         const relation = await pool.query('SELECT sender, receiver FROM friends     \
             WHERE (sender = $1 OR receiver = $1) AND status = $2', [accountID, 1])
-        return (relation.rows)
+
+        return (await idToMiniData(accountID, relation.rows))
     },
 
     async BlackList(accountID)
     {
-        const relation = await pool.query('SELECT receiver FROM friends     \
+        const relation = await pool.query('SELECT sender, receiver FROM friends     \
             WHERE sender = $1 AND status = $2', [accountID, -1])
 
-        return (relation.rows)
+        return (await idToMiniData(accountID, relation.rows))
     },
 
     async AllRelations(accountID)
