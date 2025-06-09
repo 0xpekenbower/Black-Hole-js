@@ -14,24 +14,13 @@ import { FEATURES } from '../config';
  */
 export async function initializeCache(): Promise<void> {
   if (!FEATURES.ENABLE_REDIS_CACHE) {
-    console.info('Redis cache is disabled in configuration');
     return;
-  }
-  
-  try {
-    console.info('Initializing Redis cache...');
-    
-    // Set a test key to verify connection
+  }  
+  try {    
     const testKey = 'app:init:test';
-    const success = await redis.set(testKey, { initialized: true, timestamp: Date.now() }, 60);
-    
+    const success = await redis.set(testKey, { initialized: true, timestamp: Date.now() }, 60);    
     if (success) {
-      console.info('Redis cache initialized successfully');
-      
-      // Start health checks in production
-      if (process.env.NODE_ENV === 'production') {
-        startPeriodicHealthChecks(60000); // Check every minute in production
-      }
+      startPeriodicHealthChecks(60000);
     } else {
       console.error('Failed to initialize Redis cache');
     }
@@ -46,13 +35,7 @@ export async function initializeCache(): Promise<void> {
  * Only use this for development or when explicitly needed
  */
 export async function clearAllCacheData(): Promise<void> {
-  if (process.env.NODE_ENV === 'production') {
-    console.error('Refusing to clear all cache data in production');
-    return;
-  }
-  
-  try {
-    console.info('Clearing all application cache data...');
+  try {    
     console.info('Cache data cleared');
   } catch (error) {
     console.error('Error clearing cache data', error);

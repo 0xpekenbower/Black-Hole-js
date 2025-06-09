@@ -8,7 +8,7 @@ import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { ScrollIndicator } from '@/components/ui/scroll-indicator'
 import { motion } from 'framer-motion'
-import { useEffect, useState, useRef } from 'react'
+import { useEffect, useRef } from 'react'
 
 declare global {
   interface Window {
@@ -21,29 +21,20 @@ export default function HomePage() {
   const content = lang === 'fr' ? fr : en
   const { isAuthenticated, isLoading } = useAuth()
   const router = useRouter()
-  const [headerHeight, setHeaderHeight] = useState(64) // Default header height
   const mainRef = useRef<HTMLElement>(null)
-  const [isScrolling, setIsScrolling] = useState(false)
-  const [currentSectionIndex, setCurrentSectionIndex] = useState(0)
 
   useEffect(() => {
     const header = document.querySelector('header')
     if (header) {
-      setHeaderHeight(header.offsetHeight)
+      header.offsetHeight;
     }
   }, [])
 
   const navigateToSection = (index: number) => {
     const sections = document.querySelectorAll('section, footer')
     if (index >= 0 && index < sections.length) {
-      setIsScrolling(true)
-      setCurrentSectionIndex(index)
       const targetSection = sections[index] as HTMLElement
       targetSection.scrollIntoView({ behavior: 'smooth', block: 'start' })
-      
-      setTimeout(() => {
-        setIsScrolling(false)
-      }, 1000)
     }
   }
 
@@ -81,7 +72,6 @@ export default function HomePage() {
 
   return (
     <main ref={mainRef} className="flex flex-col items-center min-h-screen scroll-smooth overflow-hidden">
-      {/* Hero Section */}
       <section 
         id="hero"
         className="flex flex-col items-center justify-center w-full min-h-screen relative snap-start pt-16"
@@ -123,51 +113,41 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* About Section */}
       <section 
         id="about" 
         className="w-full min-h-screen relative snap-start pt-16"
       >
-        {/* Empty section */}
         <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2">
           <ScrollIndicator targetId="api" sectionTitle={content.api.title} />
         </div>
       </section>
 
-      {/* API Documentation Section */}
       <section 
         id="api" 
         className="w-full min-h-screen relative snap-start pt-16"
       >
-        {/* Empty section */}
         <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2">
           <ScrollIndicator targetId="infrastructure" sectionTitle={content.infrastructure.title} />
         </div>
       </section>
 
-      {/* Infrastructure Section */}
       <section 
         id="infrastructure" 
         className="w-full min-h-screen relative snap-start pt-16"
       >
-        {/* Empty section */}
         <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2">
           <ScrollIndicator targetId="resources" sectionTitle={content.documentation.title} />
         </div>
       </section>
-
-      {/* Resources Section */}
       <section 
         id="resources" 
         className="w-full min-h-screen relative snap-start pt-16"
       >
-        {/* Empty section */}
         <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2">
           <ScrollIndicator targetId="footer" sectionTitle="Contact" />
         </div>
       </section>
 
-      {/* Footer */}
       <footer 
         id="footer" 
         className="w-full min-h-screen relative snap-start pt-16"

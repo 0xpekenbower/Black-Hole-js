@@ -4,9 +4,9 @@ const intraC = (fastify) => async(req, res) => {
     try
     {
         const code = req.query['code']
-
+        console.log(code);
         const token = await intraS(fastify.jwt, code)
-        res.status(200).send({Success: 'true', token:token})
+        res.status(200).send({token:token})
     }
     catch(err)
     {

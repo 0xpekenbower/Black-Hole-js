@@ -10,9 +10,9 @@ import { useAuth } from '@/hooks/useAuth'
 export default function LoginPage() {
   const { login, isLoading, error } = useAuth()
 
-  const handleLogin = async (email: string, password: string) => {
+  const handleLogin = async (username: string, password: string) => {
     await login({
-      username: email,
+      username,
       password
     })
   }

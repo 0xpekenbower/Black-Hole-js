@@ -6,11 +6,13 @@ export type Lang = 'en' | 'fr'
 interface LangContextType {
   lang: Lang
   setLang: (lang: Lang) => void
+  mounted: boolean
 }
 
 const LangContext = createContext<LangContextType>({
   lang: 'en',
   setLang: () => {},
+  mounted: false
 })
 
 interface LangProviderSSRProps {
@@ -28,27 +30,21 @@ interface LangProviderSSRProps {
 export const LangProviderSSR = ({ children, initialLang }: LangProviderSSRProps) => {
   const [lang, setLang] = useState<Lang>(initialLang)
   const [mounted, setMounted] = useState(false)
-
-  // Initialize language from localStorage only once on mount
   useEffect(() => {
+    setMounted(true)
     try {
       const stored = localStorage.getItem('lang') as Lang | null
-      if (stored) {
+      if (stored && (stored === 'en' || stored === 'fr')) {
         setLang(stored)
       } else {
         localStorage.setItem('lang', initialLang)
       }
     } catch (e) {
       console.error('Error accessing localStorage:', e)
-    } finally {
-      setMounted(true)
     }
-  }, [initialLang]) // Remove lang from dependencies
-
-  // Update localStorage when language changes
+  }, [initialLang])
   useEffect(() => {
     if (!mounted) return
-    
     try {
       localStorage.setItem('lang', lang)
     } catch (e) {
@@ -56,7 +52,7 @@ export const LangProviderSSR = ({ children, initialLang }: LangProviderSSRProps)
     }
   }, [lang, mounted])
 
-  return <LangContext.Provider value={{ lang, setLang }}>{children}</LangContext.Provider>
+  return <LangContext.Provider value={{ lang, setLang, mounted }}>{children}</LangContext.Provider>
 }
 
 export const useLang = () => useContext(LangContext)

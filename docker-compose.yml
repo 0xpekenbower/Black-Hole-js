@@ -29,8 +29,8 @@ services:
     env_file:
       - .env
     restart: on-failure
-    environment:
-      - GATEWAY_API=http://localhost/api
+    # environment:
+    #   - GATEWAY_API=http://localhost:6969
     networks:
       - blackholejs
 

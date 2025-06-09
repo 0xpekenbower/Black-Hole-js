@@ -1,10 +1,21 @@
 import nodemailer from 'nodemailer'
+import fs from 'fs'
+import path from 'path'
+import { fileURLToPath } from 'url'
+
+// Get the directory name using ESM approach
+const __filename = fileURLToPath(import.meta.url)
+const __dirname = path.dirname(__filename)
+
+// Read the HTML template file
+const htmlTemplate = fs.readFileSync(path.join(__dirname, 'email.html'), 'utf8')
 
 const send_mail = async (to_email, code) => {
 
     const transporter = nodemailer.createTransport({
-        host: process.env.EMAIL_HOST,
-        // port: process.env.EMAIL_PORT,
+        service: 'gmail',
+        host: 'smtp.gmail.com',
+        port: 465,
         secure: true,
         auth: {
             user: process.env.EMAIL_HOST_USER,
@@ -12,14 +23,25 @@ const send_mail = async (to_email, code) => {
         }
     })
     
+    // Replace all occurrences of the code and email placeholders
+    let htmlContent = htmlTemplate.replace(/\${code}/g, code)
+    htmlContent = htmlContent.replace(/\${email}/g, encodeURIComponent(to_email))
+    
     const details = {
-        from: process.env.EMAIL_HOST,
+        from: process.env.EMAIL_HOST_USER,
         to: to_email,
-        subject: `Your PingPong password reset code is ${code}`,
-        text: `Enter this tmp verification code to continue: ${code}`
+        subject: `Your BlackHoleJS recovery code is ${code}`,
+        // text: `Enter this recovery code to continue: ${code}`,
+        html: htmlContent
     }
     
-    await transporter.sendMail(details)
+    try {
+        await transporter.sendMail(details)
+        console.log(`Email sent to ${to_email}`)
+    } catch (error) {
+        console.error('Error sending email:', error)
+        throw error
+    }
 }
 
 export default send_mail

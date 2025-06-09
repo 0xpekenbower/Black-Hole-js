@@ -48,6 +48,10 @@ BlackHoleJs
   <img src="https://img.shields.io/badge/Cadvisor_0.52.1-00ADD8?style=for-the-badge&logo=google&logoColor=white" alt="Cadvisor" />
   <img src="https://img.shields.io/badge/Redis_Exporter_1.73.0-%23DD0031.svg?style=for-the-badge&logo=redis&logoColor=white" alt="Redis Exporter" />
   <img src="https://img.shields.io/badge/Postgres_Exporter_0.17.0-336791?style=for-the-badge&logo=postgresql&logoColor=white" alt="Postgres Exporter" />
+  <img src="https://img.shields.io/badge/Kafka_3.7.0-231F20?style=for-the-badge&logo=apache-kafka&logoColor=white" alt="Kafka" />
+  <img src="https://img.shields.io/badge/Swagger_4.15.5-85EA2D?style=for-the-badge&logo=swagger&logoColor=black" alt="Swagger" />
+  <img src="https://img.shields.io/badge/Pino_Logger-0A0A0A?style=for-the-badge&logo=logstash&logoColor=white" alt="Pino Logger" />
+  <img src="https://img.shields.io/badge/Tailwind_CSS_4-38B2AC?style=for-the-badge&logo=tailwindcss&logoColor=white" alt="Tailwind CSS" />
 </div>
 
 ## Architecture

@@ -3,6 +3,8 @@
  * @module utils/validation
  */
 
+import { z } from "zod";
+
 /**
  * Email validation regex pattern
  * Matches standard email format with domain validation
@@ -27,6 +29,75 @@ const NAME_REGEX = /^[a-zA-Z\s'-]+$/;
  * Allows letters, numbers, underscores, and hyphens, 3-20 characters
  */
 const USERNAME_REGEX = /^[a-zA-Z0-9_-]{3,20}$/;
+
+/**
+ * Login form schema
+ */
+export const loginSchema = z.object({
+  username: z.string()
+    .min(3, { message: "Username must be at least 3 characters" })
+    .max(20, { message: "Username must not exceed 20 characters" }),
+  password: z.string()
+    .min(8, { message: "Password must be at least 8 characters" })
+    .max(25, { message: "Password must not exceed 25 characters" }),
+});
+
+/**
+ * Registration form schema
+ */
+export const registerSchema = z.object({
+  username: z.string()
+    .min(3, { message: "Username must be at least 3 characters" })
+    .max(15, { message: "Username must not exceed 15 characters" }),
+  email: z.string()
+    .email({ message: "Please enter a valid email address" })
+    .max(35, { message: "Email must not exceed 35 characters" }),
+  password: z.string()
+    .min(8, { message: "Password must be at least 8 characters" })
+    .max(25, { message: "Password must not exceed 25 characters" }),
+  repassword: z.string()
+    .min(8, { message: "Password must be at least 8 characters" })
+    .max(25, { message: "Password must not exceed 25 characters" }),
+  first_name: z.string()
+    .max(15, { message: "First name must not exceed 15 characters" })
+    .optional(),
+  last_name: z.string()
+    .max(15, { message: "Last name must not exceed 15 characters" })
+    .optional()
+}).refine((data) => data.password === data.repassword, {
+  message: "Passwords don't match",
+  path: ["repassword"],
+});
+
+/**
+ * Forgot password form schema
+ */
+export const forgotPasswordSchema = z.object({
+  email: z.string()
+    .email({ message: "Please enter a valid email address" }),
+});
+
+/**
+ * OTP verification form schema
+ */
+export const otpSchema = z.object({
+  otp: z.string()
+    .min(6, { message: "Verification code must be 6 characters" })
+    .max(6, { message: "Verification code must be 6 characters" })
+});
+
+/**
+ * Password reset form schema
+ */
+export const passwordResetSchema = z.object({
+  password: z.string()
+    .min(8, { message: "Password must be at least 8 characters" }),
+  confirmPassword: z.string()
+    .min(8, { message: "Password must be at least 8 characters" })
+}).refine((data) => data.password === data.confirmPassword, {
+  message: "Passwords do not match",
+  path: ["confirmPassword"],
+});
 
 /**
  * Validate email format
@@ -140,10 +211,15 @@ export function validateOTP(otp: string): string | null {
     return 'Verification code is required';
   }
   
-  // OTP should be 6 digits
   if (!/^\d{6}$/.test(otp)) {
     return 'Verification code must be 6 digits';
   }
   
   return null;
-} 
+}
+
+export type LoginFormValues = z.infer<typeof loginSchema>;
+export type RegisterFormValues = z.infer<typeof registerSchema>;
+export type ForgotPasswordFormValues = z.infer<typeof forgotPasswordSchema>;
+export type OtpFormValues = z.infer<typeof otpSchema>;
+export type PasswordResetFormValues = z.infer<typeof passwordResetSchema>; 

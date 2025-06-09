@@ -6,6 +6,7 @@ CREATE TABLE IF NOT EXISTS account(
     last_name VARCHAR(30),
     password TEXT NOT NULL,
     is_oauth BOOLEAN DEFAULT FALSE,
+    is_otp BOOLEAN DEFAULT FALSE,
     avatar VARCHAR(120)
 );
 
@@ -17,7 +18,11 @@ CREATE TABLE IF NOT EXISTS change_pass(
     created_at TIMESTAMP DEFAULT NOW()
 );
 
-
+CREATE TABLE IF NOT EXISTS twofa(
+    id SERIAL REFERENCES account(id),
+    otp_code VARCHAR(6) NOT NULL,
+    created_at TIMESTAMP DEFAULT NOW()
+);
 
 -- INSERT INTO account(username, email, password) 
 --             VALUES(buddha, buddha@hotmail.com, $2b$10$trWPY854fHa9lAb0Vcic3uQTzqHmZFp2O1XeK6B5IX56FZ5I6giNK);' ) 

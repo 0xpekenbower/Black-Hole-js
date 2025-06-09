@@ -9,7 +9,6 @@ import { SocialButton } from "./social-button"
 import { useLang } from "@/context/langContext"
 import en from "@/i18n/en/auth"
 import fr from "@/i18n/fr/auth"
-import { z } from "zod"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import {
@@ -21,20 +20,10 @@ import {
   FormMessage,
 } from "@/components/ui/form"
 import Link from "next/link"
-
-// Schema definition
-const registerSchema = z.object({
-  name: z.string().min(2, { message: "Name must be at least 2 characters" }),
-  email: z.string().email({ message: "Please enter a valid email address" }),
-  password: z.string()
-    .min(8, { message: "Password must be at least 8 characters" })
-    .max(25, { message: "Password must not exceed 25 characters" })
-})
-
-type RegisterFormValues = z.infer<typeof registerSchema>
+import { registerSchema, RegisterFormValues } from "@/utils/validation"
 
 interface RegisterFormProps extends React.ComponentProps<"div"> {
-  handleRegister?: (name: string, email: string, password: string) => Promise<void>
+  handleRegister?: (data: RegisterFormValues) => Promise<void>
   isLoading?: boolean
   error?: string | null
 }
@@ -76,7 +65,6 @@ export function RegisterForm({
   )
 }
 
-// Form content component
 interface RegisterFormContentProps {
   content: typeof en.register
   handleRegister?: RegisterFormProps['handleRegister']
@@ -86,23 +74,24 @@ interface RegisterFormContentProps {
 
 function RegisterFormContent({ content, handleRegister, externalIsLoading, externalError }: RegisterFormContentProps) {
   const [internalIsLoading, setInternalIsLoading] = useState(false)
-  // Use external loading state if provided, otherwise use internal
   const isLoading = externalIsLoading !== undefined ? externalIsLoading : internalIsLoading
   const [showPassword, setShowPassword] = useState(false)
+  const [showRepassword, setShowRepassword] = useState(false)
   
   const form = useForm<RegisterFormValues>({
     resolver: zodResolver(registerSchema),
     defaultValues: {
-      name: "",
+      username: "",
       email: "",
-      password: ""
+      password: "",
+      repassword: "",
+      first_name: "",
+      last_name: ""
     },
   })
 
-  // Set form error if external error is provided
   useEffect(() => {
     if (externalError) {
-      // Handle specific registration error cases
       if (externalError.includes('Email already exists') || 
           externalError.includes('email already in use')) {
         form.setError("email", { 
@@ -110,7 +99,7 @@ function RegisterFormContent({ content, handleRegister, externalIsLoading, exter
         })
       } else if (externalError.includes('Username already exists') || 
                 externalError.includes('username already in use')) {
-        form.setError("name", { 
+        form.setError("username", { 
           message: "Username already in use. Please choose a different one." 
         })
       } else if (externalError.includes('Password must contain')) {
@@ -122,7 +111,7 @@ function RegisterFormContent({ content, handleRegister, externalIsLoading, exter
           message: "Please enter a valid email address." 
         })
       } else if (externalError.includes('Passwords do not match')) {
-        form.setError("password", { 
+        form.setError("repassword", { 
           message: "Passwords do not match." 
         })
       } else if (externalError.includes('Network error')) {
@@ -139,18 +128,16 @@ function RegisterFormContent({ content, handleRegister, externalIsLoading, exter
     if (!handleRegister) return
     
     try {
-      // Only set loading if we're managing it internally
       if (externalIsLoading === undefined) {
         setInternalIsLoading(true)
       }
-      await handleRegister(values.name, values.email, values.password)
+      await handleRegister(values)
     } catch (error) {
       console.error("Registration failed:", error)
       form.setError("root", { 
         message: "Registration failed. Please try again." 
       })
     } finally {
-      // Only set loading if we're managing it internally
       if (externalIsLoading === undefined) {
         setInternalIsLoading(false)
       }
@@ -161,17 +148,31 @@ function RegisterFormContent({ content, handleRegister, externalIsLoading, exter
     setShowPassword(!showPassword)
   }
 
+  const toggleRepasswordVisibility = () => {
+    setShowRepassword(!showRepassword)
+  }
+
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 w-full">
         <div className="flex flex-col space-y-4">
-          <NameField content={content} form={form} />
+          <UsernameField content={content} form={form} />
           <EmailField content={content} form={form} />
+          <div className="grid grid-cols-2 gap-4">
+            <FirstNameField content={content} form={form} />
+            <LastNameField content={content} form={form} />
+          </div>
           <PasswordField 
             content={content} 
             form={form} 
             showPassword={showPassword} 
             togglePasswordVisibility={togglePasswordVisibility} 
+          />
+          <RepasswordField 
+            content={content} 
+            form={form} 
+            showPassword={showRepassword} 
+            togglePasswordVisibility={toggleRepasswordVisibility} 
           />
           <RegisterButton isLoading={isLoading} content={content} />
 
@@ -189,18 +190,18 @@ function RegisterFormContent({ content, handleRegister, externalIsLoading, exter
   )
 }
 
-// Name field component
-function NameField({ content, form }: { content: typeof en.register, form: any }) {
+// Username field component
+function UsernameField({ content, form }: { content: typeof en.register, form: any }) {
   return (
     <FormField
       control={form.control}
-      name="name"
+      name="username"
       render={({ field }: { field: any }) => (
         <FormItem className="space-y-1 sm:space-y-2">
-          <FormLabel className="text-xs sm:text-sm">{content?.nameLabel || "Full Name"}</FormLabel>
+          <FormLabel className="text-xs sm:text-sm">Username</FormLabel>
           <FormControl>
             <Input
-              placeholder={content?.namePlaceholder || "Enter your name"}
+              placeholder="Enter your username"
               type="text"
               {...field}
               className="h-8 sm:h-9 text-xs sm:text-sm"
@@ -221,11 +222,59 @@ function EmailField({ content, form }: { content: typeof en.register, form: any 
       name="email"
       render={({ field }: { field: any }) => (
         <FormItem className="space-y-1 sm:space-y-2">
-          <FormLabel className="text-xs sm:text-sm">{content?.emailLabel || "Email"}</FormLabel>
+          <FormLabel className="text-xs sm:text-sm">Email</FormLabel>
           <FormControl>
             <Input
-              placeholder={content?.emailPlaceholder || "Enter your email"}
+              placeholder="Enter your email"
               type="email"
+              {...field}
+              className="h-8 sm:h-9 text-xs sm:text-sm"
+            />
+          </FormControl>
+          <FormMessage className="text-xs" />
+        </FormItem>
+      )}
+    />
+  )
+}
+
+// First Name field component
+function FirstNameField({ content, form }: { content: typeof en.register, form: any }) {
+  return (
+    <FormField
+      control={form.control}
+      name="first_name"
+      render={({ field }: { field: any }) => (
+        <FormItem className="space-y-1 sm:space-y-2">
+          <FormLabel className="text-xs sm:text-sm">First Name</FormLabel>
+          <FormControl>
+            <Input
+              placeholder="First name"
+              type="text"
+              {...field}
+              className="h-8 sm:h-9 text-xs sm:text-sm"
+            />
+          </FormControl>
+          <FormMessage className="text-xs" />
+        </FormItem>
+      )}
+    />
+  )
+}
+
+// Last Name field component
+function LastNameField({ content, form }: { content: typeof en.register, form: any }) {
+  return (
+    <FormField
+      control={form.control}
+      name="last_name"
+      render={({ field }: { field: any }) => (
+        <FormItem className="space-y-1 sm:space-y-2">
+          <FormLabel className="text-xs sm:text-sm">Last Name</FormLabel>
+          <FormControl>
+            <Input
+              placeholder="Last name"
+              type="text"
               {...field}
               className="h-8 sm:h-9 text-xs sm:text-sm"
             />
@@ -255,14 +304,14 @@ function PasswordField({
       name="password"
       render={({ field }: { field: any }) => (
         <FormItem className="space-y-1 sm:space-y-2">
-          <FormLabel className="text-xs sm:text-sm">{content?.passwordLabel || "Password"}</FormLabel>
+          <FormLabel className="text-xs sm:text-sm">Password</FormLabel>
           <FormControl>
             <div className="relative">
-              <Input 
-                type={showPassword ? "text" : "password"} 
-                placeholder={content?.passwordPlaceholder || "Create a password"} 
-                {...field} 
-                className="h-8 sm:h-9 text-xs sm:text-sm pr-10" 
+              <Input
+                placeholder="Enter your password"
+                type={showPassword ? "text" : "password"}
+                {...field}
+                className="h-8 sm:h-9 text-xs sm:text-sm pr-10"
               />
               {togglePasswordVisibility && (
                 <Button
@@ -326,7 +375,65 @@ function PasswordField({
   )
 }
 
-// Register button component
+function RepasswordField({ 
+  content, 
+  form, 
+  showPassword = false, 
+  togglePasswordVisibility 
+}: { 
+  content: typeof en.register, 
+  form: any, 
+  showPassword?: boolean, 
+  togglePasswordVisibility?: () => void 
+}) {
+  return (
+    <FormField
+      control={form.control}
+      name="repassword"
+      render={({ field }: { field: any }) => (
+        <FormItem className="space-y-1 sm:space-y-2">
+          <FormLabel className="text-xs sm:text-sm">Confirm Password</FormLabel>
+          <FormControl>
+            <div className="relative">
+              <Input
+                placeholder="Confirm your password"
+                type={showPassword ? "text" : "password"}
+                {...field}
+                className="h-8 sm:h-9 text-xs sm:text-sm pr-10"
+              />
+              {togglePasswordVisibility && (
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  className="absolute right-0 top-0 h-full px-3 py-1 text-muted-foreground"
+                  onClick={togglePasswordVisibility}
+                >
+                  {showPassword ? (
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4">
+                      <path d="M9.88 9.88a3 3 0 1 0 4.24 4.24"></path>
+                      <path d="M10.73 5.08A10.43 10.43 0 0 1 12 5c7 0 10 7 10 7a13.16 13.16 0 0 1-1.67 2.68"></path>
+                      <path d="M6.61 6.61A13.526 13.526 0 0 0 2 12s3 7 10 7a9.74 9.74 0 0 0 5.39-1.61"></path>
+                      <line x1="2" x2="22" y1="2" y2="22"></line>
+                    </svg>
+                  ) : (
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4">
+                      <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"></path>
+                      <circle cx="12" cy="12" r="3"></circle>
+                    </svg>
+                  )}
+                </Button>
+              )}
+            </div>
+          </FormControl>
+          <FormMessage className="text-xs" />
+        </FormItem>
+      )}
+    />
+  )
+}
+
+
 function RegisterButton({ isLoading, content }: { isLoading: boolean, content: typeof en.register }) {
   return (
     <Button 
@@ -358,7 +465,6 @@ function RegisterButton({ isLoading, content }: { isLoading: boolean, content: t
   )
 }
 
-// Social login section component
 function SocialLoginSection({ content }: { content: typeof en.register }) {
   return (
     <>
@@ -381,7 +487,6 @@ function SocialLoginSection({ content }: { content: typeof en.register }) {
   )
 }
 
-// Login prompt component
 function LoginPrompt({ content }: { content: typeof en.register }) {
   return (
     <div className="text-center text-xs sm:text-sm font-medium">
@@ -393,7 +498,6 @@ function LoginPrompt({ content }: { content: typeof en.register }) {
   )
 }
 
-// Terms and conditions component
 function RegisterTerms({ content }: { content: typeof en.register }) {
   return (
     <div className="text-balance text-center text-[10px] sm:text-xs text-muted-foreground [&_a]:underline [&_a]:underline-offset-2 hover:[&_a]:text-primary">

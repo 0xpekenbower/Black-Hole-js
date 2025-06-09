@@ -21,15 +21,14 @@ const oauth42 = (fastify, options, done) => {
                 '200':
                 {
                     type : 'object',
-                    properties: { Success: {type: 'string'}, token: {type : 'string'} }
+                    properties: { token: {type : 'string'} }
                 },
                 '4xx':
                 {
                     type:'object',
                     properties:
                     {
-                        Success:{type:'string'},
-                        Error:{type:'string'}
+                        Error: {type:'string'}
                     }
                 }
             }
@@ -37,9 +36,9 @@ const oauth42 = (fastify, options, done) => {
         handler: intraC(fastify)
     }
 
-    fastify.get('/oauth/', oauth42Schema)
+    fastify.get('/api/auth/oauth/42/', oauth42Schema)
 
-    fastify.get('/42', (_, res) => {
+    fastify.get('/api/auth/42/', (_, res) => {
         res.redirect(process.env.API_42)
     })
 

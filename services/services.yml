@@ -16,19 +16,19 @@ services:
     networks:
       - blackholejs
 
-  dashboard:
-    container_name: dashboard
-    image: blackholejs-dashboard
+  dash:
+    container_name: dash
+    image: blackholejs-dash
     build:
-      context: ./services/dashboard
+      context: ./services/dash
       dockerfile: Dockerfile
     ports:
       - "8003:8003"
     env_file:
       - .env
     volumes:
-      - ./services/dashboard:/dashboard
-      - /dashboard/node_modules
+      - ./services/dash:/dash
+      - /dash/node_modules
     networks:
       - blackholejs
 

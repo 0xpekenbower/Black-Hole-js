@@ -6,7 +6,7 @@ const googleC = (fastify) => async(req, res) => {
         const code = req.query['code']
 
         const token = await googleS(fastify.jwt, code)
-        res.status(200).send({Success: 'true', token:token})
+        res.status(200).send({token:token})
     }
     catch(err)
     {

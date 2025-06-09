@@ -4,6 +4,7 @@ import pool from '../config/pooling.js';
 
 describe ('Checking /api/auth/login/', () => {
 
+    //TODO add in db a user with is_oauth and try login with it
     let fastify;
 
     beforeAll(async() => {
@@ -16,8 +17,9 @@ describe ('Checking /api/auth/login/', () => {
     })
 
     afterAll( async() => {
-        await pool.query('DELETE FROM account;')
         await fastify.close()
+        
+        await pool.query('DELETE FROM account;')
         await pool.end()
     })
 

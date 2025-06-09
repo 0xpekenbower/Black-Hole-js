@@ -46,18 +46,16 @@ export async function storeOTPToken(
   const tokenData: OTPTokenData = {
     email,
     code,
-    retry: 3, // Default 3 retry attempts
+    retry: 3,
     expiresAt,
   };
   
-  // Store token data
   await redis.set(
     CACHE_KEYS.OTP_TOKEN + token,
     tokenData,
     expiryInSeconds
   );
   
-  // Store email reference to prevent multiple tokens for same email
   await redis.set(
     CACHE_KEYS.OTP_EMAIL + email,
     { token },
@@ -77,33 +75,27 @@ export async function verifyOTP(
   token: string,
   code: number
 ): Promise<{ token: string; retry: number; expiresAt: Date } | null> {
-  // Get token data from cache
   const tokenData = await redis.get<OTPTokenData>(CACHE_KEYS.OTP_TOKEN + token);
   
   if (!tokenData) {
-    return null; // Token not found
+    return null;
   }
   
-  // Check if token is expired
   if (new Date() > new Date(tokenData.expiresAt)) {
     await redis.del(CACHE_KEYS.OTP_TOKEN + token);
     await redis.del(CACHE_KEYS.OTP_EMAIL + tokenData.email);
     return null;
   }
   
-  // Check if code matches
   if (tokenData.code !== code) {
-    // Decrement retry count
     tokenData.retry -= 1;
     
-    // If no retries left, invalidate token
     if (tokenData.retry <= 0) {
       await redis.del(CACHE_KEYS.OTP_TOKEN + token);
       await redis.del(CACHE_KEYS.OTP_EMAIL + tokenData.email);
       return null;
     }
     
-    // Update token data with decremented retry count
     const ttl = await redis.ttl(CACHE_KEYS.OTP_TOKEN + token);
     await redis.set(
       CACHE_KEYS.OTP_TOKEN + token,
@@ -118,11 +110,9 @@ export async function verifyOTP(
     };
   }
   
-  // Code matches, extend token expiration for password reset
-  const newExpiryInSeconds = 180; // 3 minutes to complete password reset
+  const newExpiryInSeconds = 180;
   const expiresAt = new Date(Date.now() + newExpiryInSeconds * 1000);
   
-  // Update token data with new expiration
   tokenData.expiresAt = expiresAt;
   await redis.set(
     CACHE_KEYS.OTP_TOKEN + token,
@@ -130,7 +120,6 @@ export async function verifyOTP(
     newExpiryInSeconds
   );
   
-  // Return success with token and expiration
   return {
     token,
     retry: tokenData.retry,
@@ -175,7 +164,6 @@ export async function verifyPasswordResetToken(token: string): Promise<string | 
     return null;
   }
   
-  // Check if token is expired
   if (new Date() > new Date(data.expiresAt)) {
     await redis.del(CACHE_KEYS.PASSWORD_RESET_TOKEN + token);
     return null;

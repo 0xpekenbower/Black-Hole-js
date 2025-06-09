@@ -7,7 +7,7 @@
  * API configuration
  */
 export const API_CONFIG = {
-  BASE_URL: process.env.GATEWAY_API || 'http://localhost/api',
+  BASE_URL: 'http://localhost:6969/api',
   TIMEOUT: 30000, // 30 seconds
 };
 
@@ -49,5 +49,5 @@ export const ROUTES = {
 export const FEATURES = {
   ENABLE_RATE_LIMITING: false,
   ENABLE_REDIS_CACHE: true,
-  ENABLE_SESSION_TRACKING: true,
+  ENABLE_SESSION_TRACKING: false,
 }; 

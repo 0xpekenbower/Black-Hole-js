@@ -59,7 +59,6 @@ interface ValidationResult {
  * @returns Form state and handlers
  */
 export function useAuthForm<T extends Record<string, any>>(formConfig: FormConfig<T>) {
-  // Initialize form state from config
   const initialState = Object.entries(formConfig).reduce((acc, [key, config]) => {
     acc[key as keyof T] = {
       value: config.initialValue,
@@ -148,7 +147,6 @@ export function useAuthForm<T extends Record<string, any>>(formConfig: FormConfi
       },
     }));
 
-    // Clear auth error when user starts typing
     if (authError) {
       clearError();
     }
@@ -181,10 +179,8 @@ export function useAuthForm<T extends Record<string, any>>(formConfig: FormConfi
   const handleSubmit = (onSubmit: (values: T) => Promise<void>) => async (e: FormEvent) => {
     e.preventDefault();
     
-    // Validate all fields
     const { isValid, errors } = validateForm();
     
-    // Update form state with validation errors
     const newFormState = { ...formState };
     Object.keys(errors).forEach((key) => {
       const fieldName = key as keyof T;
@@ -196,13 +192,10 @@ export function useAuthForm<T extends Record<string, any>>(formConfig: FormConfi
     });
     
     setFormState(newFormState);
-    
-    // If form is valid, submit
     if (isValid) {
       setIsSubmitting(true);
       
       try {
-        // Extract values from form state
         const values = Object.entries(formState).reduce((acc, [key, field]) => {
           acc[key as keyof T] = field.value;
           return acc;

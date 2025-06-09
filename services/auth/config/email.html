@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Verification Code</title>
+  <style>
+    body {
+      font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+      background-color: #f4f4f7;
+      color: #333;
+      margin: 0;
+      padding: 0;
+    }
+    .container {
+      max-width: 600px;
+      margin: 40px auto;
+      background: #ffffff;
+      border-radius: 8px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+      overflow: hidden;
+    }
+    .header {
+      background-color: #4f46e5;
+      color: white;
+      padding: 20px 30px;
+      text-align: center;
+    }
+    .content {
+      padding: 30px;
+    }
+    .code-box {
+      background-color: #f0f4ff;
+      border: 2px dashed #4f46e5;
+      font-size: 24px;
+      font-weight: bold;
+      color: #1e3a8a;
+      text-align: center;
+      padding: 20px;
+      margin: 30px 0;
+      border-radius: 8px;
+      letter-spacing: 4px;
+    }
+    .button {
+      display: inline-block;
+      background-color: #4f46e5;
+      color: #fff;
+      text-decoration: none;
+      padding: 12px 24px;
+      font-size: 16px;
+      border-radius: 6px;
+      margin: 20px 0;
+      text-align: center;
+    }
+    .footer {
+      text-align: center;
+      padding: 20px;
+      font-size: 13px;
+      color: #888;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h2>Reset Your Password</h2>
+    </div>
+    <div class="content">
+      <p>Hi there,</p>
+      <p>You requested to reset your password. You can either:</p>
+      <p><strong>1. Use this verification code in the app:</strong></p>
+      <div class="code-box">${code}</div>
+      <p><strong>2. Or click the button below to reset your password directly:</strong></p>
+      <p style="text-align: center;">
+        <a href="http://localhost:3000/reset-password?email=${email}&code=${code}" class="button">Reset Password Now</a>
+      </p>
+      <p>If you didn't request this password reset, you can safely ignore this email.</p>
+      <p>Thanks,<br>The Support Team</p>
+    </div>
+    <div class="footer">
+      &copy; 2025 BlackHoleJS. All rights reserved.
+    </div>
+  </div>
+</body>
+</html>

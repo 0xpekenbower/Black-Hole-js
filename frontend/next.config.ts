@@ -1,8 +1,9 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  // crossOrigin: 'use-credentials',
   env: {
-    GATEWAY_API: process.env.GATEWAY_API || 'http://localhost/api',
+    GATEWAY_API: process.env.GATEWAY_API || 'http://localhost:6969',
   },
   // Enable strict mode for React
   reactStrictMode: true,
@@ -11,9 +12,18 @@ const nextConfig: NextConfig = {
     return [
       {
         source: '/api/:path*',
-        destination: `${process.env.GATEWAY_API || 'http://localhost/api'}/:path*`,
+        destination: 'http://localhost:6969/api/:path*',
       },
     ];
+  },
+  // Configure allowed image domains
+  images: {
+    domains: [
+      'images.unsplash.com',
+      'i.pravatar.cc',
+      'cdn-icons-png.flaticon.com',
+      'localhost'
+    ],
   },
 };
 

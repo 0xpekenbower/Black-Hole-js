@@ -24,15 +24,12 @@ export async function checkRedisHealth(): Promise<RedisHealthStatus> {
   let isConnected = false;
   
   try {
-    // Use a simple ping operation to check connection
     const testKey = 'health:check:ping';
     await redis.set(testKey, { timestamp: startTime }, 10); // 10 seconds TTL
     const result = await redis.get(testKey);
     
-    // If we can read back what we wrote, connection is healthy
     isConnected = result !== null && typeof result === 'object' && 'timestamp' in result;
     
-    // Clean up test key
     await redis.del(testKey);
   } catch (error) {
     console.error('Redis health check failed', error);
@@ -41,7 +38,6 @@ export async function checkRedisHealth(): Promise<RedisHealthStatus> {
   
   const responseTimeMs = Date.now() - startTime;
   
-  // Log health check result
   if (isConnected) {
     console.info(`Redis health check: OK (${responseTimeMs}ms)`);
   } else {
@@ -70,7 +66,6 @@ export function startPeriodicHealthChecks(
   return setInterval(async () => {
     const status = await checkRedisHealth();
     
-    // Call callback if provided
     if (callback) {
       callback(status);
     }

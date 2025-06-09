@@ -17,6 +17,16 @@ export interface ResponseStatus {
   message: string;
 }
 
+// Register form values (for the form)
+export interface RegisterFormValues {
+  username: string;
+  email: string;
+  password: string;
+  repassword: string;
+  first_name?: string;
+  last_name?: string;
+}
+
 // Register
 export interface RegisterRequest {
   username?: string;

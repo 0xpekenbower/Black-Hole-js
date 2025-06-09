@@ -33,21 +33,45 @@ export class AuthService {
   }
 
   /**
+   * Adapts backend response format to frontend expected format
+   * @param response - API response from backend
+   * @returns Adapted response for frontend
+   */
+  private adaptResponse<T>(response: ApiResponse<any>): ApiResponse<T> {
+    if (!response.status.success) {
+      return response as ApiResponse<T>;
+    }
+    
+    if (response.data?.token) {
+      return {
+        data: response.data as T,
+        status: response.status
+      };
+    }
+    
+    return {
+      data: response.data as T || null,
+      status: response.status
+    };
+  }
+
+  /**
    * Register a new user
    * @param data - User registration data
    * @returns Promise with registration response
    */
   async register(data: RegisterRequest): Promise<ApiResponse<RegisterResponse>> {
-    return this.client.post<RegisterResponse>(Endpoints.Auth.Register, data);
+    const response = await this.client.post<any>(Endpoints.Auth.Register, data);
+    return this.adaptResponse<RegisterResponse>(response);
   }
-
   /**
    * Login a user
    * @param data - User login credentials
    * @returns Promise with login response containing token
    */
   async login(data: LoginRequest): Promise<ApiResponse<LoginResponse>> {
-    return this.client.post<LoginResponse>(Endpoints.Auth.Login, data);
+    const response = await this.client.post<any>(Endpoints.Auth.Login, data);
+    return this.adaptResponse<LoginResponse>(response);
   }
 
   /**
@@ -56,7 +80,8 @@ export class AuthService {
    * @returns Promise with response
    */
   async sendResetEmail(email: string): Promise<ApiResponse<ForgotPasswordResponse>> {
-    return this.client.post<ForgotPasswordResponse>(Endpoints.Auth.Send_mail, { email });
+    const response = await this.client.post<any>(Endpoints.Auth.Send_mail, { email });
+    return this.adaptResponse<ForgotPasswordResponse>(response);
   }
 
   /**
@@ -65,7 +90,8 @@ export class AuthService {
    * @returns Promise with response
    */
   async resetPassword(data: ResetPasswordRequest): Promise<ApiResponse<ResetPasswordResponse>> {
-    return this.client.post<ResetPasswordResponse>(Endpoints.Auth.Forget_pass, data);
+    const response = await this.client.post<any>(Endpoints.Auth.Forget_pass, data);
+    return this.adaptResponse<ResetPasswordResponse>(response);
   }
 
   /**
@@ -79,7 +105,8 @@ export class AuthService {
       old_pass: oldPassword,
       new_pass: newPassword
     };
-    return this.client.post<ChangePasswordResponse>(Endpoints.Dashboard.Change_password, data);
+    const response = await this.client.post<any>(Endpoints.Auth.Change_password, data);
+    return this.adaptResponse<ChangePasswordResponse>(response);
   }
 
   /**
@@ -89,8 +116,9 @@ export class AuthService {
    * @returns Promise with response containing token
    */
   async handleOAuthCallback(code: string, provider: 'google' | '42'): Promise<ApiResponse<OAuthResponse>> {
-    const endpoint = provider === 'google' ? Endpoints.OAuth.Google : Endpoints.OAuth.FortyTwo;
-    return this.client.get<OAuthResponse>(`${endpoint}?code=${code}`);
+    const endpoint = provider === 'google' ? Endpoints.Auth.Google : Endpoints.Auth.FortyTwo;
+    const response = await this.client.get<any>(`${endpoint}?code=${code}`);
+    return this.adaptResponse<OAuthResponse>(response);
   }
 
   /**

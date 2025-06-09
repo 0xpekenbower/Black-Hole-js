@@ -15,6 +15,9 @@ export interface User {
   bio: string;
   is_online: boolean;
   is_oauth: boolean;
+  exp: number;
+  rank: number;
+  level: number;
 }
 
 export interface Level {
@@ -29,7 +32,7 @@ export interface Rank {
   min_exp: number;
   max_exp: number;
   reward: number;
-  path: string;
+  icon_path: string;
 }
 
 export enum FriendshipStatus {
@@ -55,13 +58,14 @@ export interface UserCardResponse {
 }
 
 // Search
-export interface SearchResult {
-  users: UserCard[];
-  total: number;
+export interface SearchUser {
+  id: string;
+  username: string;
+  avatar?: string;
 }
 
 export interface SearchResponse {
-  data?: SearchResult | null;
+  data?: SearchUser[] | null;
 }
 
 // Password Change
@@ -76,5 +80,27 @@ export interface ChangePasswordResponse {
   } | null;
 }
 
-export type LogoutResponse = ApiResponse<ApiResponse>;
+// User relationships
+export interface UserRelation {
+  id?: number;
+  username?: string;
+  avatar?: string;
+  first_name?: string;
+  last_name?: string;
+  is_online?: boolean;
+}
 
+export interface FriendRequest {
+  sender?: number;
+  receiver?: number;
+  user?: UserRelation;
+}
+
+export interface RelationshipsResponse {
+  friends: UserRelation[];
+  blacklist: UserRelation[];
+  receivedReq: FriendRequest[];
+  sentReq: FriendRequest[];
+}
+
+export type LogoutResponse = ApiResponse<ApiResponse>;

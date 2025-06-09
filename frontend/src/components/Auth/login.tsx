@@ -9,7 +9,6 @@ import { SocialButton } from "./social-button"
 import { useLang } from "@/context/langContext"
 import en from "@/i18n/en/auth"
 import fr from "@/i18n/fr/auth"
-import { z } from "zod"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import {
@@ -21,17 +20,11 @@ import {
   FormMessage,
 } from "@/components/ui/form"
 import Link from "next/link"
-
-// Schema definition
-const loginSchema = z.object({
-  email: z.string().email({ message: "Please enter a valid email address" }),
-  password: z.string().min(6, { message: "Password must be at least 6 characters" }),
-})
-
-type LoginFormValues = z.infer<typeof loginSchema>
+import { loginSchema, LoginFormValues } from "@/utils/validation"
+import { useAuth } from "@/context/AuthContext"
 
 interface LoginFormProps extends React.ComponentProps<"div"> {
-  handleLogin?: (email: string, password: string) => Promise<void>
+  handleLogin?: (username: string, password: string) => Promise<void>
   isLoading?: boolean
   error?: string | null
 }
@@ -71,7 +64,6 @@ export function LoginForm({
   )
 }
 
-// Form content component
 interface LoginFormContentProps {
   content: typeof en.login
   handleLogin?: LoginFormProps['handleLogin']
@@ -87,19 +79,18 @@ function LoginFormContent({ content, handleLogin, externalIsLoading, externalErr
   const form = useForm<LoginFormValues>({
     resolver: zodResolver(loginSchema),
     defaultValues: {
-      email: "",
+      username: "",
       password: "",
     },
   })
 
   useEffect(() => {
     if (externalError) {
-      // Handle specific login error cases
       if (externalError.includes('Invalid username or password') || 
           externalError.includes('User does not exist') || 
           externalError.includes('Incorrect Password')) {
-        form.setError("email", { message: "Invalid email or password" })
-        form.setError("password", { message: "Invalid email or password" })
+        form.setError("username", { message: "Invalid username or password" })
+        form.setError("password", { message: "Invalid username or password" })
       } else if (externalError.includes('locked')) {
         form.setError("root", { 
           message: "Your account has been locked. Please reset your password." 
@@ -125,12 +116,8 @@ function LoginFormContent({ content, handleLogin, externalIsLoading, externalErr
       if (externalIsLoading === undefined) {
         setInternalIsLoading(true)
       }
-      await handleLogin(values.email, values.password)
+      await handleLogin(values.username, values.password)
     } catch (error) {
-      console.error("Login failed:", error)
-      form.setError("root", { 
-        message: "Login failed. Please check your credentials." 
-      })
     } finally {
       if (externalIsLoading === undefined) {
         setInternalIsLoading(false)
@@ -146,7 +133,7 @@ function LoginFormContent({ content, handleLogin, externalIsLoading, externalErr
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 w-full">
         <div className="flex flex-col space-y-4">
-          <EmailField content={content} form={form} />
+          <UsernameField content={content} form={form} />
           <PasswordField content={content} form={form} showPassword={showPassword} togglePasswordVisibility={togglePasswordVisibility} />
           <LoginButton isLoading={isLoading} content={content} />
 
@@ -164,19 +151,18 @@ function LoginFormContent({ content, handleLogin, externalIsLoading, externalErr
   )
 }
 
-// Email field component
-function EmailField({ content, form }: { content: typeof en.login, form: any }) {
+function UsernameField({ content, form }: { content: typeof en.login, form: any }) {
   return (
     <FormField
       control={form.control}
-      name="email"
+      name="username"
       render={({ field }: { field: any }) => (
         <FormItem className="space-y-1 sm:space-y-2">
-          <FormLabel className="text-xs sm:text-sm">{content.emailLabel}</FormLabel>
+          <FormLabel className="text-xs sm:text-sm">Username</FormLabel>
           <FormControl>
             <Input
-              placeholder={content.emailPlaceholder}
-              type="email"
+              placeholder="Enter your username"
+              type="text"
               {...field}
               className="h-8 sm:h-9 text-xs sm:text-sm"
             />
@@ -255,7 +241,6 @@ function PasswordField({
   )
 }
 
-// Login button component
 function LoginButton({ isLoading, content }: { isLoading: boolean, content: typeof en.login }) {
   return (
     <Button 
@@ -287,8 +272,13 @@ function LoginButton({ isLoading, content }: { isLoading: boolean, content: type
   )
 }
 
-// Social login section component
 function SocialLoginSection({ content }: { content: typeof en.login }) {
+  const intra_url = "https://api.intra.42.fr/oauth/authorize?client_id=u-s4t2ud-dab9da0b99160e0756601aec6a6ae08f4338d122732b36827e83ba80c71d7035&redirect_uri=http%3A%2F%2Flocalhost%3A6969%2Fapi%2Fauth%2Foauth%2F42%2F&response_type=code";
+  // const google_url = process.env.API_GOOGLE;
+
+  const handleIntraLogin = () => {
+    window.location.href = intra_url || '';
+  }
   return (
     <>
       <div className="relative text-center text-xs sm:text-sm after:absolute after:inset-0 after:top-1/2 after:z-0 after:flex after:items-center after:border-t after:border-border">
@@ -298,19 +288,20 @@ function SocialLoginSection({ content }: { content: typeof en.login }) {
       </div>
       <div className="grid grid-cols-2 gap-2 sm:gap-3">
         <SocialButton 
-          provider="apple" 
+          provider="42" 
           className="h-8 sm:h-9 text-xs sm:text-sm"
+          onClick={handleIntraLogin}
         />
         <SocialButton 
           provider="google" 
           className="h-8 sm:h-9 text-xs sm:text-sm"
+          // onClick={}
         />
       </div>
     </>
   )
 }
 
-// Sign up prompt component
 function SignUpPrompt({ content }: { content: typeof en.login }) {
   return (
     <div className="text-center text-xs sm:text-sm font-medium">
@@ -322,7 +313,6 @@ function SignUpPrompt({ content }: { content: typeof en.login }) {
   )
 }
 
-// Terms and conditions component
 function LoginTerms({ content }: { content: typeof en.login }) {
   return (
     <div className="text-balance text-center text-[10px] sm:text-xs text-muted-foreground [&_a]:underline [&_a]:underline-offset-2 hover:[&_a]:text-primary">

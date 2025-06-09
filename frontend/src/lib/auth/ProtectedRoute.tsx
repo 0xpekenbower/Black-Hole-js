@@ -9,9 +9,6 @@ import { useEffect } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
 
-// Dev mode flag - set to true to bypass authentication
-const DEV_BYPASS_AUTH = true;
-
 /**
  * Protected route props
  */
@@ -34,34 +31,19 @@ export function ProtectedRoute({
   const pathname = usePathname();
 
   useEffect(() => {
-    // Skip authentication check in dev mode
-    if (DEV_BYPASS_AUTH) {
-      return;
-    }
-    
-    // Skip redirection during initial loading
     if (isLoading) return;
 
-    // Redirect to login if not authenticated
     if (!isAuthenticated) {
-      // Store the current path to redirect back after login
       if (typeof window !== 'undefined') {
         sessionStorage.setItem('redirectAfterLogin', pathname);
       }
-      router.push(fallbackUrl);
+      router.replace(fallbackUrl);
     }
   }, [isAuthenticated, isLoading, router, fallbackUrl, pathname]);
 
-  // In dev mode, always render children regardless of auth status
-  if (DEV_BYPASS_AUTH) {
-    return children;
-  }
-
-  // Show nothing while loading or redirecting
   if (isLoading || !isAuthenticated) {
     return null;
   }
-
   return children;
 }
 
@@ -86,37 +68,23 @@ export function PublicRoute({
   const router = useRouter();
 
   useEffect(() => {
-    // Skip authentication check in dev mode
-    if (DEV_BYPASS_AUTH) {
-      return;
-    }
-    
-    // Skip redirection during initial loading
     if (isLoading) return;
 
-    // Redirect to dashboard if already authenticated
     if (isAuthenticated) {
-      // Check if there's a stored redirect path
       if (typeof window !== 'undefined') {
         const redirectPath = sessionStorage.getItem('redirectAfterLogin');
         if (redirectPath) {
           sessionStorage.removeItem('redirectAfterLogin');
-          router.push(redirectPath);
+          router.replace(redirectPath);
         } else {
-          router.push(redirectAuthenticatedTo);
+          router.replace(redirectAuthenticatedTo);
         }
       } else {
-        router.push(redirectAuthenticatedTo);
+        router.replace(redirectAuthenticatedTo);
       }
     }
   }, [isAuthenticated, isLoading, router, redirectAuthenticatedTo]);
 
-  // In dev mode, always render children regardless of auth status
-  if (DEV_BYPASS_AUTH) {
-    return children;
-  }
-
-  // Show nothing while loading or redirecting
   if (isLoading || isAuthenticated) {
     return null;
   }

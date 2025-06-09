@@ -12,6 +12,7 @@ interface ThemeContextType {
   themeData: ThemeData
   setTheme: (theme: ThemeName) => void
   toggleTheme: () => void
+  mounted: boolean
 }
 
 const ThemeContext = createContext<ThemeContextType>({
@@ -19,6 +20,7 @@ const ThemeContext = createContext<ThemeContextType>({
   themeData: lightTheme,
   setTheme: () => {},
   toggleTheme: () => {},
+  mounted: false
 })
 
 interface ThemeProviderProps {
@@ -26,36 +28,26 @@ interface ThemeProviderProps {
 }
 
 export const ThemeProvider = ({ children }: ThemeProviderProps) => {
-  // Always start with a consistent state for SSR
   const [mounted, setMounted] = useState(false)
   const [theme, setTheme] = useState<ThemeName>('light')
-  const [themeData, setThemeData] = useState<ThemeData>(lightTheme)
-
-  // Initialize theme from localStorage or system preference
+  const [themeData, setThemeData] = useState<ThemeData>(lightTheme)  
   useEffect(() => {
-    // Check for stored theme preference
+    setMounted(true)    
     try {
       const storedTheme = localStorage.getItem('theme') as ThemeName | null
-      
-      if (storedTheme) {
+      if (storedTheme === 'dark' || storedTheme === 'light') {
         setTheme(storedTheme)
         setThemeData(storedTheme === 'dark' ? darkTheme : lightTheme)
       } else if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
-        // If no stored preference, check system preference
         setTheme('dark')
         setThemeData(darkTheme)
       }
     } catch (e) {
       console.error('Error accessing localStorage:', e)
-    } finally {
-      setMounted(true)
     }
   }, [])
-
-  // Update document class and localStorage when theme changes
   useEffect(() => {
     if (!mounted) return
-
     if (theme === 'dark') {
       document.documentElement.classList.add('dark')
       document.documentElement.style.colorScheme = 'dark'
@@ -65,31 +57,26 @@ export const ThemeProvider = ({ children }: ThemeProviderProps) => {
       document.documentElement.style.colorScheme = 'light'
       setThemeData(lightTheme)
     }
-    
     try {
       localStorage.setItem('theme', theme)
     } catch (e) {
       console.error('Error writing to localStorage:', e)
     }
   }, [theme, mounted])
-
-  // Apply theme colors when themeData changes
   useEffect(() => {
     if (!mounted) return
-    
     applyThemeColors(themeData)
   }, [themeData, mounted])
 
   const toggleTheme = () => {
     setTheme(theme === 'light' ? 'dark' : 'light')
   }
-
-  // Provide the same context value for SSR and client
   const contextValue = {
     theme,
     themeData,
     setTheme,
-    toggleTheme
+    toggleTheme,
+    mounted
   }
 
   return (

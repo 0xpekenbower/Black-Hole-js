@@ -9,7 +9,7 @@ export default {
             const email = req.body['email']
 
             await forgetPassS.send_mailS(email)
-            res.status(200).send({Success: true})
+            res.status(200)
         }
         catch(err)
         {
@@ -25,7 +25,7 @@ export default {
                 throw new Error('Passwords does not match')
 
             await forgetPassS.forget_passS(email, code, password)
-            res.status(200).send({Success: true})
+            res.status(200)
         }
         catch(err)
         {

@@ -10,7 +10,10 @@ const changePassS = async (accountID, old_pass, new_pass) => {
         throw new Error('Invalid old password')
     
     const new_hashed = await bcrypt.hash(new_pass, 10)
+
+
     await pool.query('UPDATE account SET password = $1 WHERE id = $2;', [new_hashed, accountID])
+
 }
 
 export default changePassS

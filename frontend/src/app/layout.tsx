@@ -3,10 +3,12 @@ import { Geist, Geist_Mono } from 'next/font/google'
 import './globals.css'
 import { LangProviderSSR } from '@/context/langContext'
 import { ThemeProvider } from '@/context/themeContext'
-import Header from '@/components/header'
+import Header from '@/components/layouts/header'
 import { headers } from 'next/headers'
 import ThemeScript from './theme-script'
 import { AuthProvider } from '@/context/AuthContext'
+import { NavigationProvider } from '@/context/NavigationContext'
+// import { Toaster } from '@/components/ui/sonner'
 
 // const geistSans = Geist({
 //   variable: '--font-geist-sans',
@@ -42,8 +44,11 @@ export default async function RootLayout({
         <ThemeProvider>
           <LangProviderSSR initialLang={initialLang}>
             <AuthProvider>
-              {!isDashboard && <Header />}
-              {children}
+              <NavigationProvider>
+                {!isDashboard && <Header />}
+                {children}
+                {/* <Toaster /> */}
+              </NavigationProvider>
             </AuthProvider>
           </LangProviderSSR>
         </ThemeProvider>

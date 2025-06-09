@@ -25,7 +25,7 @@ export class TokenManager {
   static storeTokens(token: string, refreshToken: string, expiresIn: number): void {
     if (typeof window === 'undefined') return;
     
-    const expiryTime = Date.now() + expiresIn * 1000;
+    const expiryTime = Date.now() + expiresIn * 10000;
     
     localStorage.setItem(TOKEN_KEYS.AUTH_TOKEN, token);
     localStorage.setItem(TOKEN_KEYS.REFRESH_TOKEN, refreshToken);
@@ -58,9 +58,7 @@ export class TokenManager {
     if (typeof window === 'undefined') return true;
     
     const expiryTime = localStorage.getItem(TOKEN_KEYS.TOKEN_EXPIRY);
-    if (!expiryTime) return true;
-    
-    // Add a 30-second buffer to account for network latency
+    if (!expiryTime) return true;    
     return Date.now() > parseInt(expiryTime, 10) - 30000;
   }
 

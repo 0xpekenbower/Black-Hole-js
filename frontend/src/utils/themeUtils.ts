@@ -9,11 +9,9 @@ export const applyThemeColors = (themeData: ThemeData): void => {
   
   const root = document.documentElement;
   
-  // Apply base colors
   root.style.setProperty('--frontground', themeData.frontground);
   root.style.setProperty('--background', themeData.background);
   
-  // Apply color variants
   Object.entries(themeData.primary).forEach(([key, value]) => {
     root.style.setProperty(`--primary-${key}`, value);
   });
@@ -38,7 +36,6 @@ export const applyThemeColors = (themeData: ThemeData): void => {
     root.style.setProperty(`--warning-${key}`, value);
   });
   
-  // Apply UI component colors
   root.style.setProperty('--card', themeData.card);
   root.style.setProperty('--card-foreground', themeData.cardForeground);
   root.style.setProperty('--popover', themeData.popover);
@@ -55,7 +52,6 @@ export const applyThemeColors = (themeData: ThemeData): void => {
   root.style.setProperty('--input', themeData.input);
   root.style.setProperty('--ring', themeData.ring);
   
-  // Apply sidebar colors
   root.style.setProperty('--sidebar', themeData.sidebar);
   root.style.setProperty('--sidebar-foreground', themeData.sidebarForeground);
   root.style.setProperty('--sidebar-primary', themeData.sidebarPrimary);
@@ -65,7 +61,6 @@ export const applyThemeColors = (themeData: ThemeData): void => {
   root.style.setProperty('--sidebar-border', themeData.sidebarBorder);
   root.style.setProperty('--sidebar-ring', themeData.sidebarRing);
   
-  // Apply chart colors
   root.style.setProperty('--chart-1', themeData.chart1);
   root.style.setProperty('--chart-2', themeData.chart2);
   root.style.setProperty('--chart-3', themeData.chart3);

@@ -4,10 +4,9 @@ const start = async () => {
     try
     {
         const fastify = await appBuilder()
-        await fastify.listen({ 
-            port: process.env.PORT || 8002,
-            host: '0.0.0.0' // Listen on all interfaces to be accessible from other containers
-        })
+        // await fastify.listen({ port:8002 })
+        // bind to all interfaces
+        await fastify.listen({ port:8002, host: '0.0.0.0' })
     }
     catch (err)
     {

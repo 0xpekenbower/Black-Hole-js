@@ -8,7 +8,7 @@ import { ResponseStatus } from '@/types/Auth';
 /**
  * HTTP request methods
  */
-export type HttpMethod = 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH';
+export type HttpMethod = 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH' | 'OPTIONS';
 
 /**
  * API response interface
@@ -29,12 +29,10 @@ export class ApiClient {
    * Create a new API client instance
    */
   constructor() {
-    // Use empty base URL since endpoints already include /api prefix
-    // Next.js will handle the rewrites to the actual API server
-    this.baseUrl = '';
+    this.baseUrl = 'http://localhost:6969';
     this.defaultHeaders = {
       'Content-Type': 'application/json',
-      'Accept': 'application/json',
+      'Accept': 'application/json'
     };
   }
 
@@ -67,8 +65,7 @@ export class ApiClient {
     body?: any,
     headers?: Record<string, string>
   ): Promise<ApiResponse<T>> {
-    const url = `${this.baseUrl}${endpoint}`;
-    
+    const url = `${this.baseUrl}${endpoint}`
     const requestHeaders = {
       ...this.defaultHeaders,
       ...headers,
@@ -82,37 +79,52 @@ export class ApiClient {
     if (body && method !== 'GET') {
       requestOptions.body = JSON.stringify(body);
     }
-
+    
     try {
-      // Make the request
       const response = await fetch(url, requestOptions);
-      
-      // Parse the response
       let data = null;
       
       if (response.status !== 204) {
         const text = await response.text();
         if (text) {
-          data = JSON.parse(text);
+          try {
+            data = JSON.parse(text);
+          } catch (e) {
+            data = null;
+          }
         }
+      }
+      
+      if (!response.ok || data?.Error) {
+        return {
+          data,
+          status: {
+            success: false,
+            code: response.status,
+            message: data?.Error || response.statusText || 'Unknown error'
+          }
+        };
       }
       
       return {
         data,
         status: {
-          success: response.ok,
+          success: true,
           code: response.status,
-          message: response.ok ? 'Success' : 'Error'
+          message: 'Success'
         }
       };
     } catch (error) {
-      // Simple error handling
       return {
         data: null,
         status: {
           success: false,
           code: 500,
-          message: error instanceof Error ? error.message : 'Unknown error'
+          message: error instanceof Error ? 
+            error.message === 'Failed to fetch' ? 
+              'Network error. Please check your internet connection.' : 
+              error.message : 
+            'Unknown error'
         }
       };
     }
@@ -171,6 +183,3 @@ export class ApiClient {
     return this.request<T>(endpoint, 'PATCH', body, headers);
   }
 }
-
-
-// todo list wiil abe add some other info in case of left side

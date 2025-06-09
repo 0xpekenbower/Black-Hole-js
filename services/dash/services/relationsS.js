@@ -1,0 +1,135 @@
+import pool from '../config/pooling.js'
+import add_notif from '../utils/add_notif.js'
+
+export default {
+    async SendReq(accountID, otherID) {
+
+        const receiver = await pool.query('SELECT EXISTS(SELECT 1 FROM player WHERE id = $1);', [otherID])
+        if (!receiver.rows[0].exists)
+            throw new Error("Account not found")
+
+        const relation = await pool.query('SELECT EXISTS(SELECT 1 FROM friends \
+            WHERE (sender = $1 AND receiver = $2) OR (sender = $2 AND receiver = $1))', [accountID, otherID])
+
+        if (relation.rows[0].exists)
+            throw new Error("The Current relation, does not allow sending new request")
+            
+        await pool.query('INSERT INTO friends(sender, receiver) VALUES($1, $2);', [accountID, otherID])
+        await add_notif(accountID, otherID, 1)
+    },
+
+    async AcceptReq(accountID, otherID) {
+
+        const sender = await pool.query('SELECT EXISTS(SELECT 1 FROM player WHERE      \
+            id = $1)', [otherID])
+        if (!sender.rows[0].exists)
+            throw new Error('Account not found')
+
+        const relation = await pool.query('SELECT EXISTS(SELECT 1 FROM friends WHERE    \
+            sender = $1 AND receiver = $2 AND status = $3)', [otherID, accountID, 0])
+
+        if (!relation.rows[0].exists)
+            throw new Error('The relation does not exist')
+            
+        await pool.query('UPDATE friends SET status = 1     \
+            WHERE sender = $1 AND receiver = $2', [otherID, accountID])
+
+        await add_notif(accountID, otherID, 2)
+    },
+
+    async DenyReq(accountID, otherID)
+    {
+        const sender = await pool.query('SELECT EXISTS(SELECT 1 FROM player    \
+            WHERE id = $1)', [otherID])
+
+        if (!sender.rows[0].exists)
+            throw Error('Account not found')
+
+        const relation = await pool.query('SELECT EXISTS(SELECT 1 FROM friends WHERE    \
+            sender = $1 AND receiver = $2 AND status = $3)', [otherID, accountID, 0])
+
+        if (!relation.rows[0].exists)
+            throw Error('The relation does not exist')
+
+        await pool.query('DELETE FROM friends WHERE     \
+            sender = $1 AND receiver = $2 AND status = $3', [otherID, accountID, 0])
+    },
+
+    async cancelMyReqS(accountID, otherID)
+    {
+        const q = await pool.query('DELETE FROM friends WHERE     \
+            sender = $1 AND receiver = $2 AND status = $3', [accountID, otherID, 0])
+
+        return q.rowCount
+    },
+    //TODO consider when the receiver is expected to be the sender
+
+    async blockUser(accountID, otherID)
+    {
+        const res = await pool.query('UPDATE friends SET status = -1 \
+            WHERE (sender = $1 AND receiver = $2) OR (sender = $2 AND receiver = $1)\
+            RETURNING sender', [accountID, otherID])
+
+        if (!res.rowCount)
+            await pool.query('INSERT INTO friends(sender, receiver, status) \
+                VALUES($1, $2, $3);', [accountID, otherID, -1])
+    },
+
+
+    async unblockUser(accountID, otherID)
+    {
+        const query = await pool.query('DELETE FROM friends WHERE  \
+            (sender = $1 AND receiver = $2 AND status = $3)', [accountID, otherID, -1])
+        return query.rowCount
+    },
+    
+
+    async unfriendReq(accountID, otherID)
+    {
+        const relation = await pool.query('DELETE FROM friends WHERE  \
+            ((sender = $1 AND receiver = $2 ) OR (sender = $2 AND receiver = $1)) AND status = 1', [accountID, otherID])
+        return relation.rowCount
+    },
+
+    async ReceivedReq(accountID)
+    {
+        const relation = await pool.query('SELECT sender FROM friends WHERE     \
+            receiver = $1 AND status = $2', [accountID, 0])
+
+        return (relation.rows)
+    },
+
+    async SentReq(accountID)
+    {
+        const relation = await pool.query('SELECT receiver FROM friends     \
+            WHERE sender = $1 AND status = $2', [accountID, 0])
+        
+        return (relation.rows)
+    },
+
+    async FriendList(accountID)
+    {
+        const relation = await pool.query('SELECT sender, receiver FROM friends     \
+            WHERE (sender = $1 OR receiver = $1) AND status = $2', [accountID, 1])
+        return (relation.rows)
+    },
+
+    async BlackList(accountID)
+    {
+        const relation = await pool.query('SELECT receiver FROM friends     \
+            WHERE sender = $1 AND status = $2', [accountID, -1])
+
+        return (relation.rows)
+    },
+
+    async AllRelations(accountID)
+    {
+        const relations = {
+            friends: await this.FriendList(accountID),
+            blacklist: await this.BlackList(accountID),
+            receivedReq: await this.ReceivedReq(accountID),
+            sentReq: await this.SentReq(accountID)
+        }
+        return relations
+    }
+}

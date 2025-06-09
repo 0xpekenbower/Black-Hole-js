@@ -22,14 +22,13 @@ const oauth2google = (fastify, options, done) => {
                 '200':
                 {
                     type : 'object',
-                    properties: { Success: {type: 'string'}, token: {type : 'string'} }
+                    properties: { token: {type : 'string'} }
                 },
                 '4xx':
                 {
                     type:'object',
                     properties:
                     {
-                        Success:{type:'string'},
                         Error:{type:'string'}
                     }
                 }
@@ -38,9 +37,9 @@ const oauth2google = (fastify, options, done) => {
         handler: googleC(fastify)
     }
 
-    fastify.get('/oauth/google/', oauthGoogleSchema) 
+    fastify.get('/api/auth/oauth/google/', oauthGoogleSchema) 
 
-    fastify.get('/google/',(_, res) => {
+    fastify.get('/api/auth/google/',(_, res) => {
 
         const oauth2C = new OAuth2Client({
             clientId: process.env.CLIENT_ID_GOOGLE,

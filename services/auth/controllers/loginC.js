@@ -5,7 +5,7 @@ const loginC = (fastify) => async(req, res) => {
     {
         const {username, password} = req.body
         const token = await loginS.loginS(fastify.jwt, username, password)
-        res.status(200).send({Success: 'true', token:token})
+        res.status(200).send({token:token})
     }
     catch(err)
     {

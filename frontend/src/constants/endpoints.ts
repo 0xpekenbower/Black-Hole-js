@@ -9,21 +9,17 @@ const Endpoints = {
     Logout: "/api/auth/logout/",
     Send_mail: "/api/auth/send-mail/",
     Forget_pass: "/api/auth/forget-pass/",
-  },
-  OAuth: {
-    Google: "/api/oauth/google/",
-    FortyTwo: "/api/oauth/",
+    Change_password: "/api/auth/change-password/",
+    FortyTwo: "/api/auth/oauth/42/",
+    Google: "/api/auth/oauth/google/",
   },
   Dashboard: {
-
       Add_achievements:'/api/dash/add-achievements/', 
       Update_achievements:'/api/dash/update-achievements/', 
       My_achievements:'/api/dash/my-achievements/',
 
-      Get_card: '/api/dash/get_card/',
+      Get_card: '/api/dash/get-card/',
       Search: '/api/dash/search/',
-      Change_password: '/api/dash/change-password/',
-
 
       Send_req: '/api/dash/send-req/',
       Cancel: '/api/dash/cancel/', 
@@ -35,6 +31,8 @@ const Endpoints = {
     
       Buy:'/api/dash/buy/',
       Inventory:'/api/dash/inventory/',
+      
+      All_relations: '/api/dash/all-relations/',
   }
 };
 

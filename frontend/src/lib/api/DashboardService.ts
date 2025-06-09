@@ -6,14 +6,13 @@
 import { ApiClient, ApiResponse } from './Client';
 import Endpoints from '@/constants/endpoints';
 import {
-  User,
-  UserCard,
   UserCardResponse,
-  SearchResponse,
   ChangePasswordRequest,
   ChangePasswordResponse,
-  LogoutResponse
+  SearchUser,
+  RelationshipsResponse
 } from '@/types/Dashboard';
+import { TokenManager } from './TokenManager';
 
 /**
  * Dashboard service for handling dashboard-related operations
@@ -27,6 +26,19 @@ export class DashboardService {
    */
   constructor(apiClient?: ApiClient) {
     this.client = apiClient || new ApiClient();
+    const token = TokenManager.getToken();
+    if (token) {
+      this.client.setAuthToken(token);
+    }
+  }
+
+  /**
+   * Get authorization headers for requests
+   * @returns Headers with authorization token if available
+   */
+  private getAuthHeaders(): Record<string, string> | undefined {
+    const token = TokenManager.getToken();
+    return token ? { 'Authorization': `Bearer ${token}` } : undefined;
   }
 
   /**
@@ -34,7 +46,8 @@ export class DashboardService {
    * @returns Promise with logout response
    */
   async logout(): Promise<ApiResponse<any>> {
-    return this.client.post(Endpoints.Auth.Logout);
+    const headers = this.getAuthHeaders();
+    return this.client.post(Endpoints.Auth.Logout, undefined, headers);
   }
 
   /**
@@ -43,7 +56,8 @@ export class DashboardService {
    * @returns Promise with response
    */
   async getCard(userId?: string): Promise<ApiResponse<UserCardResponse['data']>> {
-    return this.client.get<UserCardResponse['data']>(`${Endpoints.Dashboard.Get_card}${userId ? '?userId=' + userId : ''}`);
+    const headers = this.getAuthHeaders();
+    return this.client.get<UserCardResponse['data']>(`${Endpoints.Dashboard.Get_card}${userId ? '?id=' + userId : ''}`, headers);
   }
 
   /**
@@ -51,8 +65,9 @@ export class DashboardService {
    * @param query - Search query
    * @returns Promise with response
    */
-  async search(query: string): Promise<ApiResponse<SearchResponse['data']>> {
-    return this.client.get<SearchResponse['data']>(`${Endpoints.Dashboard.Search}?q=${encodeURIComponent(query)}`);
+  async search(query: string): Promise<ApiResponse<SearchUser[]>> {
+    const headers = this.getAuthHeaders();
+    return this.client.get<SearchUser[]>(`${Endpoints.Dashboard.Search}?q=${encodeURIComponent(query)}`, headers);
   }
 
   /**
@@ -61,7 +76,8 @@ export class DashboardService {
    * @returns Promise with response
    */
   async changePassword(data: ChangePasswordRequest): Promise<ApiResponse<ChangePasswordResponse['data']>> {
-    return this.client.post<ChangePasswordResponse['data']>(Endpoints.Dashboard.Change_password, data);
+    const headers = this.getAuthHeaders();
+    return this.client.post<ChangePasswordResponse['data']>(Endpoints.Auth.Change_password, data, headers);
   }
 
   /**
@@ -70,7 +86,8 @@ export class DashboardService {
    * @returns Promise with response
    */
   async sendFriendRequest(userId: string): Promise<ApiResponse<any>> {
-    return this.client.post(Endpoints.Dashboard.Send_req, { userId });
+    const headers = this.getAuthHeaders();
+    return this.client.get(`${Endpoints.Dashboard.Send_req}?id=${userId}`, headers);
   }
 
   /**
@@ -79,7 +96,8 @@ export class DashboardService {
    * @returns Promise with response
    */
   async cancelFriendRequest(userId: string): Promise<ApiResponse<any>> {
-    return this.client.post(Endpoints.Dashboard.Cancel, { userId });
+    const headers = this.getAuthHeaders();
+    return this.client.get(`${Endpoints.Dashboard.Cancel}?id=${userId}`, headers);
   }
 
   /**
@@ -88,7 +106,8 @@ export class DashboardService {
    * @returns Promise with response
    */
   async acceptFriendRequest(userId: string): Promise<ApiResponse<any>> {
-    return this.client.post(Endpoints.Dashboard.Accept_req, { userId });
+    const headers = this.getAuthHeaders();
+    return this.client.get(`${Endpoints.Dashboard.Accept_req}?id=${userId}`, headers);
   }
 
   /**
@@ -97,7 +116,8 @@ export class DashboardService {
    * @returns Promise with response
    */
   async denyFriendRequest(userId: string): Promise<ApiResponse<any>> {
-    return this.client.post(Endpoints.Dashboard.Deny_req, { userId });
+    const headers = this.getAuthHeaders();
+    return this.client.get(`${Endpoints.Dashboard.Deny_req}?id=${userId}`, headers);
   }
 
   /**
@@ -106,7 +126,8 @@ export class DashboardService {
    * @returns Promise with response
    */
   async unfriend(userId: string): Promise<ApiResponse<any>> {
-    return this.client.post(Endpoints.Dashboard.Unfriend, { userId });
+    const headers = this.getAuthHeaders();
+    return this.client.get(`${Endpoints.Dashboard.Unfriend}?id=${userId}`, headers);
   }
 
   /**
@@ -115,7 +136,8 @@ export class DashboardService {
    * @returns Promise with response
    */
   async blockUser(userId: string): Promise<ApiResponse<any>> {
-    return this.client.post(Endpoints.Dashboard.Block, { userId });
+    const headers = this.getAuthHeaders();
+    return this.client.get(`${Endpoints.Dashboard.Block}?id=${userId}`, headers);
   }
 
   /**
@@ -124,6 +146,16 @@ export class DashboardService {
    * @returns Promise with response
    */
   async unblockUser(userId: string): Promise<ApiResponse<any>> {
-    return this.client.post(Endpoints.Dashboard.Unblock, { userId });
+    const headers = this.getAuthHeaders();
+    return this.client.get(`${Endpoints.Dashboard.Unblock}?id=${userId}`, headers);
+  }
+  
+  /**
+   * Get all user relationships
+   * @returns Promise with response containing all relationships
+   */
+  async getAllRelations(): Promise<ApiResponse<RelationshipsResponse>> {
+    const headers = this.getAuthHeaders();
+    return this.client.get<RelationshipsResponse>(Endpoints.Dashboard.All_relations, headers);
   }
 } 
