@@ -1,4 +1,6 @@
+import { useState } from 'react'
 import { FriendshipStatus } from '@/types/Dashboard'
+import { dashboardService } from '@/lib/api'
 import { 
   AddButton, 
   CancelButton, 
@@ -14,38 +16,48 @@ interface FriendActionsProps {
   userId: number
   username?: string
   friendshipStatus: FriendshipStatus
-  isLoading?: boolean
-  onSendRequest?: (userId: number) => void
-  onCancelRequest?: (userId: number) => void
-  onAcceptRequest?: (userId: number) => void
-  onRejectRequest?: (userId: number) => void
-  onRemoveFriend?: (userId: number) => void
-  onBlockUser?: (userId: number) => void
-  onUnblockUser?: (userId: number) => void
   showMessage?: boolean
   compact?: boolean
+  onActionComplete?: () => Promise<void>
 }
 
 export function FriendActions({
   userId,
   username,
   friendshipStatus,
-  isLoading = false,
-  onSendRequest,
-  onCancelRequest,
-  onAcceptRequest,
-  onRejectRequest,
-  onRemoveFriend,
-  onBlockUser,
-  onUnblockUser,
   showMessage = false,
-  compact = false
+  compact = false,
+  onActionComplete
 }: FriendActionsProps) {
+  const [isLoading, setIsLoading] = useState(false)
+
+  const handleAction = async (action: () => Promise<any>) => {
+    setIsLoading(true)
+    try {
+      await action()
+      if (onActionComplete) {
+        await onActionComplete()
+      }
+    } catch (error) {
+      console.error("Error performing friend action:", error)
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  const handleSendRequest = () => handleAction(() => dashboardService.sendFriendRequest(userId.toString()))
+  const handleCancelRequest = () => handleAction(() => dashboardService.cancelFriendRequest(userId.toString()))
+  const handleAcceptRequest = () => handleAction(() => dashboardService.acceptFriendRequest(userId.toString()))
+  const handleRejectRequest = () => handleAction(() => dashboardService.denyFriendRequest(userId.toString()))
+  const handleRemoveFriend = () => handleAction(() => dashboardService.unfriend(userId.toString()))
+  const handleBlockUser = () => handleAction(() => dashboardService.blockUser(userId.toString()))
+  const handleUnblockUser = () => handleAction(() => dashboardService.unblockUser(userId.toString()))
+
   switch (friendshipStatus) {
     case 0 as unknown as FriendshipStatus: // No relation (no enum value for this in new system)
       return (
         <AddButton
-          onClick={() => onSendRequest?.(userId)}
+          onClick={handleSendRequest}
           isLoading={isLoading}
           compact={compact}
         />
@@ -54,7 +66,7 @@ export function FriendActions({
     case FriendshipStatus.I_SENT: // I sent request (previously REQUEST_SENT)
       return (
         <CancelButton
-          onClick={() => onCancelRequest?.(userId)}
+          onClick={handleCancelRequest}
           isLoading={isLoading}
           compact={compact}
         />
@@ -64,12 +76,12 @@ export function FriendActions({
       return (
         <div className="flex gap-2">
           <AcceptButton
-            onClick={() => onAcceptRequest?.(userId)}
+            onClick={handleAcceptRequest}
             isLoading={isLoading}
             compact={compact}
           />
           <RejectButton
-            onClick={() => onRejectRequest?.(userId)}
+            onClick={handleRejectRequest}
             isLoading={isLoading}
             compact={compact}
           />
@@ -81,13 +93,13 @@ export function FriendActions({
       return (
         <div className="flex gap-2">
           <RemoveButton
-            onClick={() => onRemoveFriend?.(userId)}
+            onClick={handleRemoveFriend}
             isLoading={isLoading}
             compact={compact}
           />
           
           <BlockButton
-            onClick={() => onBlockUser?.(userId)}
+            onClick={handleBlockUser}
             isLoading={isLoading}
             compact={compact}
           />
@@ -101,14 +113,13 @@ export function FriendActions({
     case FriendshipStatus.I_BLK: // I blocked (previously BLOCKED)
       return (
         <UnblockButton
-          onClick={() => onUnblockUser?.(userId)}
+          onClick={handleUnblockUser}
           isLoading={isLoading}
           compact={compact}
         />
       )
     
     case FriendshipStatus.HE_BLK: // He blocked me
-      // When someone blocks you, you shouldn't see any action buttons
       return null;
     
     default:

@@ -10,6 +10,7 @@ import { useRouter } from 'next/navigation';
 import { AuthService } from '@/lib/api/AuthService';
 import { TokenManager } from '@/lib/api/TokenManager';
 import { LoginRequest, RegisterRequest } from '@/types/Auth';
+import { clearProfileData } from '@/utils/profileStorage';
 
 /**
  * User data structure
@@ -156,6 +157,7 @@ export function AuthProvider({ children }: AuthProviderProps): React.ReactElemen
     try {
       TokenManager.clearTokens();
       authService.removeAuthToken();
+      clearProfileData();
       setUser(null);
     } catch (err) {
       console.error('Logout error:', err);

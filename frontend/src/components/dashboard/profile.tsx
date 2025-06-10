@@ -24,8 +24,6 @@ import { dashboardService } from '@/lib/api'
 import { handleApiError } from '@/utils/errorHandler'
 import { UserCard, FriendshipStatus } from '@/types/Dashboard'
 import { FriendActions } from './friends/Actions'
-import { useFriends } from '@/hooks/useFriends'
-
 
 export function ProfileComponent({ userId }: { userId?: string }) {
   const [profileData, setProfileData] = useState<UserCard | null>(null);
@@ -33,17 +31,6 @@ export function ProfileComponent({ userId }: { userId?: string }) {
   const [error, setError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState("profile");
   
-  const {
-    isLoading: friendsLoading,
-    sendFriendRequest,
-    cancelFriendRequest,
-    acceptFriendRequest,
-    rejectFriendRequest,
-    removeFriend,
-    blockUser,
-    unblockUser
-  } = useFriends();
-
   useEffect(() => {
     const fetchProfileData = async () => {
       setIsLoading(true);
@@ -53,7 +40,6 @@ export function ProfileComponent({ userId }: { userId?: string }) {
         const response = await dashboardService.getCard(userId);
         
         if (!response.status.success || !response.data) {
-          console.error(response.status.message);
           throw new Error(response.status.message);
         }
         
@@ -88,15 +74,6 @@ export function ProfileComponent({ userId }: { userId?: string }) {
       }
     } catch (err) {
       console.error(handleApiError(err, 'Profile Refresh'));
-    }
-  };
-
-  const handleFriendAction = async (action: (userId: number) => Promise<void>, targetId: number) => {
-    try {
-      await action(targetId);
-      await refreshProfileData();
-    } catch (err) {
-      console.error(handleApiError(err, 'Friend Action'));
     }
   };
 
@@ -192,22 +169,14 @@ export function ProfileComponent({ userId }: { userId?: string }) {
                 <CardDescription>@{UserInfo.username}</CardDescription>
               </div>
               
-              {/* Friend Actions Mkayn lach if we can call it form friends dir  */}
               {!is_self && (
                 <div className="flex gap-2">
                   <FriendActions
                     userId={UserInfo.id}
                     username={UserInfo.username}
                     friendshipStatus={Friendship}
-                    isLoading={friendsLoading}
-                    onSendRequest={(id) => handleFriendAction(sendFriendRequest, id)}
-                    onCancelRequest={(id) => handleFriendAction(cancelFriendRequest, id)}
-                    onAcceptRequest={(id) => handleFriendAction(acceptFriendRequest, id)}
-                    onRejectRequest={(id) => handleFriendAction(rejectFriendRequest, id)}
                     showMessage={Friendship === FriendshipStatus.I_FR || Friendship === FriendshipStatus.HE_FR}
-                    onRemoveFriend={(id) => handleFriendAction(removeFriend, id)}
-                    onBlockUser={(id) => handleFriendAction(blockUser, id)}
-                    onUnblockUser={(id) => handleFriendAction(unblockUser, id)}
+                    onActionComplete={refreshProfileData}
                   />
                 </div>
               )}

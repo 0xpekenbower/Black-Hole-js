@@ -2,7 +2,6 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { LayoutDashboard, Gamepad2, Trophy, MessageSquare, Users, History } from "lucide-react"
 import Link from "next/link"
 
 /**

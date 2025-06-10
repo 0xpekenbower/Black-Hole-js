@@ -20,6 +20,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { useAuth } from '@/hooks/useAuth'
+import { getStoredProfile, storeProfileData, isProfileDataValid } from '@/utils/profileStorage'
 
 interface EnhancedSearchUser extends SearchUser {
   avatarUrl?: string;
@@ -34,7 +35,8 @@ const DashboardSidebar = () => {
   const [searchQuery, setSearchQuery] = useState('')
   const [searchResults, setSearchResults] = useState<EnhancedSearchUser[]>([])
   const [isSearching, setIsSearching] = useState(false)
-  const [profileData, setProfileData] = useState<UserCard | null>(null)
+  const [username, setUsername] = useState<string>('')
+  const [avatar, setAvatar] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const pathname = usePathname()
   const { logout } = useAuth()
@@ -56,28 +58,6 @@ const DashboardSidebar = () => {
             avatarUrl: "/data/avatars/default.png"
           }))
           setSearchResults(enhancedResults)
-          
-          enhancedResults.forEach(async (user, index) => {
-            try {
-              const userResponse = await dashboardService.getCard(user.id)
-              const avatarUrl = userResponse?.status?.success 
-                ? userResponse?.data?.User?.avatar || "/data/avatars/default.png" 
-                : "/data/avatars/default.png"
-                
-              if (avatarUrl) {
-                setSearchResults(prevResults => {
-                  const newResults = [...prevResults]
-                  newResults[index] = {
-                    ...newResults[index],
-                    avatarUrl
-                  }
-                  return newResults
-                })
-              }
-            } catch (err) {
-              console.error(`Failed to fetch avatar for user ${user.id}`, err)
-            }
-          })
         } else {
           setSearchResults([])
         }
@@ -120,24 +100,35 @@ const DashboardSidebar = () => {
 
   useEffect(() => {
     const fetchProfileData = async () => {
-      setIsLoading(true);
-      
-      try {
-        const response = await dashboardService.getCard();
+      if (mounted && typeof window !== 'undefined') {
+        const storedProfile = getStoredProfile();
         
-        if (response.status.success && response.data) {
-          setProfileData(response.data);
+        if (storedProfile && isProfileDataValid()) {
+          setUsername(storedProfile.username);
+          setAvatar(storedProfile.avatar);
+          setIsLoading(false);
+          return;
+        }        
+        setIsLoading(true);
+        try {
+          const response = await dashboardService.getCard();
+          
+          if (response.status.success && response.data) {
+            const { User } = response.data;
+            setUsername(User.username);
+            setAvatar(User.avatar);
+              
+            storeProfileData(response.data);
+          }
+        } catch (err) {
+          console.error(err);
+        } finally {
+          setIsLoading(false);
         }
-      } catch (err) {
-        console.error(err);
-      } finally {
-        setIsLoading(false);
       }
     };
     
-    if (mounted) {
-      fetchProfileData();
-    }
+    fetchProfileData();
   }, [mounted]);
 
   useEffect(() => {
@@ -190,14 +181,14 @@ const DashboardSidebar = () => {
             <DropdownMenuTrigger asChild>
               <div className="flex items-center gap-3 cursor-pointer hover:opacity-80 transition-opacity">
                 <Avatar className="h-8 w-8 border-2 border-primary/20">
-                  {profileData?.User.avatar ? (
-                    <AvatarImage src={profileData.User.avatar} alt={profileData.User.username} />
+                  {avatar ? (
+                    <AvatarImage src={avatar} alt={username} />
                   ) : (
-                    <AvatarImage src="/data/avatars/default.png" alt={profileData?.User.username || "User"} />
+                    <AvatarImage src="/data/avatars/default.png" alt={username || "User"} />
                   )}
                 </Avatar>
                 <p className="font-medium text-sm">
-                  @{profileData?.User.username || "loading..."}
+                  @{username || "loading..."}
                 </p>
               </div>
             </DropdownMenuTrigger>
@@ -316,10 +307,10 @@ const DashboardSidebar = () => {
                       )}
                     >
                       <Avatar className="h-5 w-5 md:h-7 md:w-7">
-                        {profileData?.User.avatar ? (
-                          <AvatarImage src={profileData.User.avatar} alt={profileData.User.username} />
+                        {avatar ? (
+                          <AvatarImage src={avatar} alt={username} />
                         ) : (
-                          <AvatarImage src="/data/avatars/default.png" alt={profileData?.User.username || "User"} />
+                          <AvatarImage src="/data/avatars/default.png" alt={username || "User"} />
                         )}
                       </Avatar>
                     </Button>

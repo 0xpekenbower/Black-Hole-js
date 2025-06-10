@@ -19,6 +19,13 @@ export interface ApiResponse<T = any> {
 }
 
 /**
+ * request_unique_id generator for each request
+ */
+export const generateRequestUniqueId = () => {
+  return Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+}
+
+/**
  * Simple API client for making HTTP requests
  */
 export class ApiClient {
@@ -66,9 +73,12 @@ export class ApiClient {
     headers?: Record<string, string>
   ): Promise<ApiResponse<T>> {
     const url = `${this.baseUrl}${endpoint}`
+    const requestId = generateRequestUniqueId();
+    
     const requestHeaders = {
       ...this.defaultHeaders,
       ...headers,
+      'X-Request-ID': requestId
     };
 
     const requestOptions: RequestInit = {
