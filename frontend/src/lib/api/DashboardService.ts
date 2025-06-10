@@ -14,6 +14,7 @@ import {
   EditProfileRequest,
   AchievementsResponse
 } from '@/types/Dashboard';
+import { BuyItemRequest, InventoryItem, StoreItemsResponse, InventoryResponse } from '@/types/Store';
 import { TokenManager } from './TokenManager';
 
 /**
@@ -182,5 +183,24 @@ export class DashboardService {
   async getAchievements(): Promise<ApiResponse<AchievementsResponse>> {
     const headers = this.getAuthHeaders();
     return this.client.get<AchievementsResponse>(Endpoints.Dashboard.My_achievements, headers);
+  }
+
+  /**
+   * Buy an item from the store
+   * @param data - Item data to buy
+   * @returns Promise with response
+   */
+  async buyItem(data: BuyItemRequest): Promise<ApiResponse<null>> {
+    const headers = this.getAuthHeaders();
+    return this.client.post<null>(Endpoints.Dashboard.Buy, data, headers);
+  }
+
+  /**
+   * Get user inventory
+   * @returns Promise with response containing user inventory items and coins
+   */
+  async getInventory(): Promise<ApiResponse<InventoryResponse>> {
+    const headers = this.getAuthHeaders();
+    return this.client.get<InventoryResponse>(Endpoints.Dashboard.Inventory, headers);
   }
 } 

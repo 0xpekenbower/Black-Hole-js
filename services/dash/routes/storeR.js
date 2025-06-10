@@ -24,7 +24,22 @@ const storeR = (fastify, options, done) => {
         {
             response:
             {
-                '200': { type : 'array', items: {item_id: {type:'string'}, item_type: {type:'string'}} },
+                '200': { 
+                    type: 'object',
+                    properties: {
+                        inventory: { 
+                            type: 'array', 
+                            items: { 
+                                type: 'object',
+                                properties: {
+                                    item_id: { type: 'string' }, 
+                                    item_type: { type: 'string' }
+                                }
+                            }
+                        },
+                        coins: { type: 'number' }
+                    }
+                },
                 '4xx': { type:'object', properties: { Error: {type:'string'} } }
             }
         },

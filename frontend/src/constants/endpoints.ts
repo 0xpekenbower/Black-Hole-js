@@ -30,7 +30,7 @@ const Endpoints = {
       Block: '/api/dash/block/', 
       Unblock: '/api/dash/unblock/',
     
-      Buy:'/api/dash/buy/',
+      Buy:'/api/dash/store/buy/',
       Inventory:'/api/dash/inventory/',
       
       All_relations: '/api/dash/all-relations/',

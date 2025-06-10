@@ -53,7 +53,6 @@ export default {
             throw new Error('User does not exist')
 
         user_data = user_data.rows[0]
-
         const rank_data = await pool.query('SELECT name, min_exp, max_exp, \
             reward, icon_path FROM ranks WHERE id = $1', [user_data.rank])
 
@@ -69,15 +68,6 @@ export default {
                 return fr.sender
             return fr.receiver
         })
-        // console.log(friends)
-        console.log(
-            "User", user_data,
-            "Level", level_data.rows[0],
-            "Rank", rank_data.rows[0],
-            "Friends", fr_list,
-            "is_self", id == req_id,
-            "Friendship", relation
-        );
         return {
             "User": user_data,
             "Level": level_data.rows[0],
@@ -87,6 +77,7 @@ export default {
             "Friendship": relation
         }
     },
+
 
     async searchS(username)
     {
@@ -104,7 +95,9 @@ export default {
             { headers: { Authorization: TOKEN } }
         )
     },
-
+    // TODO: you should expect the avatar and background will be from the store so should be just identifiers , and you will
+    // use the id to check if the item is owned or not and then just put path of the item in the database frontend will handle the rest
+    // remember check is necessary , no more uploads
     async editS(accountID, first_name, last_name, bio, avatar, background)
     {
         await pool.query('UPDATE player SET \

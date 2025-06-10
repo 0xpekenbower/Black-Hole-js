@@ -33,6 +33,7 @@
     "react-hook-form": "^7.56.4",
     "recharts": "^2.15.3",
     "redis": "^5.1.0",
+    "skeleton": "^1.0.0",
     "sonner": "^2.0.5",
     "swagger-ui": "^5.22.0",
     "tailwind-merge": "^3.3.0",

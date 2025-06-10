@@ -31,6 +31,11 @@ export default {
     async list_inventoryS(accoundID) {
         const list = await pool.query(`SELECT item_id, item_type FROM inventory 
             WHERE user_id = $1`, [accoundID])
-        return list.rows
+        const budgetQuery = await pool.query(`SELECT budget FROM player WHERE id = $1`, [accoundID])
+        const budget = budgetQuery.rows.length > 0 ? budgetQuery.rows[0].budget : 0        
+        return {
+            inventory: list.rows,
+            coins: budget
+        }
     }
 }

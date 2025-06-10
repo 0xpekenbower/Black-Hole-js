@@ -19,6 +19,7 @@ export interface User {
   exp: number;
   rank: number;
   level: number;
+  budget: number;
 }
 
 export interface Level {

@@ -3,6 +3,7 @@
 import { ProtectedRoute } from "@/lib/auth/ProtectedRoute"
 import DashboardHeader from "@/components/DashboardHeader"
 import DashboardSidebar from "@/components/layouts/DashboardSidebar"
+import { WalletProvider } from "@/context/walletContext"
 
 /**
  * Dashboard layout with authentication protection
@@ -14,15 +15,17 @@ export default function DashboardLayout({
 }: Readonly<{ children: React.ReactNode }>) {
   return (
     <ProtectedRoute>
-      <div className="flex flex-col min-h-screen">
-        <DashboardHeader />
-        <div className="flex flex-1">
-          <DashboardSidebar />
-          <main className="flex-1 pt-4 pb-16 px-4 md:px-6 md:pr-20">
-            {children}
-          </main>
+      <WalletProvider>
+        <div className="flex flex-col min-h-screen">
+          <DashboardHeader />
+          <div className="flex flex-1">
+            <DashboardSidebar />
+            <main className="flex-1 pt-4 pb-16 px-4 md:px-6 md:pr-20">
+              {children}
+            </main>
+          </div>
         </div>
-      </div>
+      </WalletProvider>
     </ProtectedRoute>
   )
 } 

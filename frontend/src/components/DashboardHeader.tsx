@@ -5,6 +5,8 @@ import { useLang } from '@/context/langContext'
 import { ThemeToggle } from '@/components/layouts/theme-toggle'
 import { Button } from '@/components/ui/button'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
+import { useWallet } from '@/context/walletContext'
+import Wallet from '@/components/ui/wallet'
 
 /**
  * Small header component for dashboard layout
@@ -12,6 +14,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/comp
  */
 const DashboardHeader = () => {
   const { lang, setLang, mounted: langMounted } = useLang()
+  const { budget, isLoading: walletLoading } = useWallet()
   const [mounted, setMounted] = useState(false)
 
   useEffect(() => {
@@ -38,6 +41,7 @@ const DashboardHeader = () => {
       <header className="border-b border-border-1 bg-card/80 backdrop-blur-sm h-12 px-4">
         <div className="flex items-center justify-between h-full">
           <div>
+            {mounted && <Wallet budget={budget} size="sm" />}
           </div>
           <div className="flex items-center gap-2">
             <TooltipProvider>
