@@ -1,6 +1,5 @@
 DC = docker compose -f ./docker-compose.yml -f ./infra/infra.yml -f ./services/services.yml -f ./metrics/metrics.yml -f ./logs/logs.yml -p blackholejs
 
-
 all: build up
 
 build:
@@ -26,3 +25,16 @@ down:
 
 fdown:
 	@$(DC) down -v
+
+reload:
+	@echo "Reloading services: $(filter-out $@,$(MAKECMDGOALS))"
+	@$(DC) down $(filter-out $@,$(MAKECMDGOALS))
+	@$(DC) up -d $(filter-out $@,$(MAKECMDGOALS))
+
+freload:
+	@echo "Reloading services: $(filter-out $@,$(MAKECMDGOALS))"
+	@$(DC) down -v $(filter-out $@,$(MAKECMDGOALS))
+	@$(DC) up -d $(filter-out $@,$(MAKECMDGOALS))
+
+%:
+	@:

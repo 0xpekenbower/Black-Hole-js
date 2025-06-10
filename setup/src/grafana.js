@@ -1,5 +1,4 @@
 #!/usr/bin/env node
-// Using environment variables directly instead of loading from .env file
 const axios = require('axios');
 
 const GRAFANA_URL = process.env.GRAFANA_URL || 'http://localhost:7050/grafana';
@@ -30,12 +29,16 @@ async function waitForGrafana() {
   throw new Error('Grafana did not become ready in time');
 }
 
-async function main() {
+async function setupGrafana() {
   await waitForGrafana();
   console.log('✅ Grafana is up and healthy (default admin/admin)');
 }
 
-main().catch(err => {
-  console.error('❌ Grafana setup failed:', err.message);
-  process.exit(1);
-}); 
+if (require.main === module) {
+  setupGrafana().catch(err => {
+    console.error('❌ Grafana setup failed:', err.message);
+    process.exit(1);
+  });
+}
+
+module.exports = { setupGrafana }; 

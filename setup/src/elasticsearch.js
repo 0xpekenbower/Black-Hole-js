@@ -6,7 +6,6 @@ const axios = require('axios');
 const CONFIG_DIR = path.resolve(__dirname, '..', 'config');
 const LOGSTASH_ROLE_FILE = path.join(CONFIG_DIR, 'logstash_writer.json');
 const GATEWAY_TEMPLATE_FILE = path.join(CONFIG_DIR, 'gateway.json');
-const VECTOR_TEMPLATE_FILE = path.join(CONFIG_DIR, 'vector-logs.json');
 
 const ES_HOST = 'http://elasticsearch:9200';
 const REQUIRED_ENV_VARS = ['ELASTIC_PASSWORD', 'KIBANA_SYSTEM_PASSWORD', 'LOGSTASH_INTERNAL_PASSWORD'];
@@ -79,6 +78,7 @@ async function createLogstashUser() {
 }
 
 async function installGatewayTemplateAndPolicy() {
+  console.log("Starting Gateway logs setup...");
   const fileData = await fs.readFile(GATEWAY_TEMPLATE_FILE, 'utf8');
   const parsed = JSON.parse(fileData);
 
@@ -90,6 +90,7 @@ async function installGatewayTemplateAndPolicy() {
 
   const policyRes = await axiosInstance.put(`/_ilm/policy/${policyName}`, { policy: policyContent });
   if (policyRes.status !== 200) throw new Error('Failed to create ILM policy');
+  console.log(`✅ Created ILM policy: ${policyName}`);
 
   const templateName = Object.keys(parsed.templates || {})[0];
   if (!templateName) throw new Error('Template name not found');
@@ -99,37 +100,7 @@ async function installGatewayTemplateAndPolicy() {
 
   const templateRes = await axiosInstance.put(`/_index_template/${templateName}`, templateContent);
   if (templateRes.status !== 200) throw new Error('Failed to create index template');
-}
-
-async function installVectorTemplateAndPolicy() {
-  const fileData = await fs.readFile(VECTOR_TEMPLATE_FILE, 'utf8');
-  const parsed = JSON.parse(fileData);
-
-  // Install all policies
-  const policyNames = Object.keys(parsed.policies || {});
-  if (policyNames.length === 0) throw new Error('No policies found in vector-logs.json');
-
-  for (const policyName of policyNames) {
-    const policyContent = parsed.policies[policyName].policy;
-    if (!policyContent) throw new Error(`Policy content not found for ${policyName}`);
-
-    const policyRes = await axiosInstance.put(`/_ilm/policy/${policyName}`, { policy: policyContent });
-    if (policyRes.status !== 200) throw new Error(`Failed to create ILM policy ${policyName}`);
-    console.log(`✅ Created ILM policy: ${policyName}`);
-  }
-
-  // Install all templates
-  const templateNames = Object.keys(parsed.templates || {});
-  if (templateNames.length === 0) throw new Error('No templates found in vector-logs.json');
-
-  for (const templateName of templateNames) {
-    const templateContent = parsed.templates[templateName];
-    if (!templateContent) throw new Error(`Template content not found for ${templateName}`);
-
-    const templateRes = await axiosInstance.put(`/_index_template/${templateName}`, templateContent);
-    if (templateRes.status !== 200) throw new Error(`Failed to create index template ${templateName}`);
-    console.log(`✅ Created index template: ${templateName}`);
-  }
+  console.log(`✅ Created index template: ${templateName}`);
 }
 
 async function setupElasticsearch() {
@@ -138,17 +109,14 @@ async function setupElasticsearch() {
   await createLogstashRole();
   await createLogstashUser();
   await installGatewayTemplateAndPolicy();
-  await installVectorTemplateAndPolicy();
 }
 
-// Export the function for use in index.js
 module.exports = { setupElasticsearch };
 
-// Run directly if this script is executed directly
 if (require.main === module) {
   setupElasticsearch()
     .then(() => {
-      console.log('✅ Elasticsearch setup complete');
+      console.log('✅ Elasticsearch setup completed successfully.');
     })
     .catch((err) => {
       console.error('❌ Elasticsearch setup failed:', err.message);

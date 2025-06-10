@@ -3,13 +3,18 @@
   "version": "1.0.0",
   "description": "Setup scripts for BlackHoleJS",
   "scripts": {
-    "start": "node src/index.js"
+    "start": "node src/index.js",
+    "kafka:setup": "node src/kafka.js"
   },
   "author": "0xpekenbower",
   "license": "ISC",
   "dependencies": {
     "axios": "^1.9.0",
     "express": "^5.1.0",
-    "pg": "^8.16.0"
+    "kafka": "^0.2.3",
+    "kafkajs": "^2.2.4",
+    "pg": "^8.16.0",
+    "pino": "^8.19.0",
+    "pino-pretty": "^11.0.0"
   }
 }

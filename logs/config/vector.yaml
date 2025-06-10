@@ -1,34 +1,6 @@
 data_dir: /var/lib/vector
 
 sources:
-  nginx_access_logs:
-    type: file
-    include:
-      - /var/log/nginx/nginx-access.log
-    read_from: beginning
-    # For JSON logs
-    line_delimiter: "\n"
-    ignore_older_secs: 86400  # Ignore files older than 1 day
-    fingerprinting:
-      strategy: device_and_inode
-      ignored_header_bytes: 0
-    max_line_bytes: 32768
-    max_read_bytes: 2048
-
-  # Collect Nginx frontend error logs
-  nginx_error_logs:
-    type: file
-    include:
-      - /var/log/nginx/frontend-error.log
-    read_from: beginning
-    ignore_older_secs: 86400  # Ignore files older than 1 day
-    fingerprinting:
-      strategy: device_and_inode
-      ignored_header_bytes: 0
-    max_line_bytes: 32768
-    max_read_bytes: 2048
-    
-  # TCP source for gateway logs
   gateway_logs:
     type: socket
     address: 0.0.0.0:9000
@@ -36,89 +8,12 @@ sources:
     decoding:
       codec: json
 
-transforms:
-  parse_nginx_access:
-    type: remap
-    inputs:
-      - nginx_access_logs
-    source: |
-      # Parse JSON content
-      . = parse_json!(string!(.message))
-      # Add a log type field
-      .log_type = "nginx_access"
-      # Parse timestamp
-      .timestamp = parse_timestamp!(.time_local, format: "%d/%b/%Y:%H:%M:%S %z")
-      # Add log category
-      .log_category = "access"
-      # Add component
-      .component = "nginx"
-      # Add source
-      .source = "vector"
-
-  filter_frontend_logs:
-    type: filter
-    inputs:
-      - parse_nginx_access
-    condition: |
-      # Extract the first path segment from the request
-      path = string!(.request) || ""
-      first_segment = match(path, r'^(?:GET|POST|PUT|DELETE|PATCH) /([^/]+)')[1] || ""
-      # Check if it's not one of the monitoring services
-      !includes(["grafana", "prometheus", "kibana"], first_segment)
-
-  parse_nginx_errors:
-    type: remap
-    inputs:
-      - nginx_error_logs
-    source: |
-      # Extract timestamp and message from Nginx error log format
-      . = parse_regex!(.message, r'^(?P<timestamp>\d{4}/\d{2}/\d{2} \d{2}:\d{2}:\d{2}) \[(?P<level>\w+)\] (?P<pid>\d+)#(?P<tid>\d+): (?P<message>.*)$')
-      # Add a log type field
-      .log_type = "nginx_error"
-      # Parse timestamp
-      .timestamp = parse_timestamp!(.timestamp, format: "%Y/%m/%d %H:%M:%S")
-      # Add log category
-      .log_category = "error"
-      # Add component
-      .component = "nginx"
-      # Add source
-      .source = "vector"
-      # Add service field for frontend
-      .service = "frontend"
-      
-  enrich_frontend_logs:
-    type: remap
-    inputs:
-      - filter_frontend_logs
-    source: |
-      # Add service field to identify frontend logs
-      .service = "frontend"
-
 sinks:
-  # console:
-  #   type: console
-  #   inputs:
-  #     - enrich_frontend_logs
-  #     - parse_nginx_errors
-  #   encoding:
-  #     codec: json
-
-  logstash:
+  logstash_gateway:
     type: socket
     inputs:
-      - enrich_frontend_logs
-      - parse_nginx_errors
       - gateway_logs
     mode: tcp
-    address: logstash:5044
+    address: logstash:50000
     encoding:
       codec: json
-
-  # file_out:
-  #   type: file
-  #   inputs:
-  #     - enrich_frontend_logs
-  #     - parse_nginx_errors
-  #   path: "/var/lib/vector/nginx_processed.log"
-  #   encoding:
-  #     codec: json 

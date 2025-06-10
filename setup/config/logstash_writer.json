@@ -8,9 +8,7 @@
     {
       "names": [
         "gateway-logs-*",
-        "gateway-logs",
-        "frontend-logs",
-        "frontend-logs-*"
+        "gateway-logs"
       ],
       "privileges": [
         "write",

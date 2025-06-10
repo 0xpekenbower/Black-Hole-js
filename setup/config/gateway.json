@@ -7,44 +7,49 @@
           "number_of_replicas": 0,
           "index.refresh_interval": "5s",
           "index.lifecycle.name": "gateway-logs-policy",
-          "index.lifecycle.rollover_alias": "gateway-logs"
+          "index.lifecycle.rollover_alias": "gateway-logs-template"
         },
         "mappings": {
           "properties": {
-            "@timestamp": { "type": "date" },
-            "time": { "type": "date" },
+            "timestamp": { "type": "date" },
             "level": { "type": "keyword" },
-            "service": { "type": "keyword" },
-            "message": { "type": "text" },
-            "source": { 
-              "type": "keyword",
-              "fields": {
-                "text": { "type": "text" }
+            "event_type": { "type": "keyword" },
+            "frontend": {
+              "properties": {
+                "userAgent": { "type": "text" },
+                "clientIp": { "type": "ip" },
+                "request": {
+                  "properties": {
+                    "url": { "type": "keyword" },
+                    "method": { "type": "keyword" },
+                    "referrer": { "type": "keyword" }
+                  }
+                }
               }
             },
-            "req": {
+            "gateway": {
               "properties": {
-                "method": { "type": "keyword" },
-                "url": { "type": "keyword" },
-                "source": { "type": "keyword" },
-                "user_id": { "type": "keyword" },
-                "ip": { "type": "ip" }
+                "forwarded": {
+                  "properties": {
+                    "service": { "type": "keyword" },
+                    "rewritePrefix": { "type": "keyword" }
+                  }
+                },
+                "response": {
+                  "properties": {
+                    "service": { "type": "keyword" },
+                    "statusCode": { "type": "integer" }
+                  }
+                }
               }
             },
-            "res": {
+            "context": {
               "properties": {
-                "statusCode": { "type": "integer" },
-                "source": { "type": "keyword" },
-                "response_time": { "type": "float" },
-                "message": { "type": "keyword" }
+                "userId": { "type": "integer" },
+                "sessionId": { "type": "keyword" }
               }
             },
-            "error": {
-              "properties": {
-                "message": { "type": "text" },
-                "stack": { "type": "text" }
-              }
-            }
+            "requestId": { "type": "keyword" }
           }
         }
       },

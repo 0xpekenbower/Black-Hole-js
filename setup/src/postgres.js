@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 
-const { Client } = require('pg');
+const pg = require('pg');
+const { Client } = pg;
 
 const {
   POSTGRES_USER,
@@ -47,7 +48,7 @@ async function waitForPostgres() {
   process.exit(1);
 }
 
-async function runSetup() {
+async function setupPostgres() {
   const rootClient = new Client({
     user: POSTGRES_USER,
     password: POSTGRES_PASSWORD,
@@ -57,10 +58,8 @@ async function runSetup() {
   });
   await rootClient.connect();
 
-  // Set timezone
   await rootClient.query(`SET TIME ZONE '${TIMEZONE}';`);
   
-  // Create users if they don't exist
   const users = [
     { name: AUTH_DB_USER, password: AUTH_DB_PASSWORD },
     { name: CHAT_DB_USER, password: CHAT_DB_PASSWORD },
@@ -86,7 +85,6 @@ async function runSetup() {
     }
   }
 
-  // Create admin user if not exists
   try {
     await rootClient.query(`
       DO $$
@@ -104,7 +102,6 @@ async function runSetup() {
     console.error(`Error creating admin user:`, error.message);
   }
 
-  // Create databases individually (outside transaction)
   const databases = [
     { name: AUTH_DB_NAME, owner: AUTH_DB_USER },
     { name: CHAT_DB_NAME, owner: CHAT_DB_USER },
@@ -114,7 +111,6 @@ async function runSetup() {
 
   for (const db of databases) {
     try {
-      // Check if database exists
       const dbCheckResult = await rootClient.query(`
         SELECT 1 FROM pg_database WHERE datname = '${db.name}'
       `);
@@ -130,7 +126,6 @@ async function runSetup() {
     }
   }
 
-  // Grant privileges
   try {
     await rootClient.query(`
       GRANT ALL PRIVILEGES ON DATABASE "${AUTH_DB_NAME}" TO "${ADMIN_DB_USER}";
@@ -146,46 +141,14 @@ async function runSetup() {
   }
 
   await rootClient.end();
-
-//   // Setup schema + Users table in AUTH_DB_NAME
-//   const authClient = new Client({
-//     user: POSTGRES_USER,
-//     password: POSTGRES_PASSWORD,
-//     database: AUTH_DB_NAME
-//   });
-//   await authClient.connect();
-
-//   const authSQL = `
-//     REVOKE ALL ON SCHEMA public FROM PUBLIC;
-//     GRANT USAGE ON SCHEMA public TO "${AUTH_DB_USER}";
-//     GRANT ALL ON SCHEMA public TO "${ADMIN_DB_USER}";
-
-//     CREATE TABLE IF NOT EXISTS "Users" (
-//       "id" SERIAL PRIMARY KEY,
-//       "email" VARCHAR(255) NOT NULL UNIQUE,
-//       "password" VARCHAR(255) NOT NULL,
-//       "twoFactorSecret" VARCHAR(255),
-//       "createdAt" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
-//       "updatedAt" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP
-//     );
-
-//     CREATE INDEX IF NOT EXISTS "users_email_idx" ON "Users" ("email");
-
-//     GRANT ALL PRIVILEGES ON DATABASE "${AUTH_DB_NAME}" TO "${AUTH_DB_USER}";
-//     GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA public TO "${AUTH_DB_USER}";
-//     GRANT ALL PRIVILEGES ON ALL SEQUENCES IN SCHEMA public TO "${AUTH_DB_USER}";
-//     GRANT ALL PRIVILEGES ON SCHEMA public TO "${AUTH_DB_USER}";
-
-//     ALTER TABLE "Users" OWNER TO "${AUTH_DB_USER}";
-//   `;
-
-//   await authClient.query(authSQL);
-//   await authClient.end();
-
   console.log('PostgreSQL setup complete!');
 }
 
-(async () => {
-  await waitForPostgres();
-  await runSetup();
-})();
+if (require.main === module) {
+  (async () => {
+    await waitForPostgres();
+    await setupPostgres();
+  })();
+}
+
+module.exports = { setupPostgres };

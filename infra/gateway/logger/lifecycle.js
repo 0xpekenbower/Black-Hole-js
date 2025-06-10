@@ -91,7 +91,7 @@ export function createLifecycleLog(request, reply, error = null) {
   const sessionId = getSessionId(request);
 
   const lifecycleLog = {
-    event: "request_lifecycle",
+    event_type: "request_lifecycle",
     requestId: requestData.requestId,
     frontend: {
       userAgent: requestData.userAgent,

@@ -1,5 +1,6 @@
 const { spawn } = require('child_process');
 const path = require('path');
+const setupKafkaTopics = require('./kafka.js');
 const { setupElasticsearch } = require('./elasticsearch');
 
 // List of setup scripts to run
@@ -34,6 +35,13 @@ const main = async () => {
     console.log('Starting Elasticsearch setup...');
     await setupElasticsearch();
     console.log('Elasticsearch setup completed successfully.');
+    
+    console.log('Starting Kafka topics setup...');
+    const kafkaSetupSuccess = await setupKafkaTopics();
+    if (!kafkaSetupSuccess) {
+      throw new Error('Kafka setup failed');
+    }
+    console.log('Kafka topics setup completed successfully.');
     
     for (const script of setupScripts) {
       await runScript(script);
