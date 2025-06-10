@@ -28,6 +28,7 @@
     "jsonwebtoken": "^9.0.2",
     "nodemon": "^3.1.10",
     "pino": "^8.16.0",
-    "pino-pretty": "^10.2.3"
+    "pino-pretty": "^10.2.3",
+    "pino-socket": "^7.4.0"
   }
 }

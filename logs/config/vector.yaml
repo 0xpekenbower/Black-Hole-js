@@ -27,6 +27,14 @@ sources:
       ignored_header_bytes: 0
     max_line_bytes: 32768
     max_read_bytes: 2048
+    
+  # TCP source for gateway logs
+  gateway_logs:
+    type: socket
+    address: 0.0.0.0:9000
+    mode: tcp
+    decoding:
+      codec: json
 
 transforms:
   parse_nginx_access:
@@ -100,6 +108,7 @@ sinks:
     inputs:
       - enrich_frontend_logs
       - parse_nginx_errors
+      - gateway_logs
     mode: tcp
     address: logstash:5044
     encoding:

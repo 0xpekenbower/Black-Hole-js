@@ -6,7 +6,7 @@ import { registerLifecycleHooks } from './logger/lifecycle.js';
 export async function createApp() {
   const app = Fastify({ 
     logger: false, 
-    disableRequestLogging: true, 
+    disableRequestLogging: true,
   });  
       
   registerLifecycleHooks(app);

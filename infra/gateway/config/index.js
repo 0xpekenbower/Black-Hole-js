@@ -15,4 +15,9 @@ export const cors = {
 export const server = {
   port: 8000,
   host: '0.0.0.0'
+};
+
+export const vector = {
+  host: process.env.VECTOR_HOST || 'vector',
+  port: parseInt(process.env.VECTOR_PORT || '9000', 10)
 }; 

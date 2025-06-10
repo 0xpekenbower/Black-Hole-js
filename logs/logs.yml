@@ -71,7 +71,8 @@ services:
       - ./logs/config/vector.yaml:/etc/vector/vector.yaml:ro
       - logs_data_nginx:/var/log/nginx:ro
       - logs_data_vector:/var/lib/vector:rw
-    # Command to ensure Vector waits for log files and then starts
+    ports:
+      - 9000:9000
     depends_on:
       - logstash
     restart: on-failure
@@ -80,6 +81,7 @@ services:
 
 volumes:
   elasticsearch:
+  logs_data_vector:
 
 networks:
   blackholejs:
