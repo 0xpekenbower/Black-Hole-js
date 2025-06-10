@@ -11,7 +11,8 @@ import {
   ChangePasswordResponse,
   SearchUser,
   RelationshipsResponse,
-  EditProfileRequest
+  EditProfileRequest,
+  AchievementsResponse
 } from '@/types/Dashboard';
 import { TokenManager } from './TokenManager';
 
@@ -172,5 +173,14 @@ export class DashboardService {
   async getAllRelations(): Promise<ApiResponse<RelationshipsResponse>> {
     const headers = this.getAuthHeaders();
     return this.client.get<RelationshipsResponse>(Endpoints.Dashboard.All_relations, headers);
+  }
+
+  /**
+   * Get user achievements
+   * @returns Promise with response containing user achievements
+   */
+  async getAchievements(): Promise<ApiResponse<AchievementsResponse>> {
+    const headers = this.getAuthHeaders();
+    return this.client.get<AchievementsResponse>(Endpoints.Dashboard.My_achievements, headers);
   }
 } 

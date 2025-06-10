@@ -217,3 +217,18 @@ export const personalInfoSchema = z.object({
 
 export type PersonalInfoFormValues = z.infer<typeof personalInfoSchema>;
 export type PasswordFormValues = z.infer<typeof passwordSchema>;
+
+// Achievement types
+export interface Achievement {
+  id: number;
+  title: string;
+  description: string;
+  coin_reward: number;
+  icon_path: string;
+  parts?: number;
+  total_parts?: number;
+}
+
+export interface AchievementsResponse {
+  msg: Achievement[];
+}

@@ -4,7 +4,7 @@ import React, { useState, useEffect, useCallback } from 'react'
 import { useLang } from '@/context/langContext'
 import { Button } from '@/components/ui/button'
 import Link from 'next/link'
-import { Home, Gamepad2, MessageSquare, Users, Trophy, History, Settings, Search, ChevronLeft, ChevronRight, X, LogOut, ChartBar } from 'lucide-react'
+import { Home, Gamepad2, MessageSquare, Users, Trophy, History, Settings, Search, ChevronLeft, ChevronRight, X, LogOut, ChartBar, Award } from 'lucide-react'
 import { Input } from '@/components/ui/input'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
 import { usePathname } from 'next/navigation'
@@ -164,6 +164,7 @@ const DashboardSidebar = () => {
     { name: 'Chat', href: '/dashboard/chat', icon: <MessageSquare className="h-5 w-5" /> },
     { name: 'Friends', href: '/dashboard/friends', icon: <Users className="h-5 w-5" /> },
     { name: 'Leaderboard', href: '/dashboard/leaderboard', icon: <Trophy className="h-5 w-5" /> },
+    // { name: 'Achievements', href: '/dashboard/achievements', icon: <Award className="h-5 w-5" /> },
     { name: 'History', href: '/dashboard/history', icon: <History className="h-5 w-5" /> },
     { name: 'Statistics', href: '/dashboard/statistics', icon: <ChartBar className="h-5 w-5" /> },
     { name: 'Settings', href: '/dashboard/settings', icon: <Settings className="h-5 w-5" /> },
