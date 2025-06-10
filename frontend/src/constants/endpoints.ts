@@ -20,6 +20,7 @@ const Endpoints = {
 
       Get_card: '/api/dash/get-card/',
       Search: '/api/dash/search/',
+      Edit: '/api/dash/edit/',
 
       Send_req: '/api/dash/send-req/',
       Cancel: '/api/dash/cancel/', 

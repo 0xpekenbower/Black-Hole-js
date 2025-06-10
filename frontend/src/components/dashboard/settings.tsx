@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { 
   Card, 
   CardContent, 
@@ -22,6 +22,7 @@ import { Button } from "@/components/ui/button"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Label } from "@/components/ui/label"
 import { useForm } from "react-hook-form"
+import { zodResolver } from "@hookform/resolvers/zod"
 import { 
   User, 
   Save,
@@ -29,52 +30,22 @@ import {
   KeyRound,
   Smartphone
 } from "lucide-react"
-import { dashboardService } from '@/lib/api'
-import { handleApiError } from '@/utils/errorHandler'
+import { useSettings } from '@/hooks/useSettings'
+import { 
+  PersonalInfoProps, 
+  PasswordProps, 
+  OTPProps,
+  PersonalInfoFormValues,
+  PasswordFormValues,
+  personalInfoSchema,
+  passwordSchema
+} from '@/types/Dashboard'
+import { useAuth } from '@/hooks/useAuth'
+import { useRouter } from 'next/navigation'
 
-// Type definitions
-interface UserData {
-  first_name: string;
-  last_name: string;
-  username: string;
-  email?: string;
-  avatar: string;
-  is_oauth: boolean;
-  is_otp_active: boolean;
-  is_otp_verified: boolean;
-}
-
-interface PersonalInfoData {
-  first_name: string;
-  last_name: string;
-  username: string;
-  email?: string;
-  avatar?: string;
-}
-
-interface OTPData {
-  is_otp_active: boolean;
-  is_otp_verified: boolean;
-}
-
-interface FormComponentProps {
-  initialData: PersonalInfoData;
-  onSuccess?: () => void;
-}
-
-interface PasswordFormProps {
-  onSuccess?: () => void;
-}
-
-interface OTPFormProps {
-  initialData: OTPData;
-  onSuccess?: () => void;
-}
-
-function PersonalInfoForm({ initialData, onSuccess }: FormComponentProps) {
-  const [isLoading, setIsLoading] = useState(false)
-  
-  const form = useForm({
+function PersonalInfoForm({ initialData, onSubmit, isLoading, error }: PersonalInfoProps) {
+  const form = useForm<PersonalInfoFormValues>({
+    resolver: zodResolver(personalInfoSchema),
     defaultValues: {
       first_name: initialData.first_name,
       last_name: initialData.last_name,
@@ -83,12 +54,11 @@ function PersonalInfoForm({ initialData, onSuccess }: FormComponentProps) {
     }
   })
 
-  const handleSubmit = (data: Record<string, string>) => {
-    setIsLoading(true)
-    setTimeout(() => {
-      onSuccess?.()
-      setIsLoading(false)
-    }, 1000)
+  const handleSubmit = async (data: PersonalInfoFormValues) => {
+    await onSubmit({
+      first_name: data.first_name,
+      last_name: data.last_name
+    });
   }
 
   return (
@@ -103,6 +73,11 @@ function PersonalInfoForm({ initialData, onSuccess }: FormComponentProps) {
         </CardDescription>
       </CardHeader>
       <CardContent className="flex-1">
+        {error && (
+          <div className="bg-destructive/10 border border-destructive rounded-xl p-4 text-destructive mb-4">
+            {error}
+          </div>
+        )}
         <Form {...form}>
           <form className="space-y-4">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -193,24 +168,23 @@ function PersonalInfoForm({ initialData, onSuccess }: FormComponentProps) {
   )
 }
 
-function PasswordChangeForm({ onSuccess }: PasswordFormProps) {
-  const [isLoading, setIsLoading] = useState(false)
-  
-  const form = useForm({
+function PasswordChangeForm({ onSubmit, isLoading, error }: PasswordProps) {
+  const form = useForm<PasswordFormValues>({
+    resolver: zodResolver(passwordSchema),
     defaultValues: {
-      current_password: "",
-      new_password: "",
-      confirm_password: ""
+      old_pass: "",
+      new_pass: "",
+      re_pass: ""
     }
   })
 
-  const handleSubmit = (data: Record<string, string>) => {
-    setIsLoading(true)
-    setTimeout(() => {
-      onSuccess?.()
-      setIsLoading(false)
-      form.reset()
-    }, 1000)
+  const handleSubmit = async (data: PasswordFormValues) => {
+    try {
+      await onSubmit(data);
+      form.reset();
+    } catch (err) {
+      console.log(err);
+    }
   }
 
   return (
@@ -225,11 +199,16 @@ function PasswordChangeForm({ onSuccess }: PasswordFormProps) {
         </CardDescription>
       </CardHeader>
       <CardContent className="flex-1">
+        {error && (
+          <div className="bg-destructive/10 border border-destructive rounded-xl p-4 text-destructive mb-4">
+            {error}
+          </div>
+        )}
         <Form {...form}>
           <form className="space-y-4">
             <FormField
               control={form.control}
-              name="current_password"
+              name="old_pass"
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Current Password</FormLabel>
@@ -242,7 +221,7 @@ function PasswordChangeForm({ onSuccess }: PasswordFormProps) {
             />
             <FormField
               control={form.control}
-              name="new_password"
+              name="new_pass"
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>New Password</FormLabel>
@@ -255,7 +234,7 @@ function PasswordChangeForm({ onSuccess }: PasswordFormProps) {
             />
             <FormField
               control={form.control}
-              name="confirm_password"
+              name="re_pass"
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Confirm New Password</FormLabel>
@@ -287,17 +266,16 @@ function PasswordChangeForm({ onSuccess }: PasswordFormProps) {
   )
 }
 
-function OTPSetupForm({ initialData, onSuccess }: OTPFormProps) {
-  const [isLoading, setIsLoading] = useState(false)
+function OTPSetupForm({ initialData, onToggle, isLoading, error }: OTPProps) {
   const [isActive, setIsActive] = useState(initialData.is_otp_active)
   
-  const handleToggleOTP = () => {
-    setIsLoading(true)
-    setTimeout(() => {
-      setIsActive(!isActive)
-      onSuccess?.()
-      setIsLoading(false)
-    }, 1000)
+  const handleToggleOTP = async () => {
+    try {
+      await onToggle(!isActive);
+      setIsActive(!isActive);
+    } catch (err) {
+      console.log(err);
+    }
   }
 
   return (
@@ -312,6 +290,11 @@ function OTPSetupForm({ initialData, onSuccess }: OTPFormProps) {
         </CardDescription>
       </CardHeader>
       <CardContent className="flex-1">
+        {error && (
+          <div className="bg-destructive/10 border border-destructive rounded-xl p-4 text-destructive mb-4">
+            {error}
+          </div>
+        )}
         <div className="space-y-4">
           <div className="flex items-center justify-between">
             <div>
@@ -353,49 +336,24 @@ function OTPSetupForm({ initialData, onSuccess }: OTPFormProps) {
 }
 
 export function SettingsComponent() {
-  const [userData, setUserData] = useState<UserData | null>(null);
-  const [isLoading, setIsLoading] = useState<boolean>(true);
-  const [error, setError] = useState<string | null>(null);
+  const { 
+    userData, 
+    isLoading, 
+    error, 
+    updateProfile, 
+    changePassword, 
+    toggleOTP, 
+    fetchUserData 
+  } = useSettings();
+  
+  const { logout } = useAuth();
+  const router = useRouter();
 
   useEffect(() => {
-    const fetchUserData = async () => {
-      setIsLoading(true);
-      setError(null);
-      
-      try {
-        const response = await dashboardService.getCard();
-        
-        if (!response.status.success || !response.data) {
-          throw new Error(response.status.message);
-        }
-        
-        const userCardData = response.data;        
-        setUserData({
-          first_name: userCardData.User.first_name || '',
-          last_name: userCardData.User.last_name || '',
-          username: userCardData.User.username,
-          avatar: userCardData.User.avatar || '',
-          is_oauth: userCardData.User.is_oauth,
-          is_otp_active: false,
-          is_otp_verified: false
-        });
-      } catch (err) {
-        const errorMessage = handleApiError(err, 'Settings');
-        setError(errorMessage);
-        console.error(err);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-    
     fetchUserData();
-  }, []);
+  }, [fetchUserData]);
 
-  const handleUpdateSuccess = () => {
-    // In a real implementation, we would refresh the user data here
-  }
-
-  if (isLoading) {
+  if (isLoading && !userData) {
     return (
       <div className="flex justify-center items-center h-64">
         <Loader2 className="h-12 w-12 animate-spin text-primary" />
@@ -417,12 +375,27 @@ export function SettingsComponent() {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <PersonalInfoForm 
             initialData={userData}
-            onSuccess={handleUpdateSuccess}
+            onSubmit={updateProfile}
+            isLoading={isLoading}
+            error={error}
           />
 
           {!userData.is_oauth && (
             <PasswordChangeForm 
-              onSuccess={handleUpdateSuccess}
+              onSubmit={async (data) => {
+                try {
+                  await changePassword({
+                    oldPassword: data.old_pass,
+                    newPassword: data.new_pass
+                  });                  
+                  await logout();
+                  router.push('/login');
+                } catch (err) {
+                  console.log(err);
+                }
+              }}
+              isLoading={isLoading}
+              error={error}
             />
           )}
           
@@ -452,7 +425,9 @@ export function SettingsComponent() {
               is_otp_active: userData.is_otp_active,
               is_otp_verified: userData.is_otp_verified
             }}
-            onSuccess={handleUpdateSuccess}
+            onToggle={toggleOTP}
+            isLoading={isLoading}
+            error={error}
           />
         </div>
       </div>

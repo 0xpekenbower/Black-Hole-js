@@ -1,4 +1,5 @@
 import { ApiResponse } from "./Auth";
+import { z } from "zod";
 
 /**
  * Dashboard types
@@ -97,6 +98,21 @@ export interface ChangePasswordResponse {
   } | null;
 }
 
+// Profile Edit
+export interface EditProfileRequest {
+  first_name?: string;
+  last_name?: string;
+  bio?: string;
+  avatar?: string;
+  background?: string;
+}
+
+export interface EditProfileResponse {
+  data?: {
+    success: boolean;
+  } | null;
+}
+
 // User relationships
 export interface UserRelation {
   id?: number;
@@ -121,3 +137,83 @@ export interface RelationshipsResponse {
 }
 
 export type LogoutResponse = ApiResponse<ApiResponse>;
+
+// Settings types
+export interface PersonalInfoProps {
+  initialData: {
+    first_name: string;
+    last_name: string;
+    username: string;
+    email?: string;
+  };
+  onSubmit: (data: EditProfileRequest) => Promise<void>;
+  isLoading: boolean;
+  error: string | null;
+}
+
+export interface PasswordProps {
+  onSubmit: (data: PasswordFormValues) => Promise<void>;
+  isLoading: boolean;
+  error: string | null;
+}
+
+export interface OTPProps {
+  initialData: {
+    is_otp_active: boolean;
+    is_otp_verified: boolean;
+  };
+  onToggle: (isActive: boolean) => Promise<void>;
+  isLoading: boolean;
+  error: string | null;
+}
+
+export interface UserData {
+  first_name: string;
+  last_name: string;
+  username: string;
+  email?: string;
+  avatar: string;
+  is_oauth: boolean;
+  is_otp_active: boolean;
+  is_otp_verified: boolean;
+}
+
+export interface UseSettingsProps {
+  onSuccess?: () => void;
+}
+
+export interface UseSettingsReturn {
+  userData: UserData | null;
+  isLoading: boolean;
+  error: string | null;
+  updateProfile: (data: EditProfileRequest) => Promise<void>;
+  changePassword: (data: ChangePasswordRequest) => Promise<void>;
+  toggleOTP: (isActive: boolean) => Promise<void>;
+  fetchUserData: () => Promise<void>;
+}
+
+// Schema for password validation
+export const passwordSchema = z.object({
+  old_pass: z.string().min(1, "Current password is required"),
+  new_pass: z.string()
+    .min(10, "Password must be at least 10 characters")
+    .regex(/[a-z]/, "Password must contain lowercase letters")
+    .regex(/[A-Z]/, "Password must contain uppercase letters")
+    .regex(/[0-9]/, "Password must contain numbers")
+    .regex(/[@$!%*?&'"]/, "Password must contain special characters"),
+  re_pass: z.string().min(1, "Confirm password is required")
+}).refine(data => data.new_pass === data.re_pass, {
+  message: "Passwords don't match",
+  path: ["re_pass"]
+});
+
+// Schema for personal info validation
+export const personalInfoSchema = z.object({
+  first_name: z.string().min(1, "First name is required"),
+  last_name: z.string().min(1, "Last name is required"),
+  username: z.string(),
+  email: z.string().optional()
+});
+
+export type PersonalInfoFormValues = z.infer<typeof personalInfoSchema>;
+export type PasswordFormValues = z.infer<typeof passwordSchema>;

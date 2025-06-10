@@ -10,7 +10,8 @@ import {
   ChangePasswordRequest,
   ChangePasswordResponse,
   SearchUser,
-  RelationshipsResponse
+  RelationshipsResponse,
+  EditProfileRequest
 } from '@/types/Dashboard';
 import { TokenManager } from './TokenManager';
 
@@ -71,13 +72,27 @@ export class DashboardService {
   }
 
   /**
+   * Edit user profile
+   * @param data - Profile data to update
+   * @returns Promise with response
+   */
+  async editProfile(data: EditProfileRequest): Promise<ApiResponse<null>> {
+    const headers = this.getAuthHeaders();
+    return this.client.post<null>(Endpoints.Dashboard.Edit, data, headers);
+  }
+
+  /**
    * Change user password
    * @param data - Password change data
    * @returns Promise with response
    */
   async changePassword(data: ChangePasswordRequest): Promise<ApiResponse<ChangePasswordResponse['data']>> {
     const headers = this.getAuthHeaders();
-    return this.client.post<ChangePasswordResponse['data']>(Endpoints.Auth.Change_password, data, headers);
+    const payload = {
+      old_pass: data.oldPassword,
+      new_pass: data.newPassword
+    };
+    return this.client.post<ChangePasswordResponse['data']>(Endpoints.Auth.Change_password, payload, headers);
   }
 
   /**
