@@ -75,7 +75,8 @@ jobs:
       - name: Build and push redis
         uses: docker/build-push-action@v4
         with:
-          context: ./infra/dockerfiles/Dockerfile.rd
+          context: ./infra/dockerfiles
+          dockerfile: Dockerfile.rd
           push: true
           tags: ghcr.io/${{ github.repository_owner }}/blackholejs-redis:latest
           cache-from: type=gha
@@ -83,7 +84,8 @@ jobs:
       - name: Build and push postgres
         uses: docker/build-push-action@v4
         with:
-          context: ./infra/dockerfiles/Dockerfile.pg
+          context: ./infra/dockerfiles
+          dockerfile: Dockerfile.pg
           push: true
           tags: ghcr.io/${{ github.repository_owner }}/blackholejs-postgres:latest
           cache-from: type=gha
@@ -92,7 +94,8 @@ jobs:
       - name: Build and push kafka
         uses: docker/build-push-action@v4
         with:
-          context: ./infra/dockerfiles/Dockerfile.kf
+          context: ./infra/dockerfiles
+          dockerfile: Dockerfile.kf
           push: true
           tags: ghcr.io/${{ github.repository_owner }}/blackholejs-kafka:latest
           cache-from: type=gha
@@ -100,7 +103,8 @@ jobs:
       - name: Build and push pgadmin
         uses: docker/build-push-action@v4
         with:
-          context: ./infra/dockerfiles/Dockerfile.pga
+          context: ./infra/dockerfiles
+          dockerfile: Dockerfile.pga
           push: true
           tags: ghcr.io/${{ github.repository_owner }}/blackholejs-pgadmin:latest
           cache-from: type=gha
@@ -109,7 +113,8 @@ jobs:
       - name: Build and push nginx
         uses: docker/build-push-action@v4
         with:
-          context: ./infra/dockerfiles/Dockerfile.ng
+          context: ./infra/dockerfiles
+          dockerfile: Dockerfile.ng
           push: true
           tags: ghcr.io/${{ github.repository_owner }}/blackholejs-nginx:latest
           cache-from: type=gha
