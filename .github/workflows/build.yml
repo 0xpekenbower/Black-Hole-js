@@ -131,3 +131,38 @@ jobs:
           tags: ghcr.io/${{ github.repository_owner }}/blackholejs-grafana:latest
           cache-from: type=gha
           cache-to: type=gha,mode=max
+
+      - name: Build and push vector
+        uses: docker/build-push-action@v4
+        with:
+          context: ./logs/vector
+          push: true
+          tags: ghcr.io/${{ github.repository_owner }}/blackholejs-vector:latest
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Build and push elasticsearch
+        uses: docker/build-push-action@v4
+        with:
+          context: ./logs/elasticsearch
+          push: true
+          tags: ghcr.io/${{ github.repository_owner }}/blackholejs-elasticsearch:latest
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+      - name: Build and push kibana
+        uses: docker/build-push-action@v4
+        with:
+          context: ./logs/kibana
+          push: true
+          tags: ghcr.io/${{ github.repository_owner }}/blackholejs-kibana:latest
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+      - name: Build and push logstash
+        uses: docker/build-push-action@v4
+        with:
+          context: ./logs/logstash
+          push: true
+          tags: ghcr.io/${{ github.repository_owner }}/blackholejs-logstash:latest
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+      
