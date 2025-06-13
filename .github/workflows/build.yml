@@ -13,10 +13,21 @@ jobs:
     permissions:
       contents: read
       packages: write
+      # Add permission for repository variables
+      actions: write
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
+
+      # Set initial build status to 'in_progress'
+      - name: Set initial build status
+        run: |
+          gh api --method PATCH -H "Accept: application/vnd.github.v3+json" \
+            /repos/${{ github.repository }}/actions/variables/BUILD_STATUS \
+            -f name=BUILD_STATUS -f value=in_progress
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v2
@@ -29,140 +40,248 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Build and push frontend image
+        id: build_frontend
         uses: docker/build-push-action@v4
         with:
           context: ./frontend
-          push: true
+          push: false # First build without pushing
+          load: true
           tags: ghcr.io/${{ github.repository_owner }}/blackholejs-frontend:latest
           cache-from: type=gha
           cache-to: type=gha,mode=max
+        continue-on-error: false
 
       - name: Build and push auth service image
+        id: build_auth
         uses: docker/build-push-action@v4
         with:
           context: ./services/auth
-          push: true
+          push: false
+          load: true
           tags: ghcr.io/${{ github.repository_owner }}/blackholejs-auth:latest
           cache-from: type=gha
           cache-to: type=gha,mode=max
+        continue-on-error: false
 
       - name: Build and push chat service image
+        id: build_chat
         uses: docker/build-push-action@v4
         with:
           context: ./services/chat
-          push: true
+          push: false
+          load: true
           tags: ghcr.io/${{ github.repository_owner }}/blackholejs-chat:latest
           cache-from: type=gha
           cache-to: type=gha,mode=max
+        continue-on-error: false
 
       - name: Build and push game service image
+        id: build_game
         uses: docker/build-push-action@v4
         with:
           context: ./services/game
-          push: true
+          push: false
+          load: true
           tags: ghcr.io/${{ github.repository_owner }}/blackholejs-game:latest
           cache-from: type=gha
           cache-to: type=gha,mode=max
+        continue-on-error: false
 
       - name: Build and push dash service image
+        id: build_dash
         uses: docker/build-push-action@v4
         with:
           context: ./services/dash
-          push: true
+          push: false
+          load: true
           tags: ghcr.io/${{ github.repository_owner }}/blackholejs-dash:latest
           cache-from: type=gha
           cache-to: type=gha,mode=max
+        continue-on-error: false
+
       - name: Build and push redis
+        id: build_redis
         uses: docker/build-push-action@v4
         with:
           context: ./infra/redis
-          push: true
+          push: false
+          load: true
           tags: ghcr.io/${{ github.repository_owner }}/blackholejs-redis:latest
           cache-from: type=gha
           cache-to: type=gha,mode=max
+        continue-on-error: false
+
       - name: Build and push postgres
+        id: build_postgres
         uses: docker/build-push-action@v4
         with:
           context: ./infra/postgres
-          push: true
+          push: false
+          load: true
           tags: ghcr.io/${{ github.repository_owner }}/blackholejs-postgres:latest
           cache-from: type=gha
           cache-to: type=gha,mode=max
+        continue-on-error: false
 
       - name: Build and push kafka
+        id: build_kafka
         uses: docker/build-push-action@v4
         with:
           context: ./infra/kafka
-          push: true
+          push: false
+          load: true
           tags: ghcr.io/${{ github.repository_owner }}/blackholejs-kafka:latest
           cache-from: type=gha
           cache-to: type=gha,mode=max
+        continue-on-error: false
+
       - name: Build and push pgadmin
+        id: build_pgadmin
         uses: docker/build-push-action@v4
         with:
           context: ./infra/pgadmin
-          push: true
+          push: false
+          load: true
           tags: ghcr.io/${{ github.repository_owner }}/blackholejs-pgadmin:latest
           cache-from: type=gha
           cache-to: type=gha,mode=max
+        continue-on-error: false
 
       - name: Build and push nginx
+        id: build_nginx
         uses: docker/build-push-action@v4
         with:
           context: ./infra/nginx
-          push: true
+          push: false
+          load: true
           tags: ghcr.io/${{ github.repository_owner }}/blackholejs-nginx:latest
           cache-from: type=gha
           cache-to: type=gha,mode=max
+        continue-on-error: false
       
       - name: Build and push prometheus
+        id: build_prometheus
         uses: docker/build-push-action@v4
         with:
           context: ./metrics/prometheus
-          push: true
+          push: false
+          load: true
           tags: ghcr.io/${{ github.repository_owner }}/blackholejs-prometheus:latest
           cache-from: type=gha
           cache-to: type=gha,mode=max
+        continue-on-error: false
+
       - name: Build and push grafana
+        id: build_grafana
         uses: docker/build-push-action@v4
         with:
           context: ./metrics/grafana
-          push: true
+          push: false
+          load: true
           tags: ghcr.io/${{ github.repository_owner }}/blackholejs-grafana:latest
           cache-from: type=gha
           cache-to: type=gha,mode=max
+        continue-on-error: false
 
       - name: Build and push vector
+        id: build_vector
         uses: docker/build-push-action@v4
         with:
           context: ./logs/vector
-          push: true
+          push: false
+          load: true
           tags: ghcr.io/${{ github.repository_owner }}/blackholejs-vector:latest
           cache-from: type=gha
           cache-to: type=gha,mode=max
+        continue-on-error: false
 
       - name: Build and push elasticsearch
+        id: build_elasticsearch
         uses: docker/build-push-action@v4
         with:
           context: ./logs/elasticsearch
-          push: true
+          push: false
+          load: true
           tags: ghcr.io/${{ github.repository_owner }}/blackholejs-elasticsearch:latest
           cache-from: type=gha
           cache-to: type=gha,mode=max
+        continue-on-error: false
+
       - name: Build and push kibana
+        id: build_kibana
         uses: docker/build-push-action@v4
         with:
           context: ./logs/kibana
-          push: true
+          push: false
+          load: true
           tags: ghcr.io/${{ github.repository_owner }}/blackholejs-kibana:latest
           cache-from: type=gha
           cache-to: type=gha,mode=max
+        continue-on-error: false
+
       - name: Build and push logstash
+        id: build_logstash
         uses: docker/build-push-action@v4
         with:
           context: ./logs/logstash
-          push: true
+          push: false
+          load: true
           tags: ghcr.io/${{ github.repository_owner }}/blackholejs-logstash:latest
           cache-from: type=gha
           cache-to: type=gha,mode=max
+        continue-on-error: false
       
+      - name: Build and push gateway
+        id: build_gateway
+        uses: docker/build-push-action@v4
+        with:
+          context: ./infra/gateway
+          push: false
+          load: true
+          tags: ghcr.io/${{ github.repository_owner }}/blackholejs-gateway:latest
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+        continue-on-error: false
+
+      # Push all images if all builds succeeded
+      - name: Push all images
+        if: success()
+        run: |
+          docker push ghcr.io/${{ github.repository_owner }}/blackholejs-frontend:latest
+          docker push ghcr.io/${{ github.repository_owner }}/blackholejs-auth:latest
+          docker push ghcr.io/${{ github.repository_owner }}/blackholejs-chat:latest
+          docker push ghcr.io/${{ github.repository_owner }}/blackholejs-game:latest
+          docker push ghcr.io/${{ github.repository_owner }}/blackholejs-dash:latest
+          docker push ghcr.io/${{ github.repository_owner }}/blackholejs-redis:latest
+          docker push ghcr.io/${{ github.repository_owner }}/blackholejs-postgres:latest
+          docker push ghcr.io/${{ github.repository_owner }}/blackholejs-kafka:latest
+          docker push ghcr.io/${{ github.repository_owner }}/blackholejs-pgadmin:latest
+          docker push ghcr.io/${{ github.repository_owner }}/blackholejs-nginx:latest
+          docker push ghcr.io/${{ github.repository_owner }}/blackholejs-prometheus:latest
+          docker push ghcr.io/${{ github.repository_owner }}/blackholejs-grafana:latest
+          docker push ghcr.io/${{ github.repository_owner }}/blackholejs-vector:latest
+          docker push ghcr.io/${{ github.repository_owner }}/blackholejs-elasticsearch:latest
+          docker push ghcr.io/${{ github.repository_owner }}/blackholejs-kibana:latest
+          docker push ghcr.io/${{ github.repository_owner }}/blackholejs-logstash:latest
+          docker push ghcr.io/${{ github.repository_owner }}/blackholejs-gateway:latest
+
+      # Set final build status based on workflow success
+      - name: Set build status on success
+        if: success()
+        run: |
+          gh api --method PATCH -H "Accept: application/vnd.github.v3+json" \
+            /repos/${{ github.repository }}/actions/variables/BUILD_STATUS \
+            -f name=BUILD_STATUS -f value=success
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      # Set build status to failed if any step fails
+      - name: Set build status on failure
+        if: failure()
+        run: |
+          gh api --method PATCH -H "Accept: application/vnd.github.v3+json" \
+            /repos/${{ github.repository }}/actions/variables/BUILD_STATUS \
+            -f name=BUILD_STATUS -f value=failure
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
