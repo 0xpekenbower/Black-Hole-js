@@ -115,3 +115,19 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
       
+      - name: Build and push prometheus
+        uses: docker/build-push-action@v4
+        with:
+          context: ./metrics/prometheus
+          push: true
+          tags: ghcr.io/${{ github.repository_owner }}/blackholejs-prometheus:latest
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+      - name: Build and push grafana
+        uses: docker/build-push-action@v4
+        with:
+          context: ./metrics/grafana
+          push: true
+          tags: ghcr.io/${{ github.repository_owner }}/blackholejs-grafana:latest
+          cache-from: type=gha
+          cache-to: type=gha,mode=max

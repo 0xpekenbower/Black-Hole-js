@@ -1,21 +1,21 @@
 services:
 
   elasticsearch:
-    image: docker.elastic.co/elasticsearch/elasticsearch:9.0.0
+    build:
+      context: ./logs/elasticsearch
+      dockerfile: Dockerfile
     container_name: elasticsearch
     volumes:
-      - ./logs/config/elasticsearch.yml:/usr/share/elasticsearch/config/elasticsearch.yml:ro,Z
       - elasticsearch:/usr/share/elasticsearch/data:Z
+      # - ./logs/config/elasticsearch.yml:/usr/share/elasticsearch/config/elasticsearch.yml:ro,Z
     ports:
       - 9200:9200
       - 9300:9300
-    environment:
-      node.name: elasticsearch
-      ES_JAVA_OPTS: -Xms512m -Xmx512m
-      ELASTIC_PASSWORD: ${ELASTIC_PASSWORD:-}
-      # Use single node discovery in order to disable production mode and avoid bootstrap checks.
-      # see: https://www.elastic.co/docs/deploy-manage/deploy/self-managed/bootstrap-checks
-      discovery.type: single-node
+    # environment:
+      # node.name: elasticsearch
+      # ES_JAVA_OPTS: -Xms512m -Xmx512m
+      # ELASTIC_PASSWORD: ${ELASTIC_PASSWORD:-}
+      # discovery.type: single-node
     env_file:
       - ./.env
     restart: unless-stopped
@@ -23,11 +23,13 @@ services:
       - blackholejs
 
   logstash:
-    image: docker.elastic.co/logstash/logstash:9.0.0
+    build:
+      context: ./logs/logstash
+      dockerfile: Dockerfile
     container_name: logstash
-    volumes:
-      - ./logs/config/logstash.yml:/usr/share/logstash/config/logstash.yml:ro,Z
-      - ./logs/config/pipeline:/usr/share/logstash/pipeline:ro,Z
+    # volumes:
+    #   - ./logs/config/logstash.yml:/usr/share/logstash/config/logstash.yml:ro,Z
+    #   - ./logs/config/pipeline:/usr/share/logstash/pipeline:ro,Z
     ports:
       - 5044:5044
       - 50000:50000/tcp
@@ -46,10 +48,12 @@ services:
       - blackholejs
 
   kibana:
-    image: docker.elastic.co/kibana/kibana:9.0.0
+    build:
+      context: ./logs/kibana
+      dockerfile: Dockerfile
     container_name: kibana
-    volumes:
-      - ./logs/config/kibana.yml:/usr/share/kibana/config/kibana.yml:ro,Z
+    # volumes:
+    #   - ./logs/config/kibana.yml:/usr/share/kibana/config/kibana.yml:ro,Z
     ports:
       - 5601:5601
     environment:
@@ -66,11 +70,13 @@ services:
 
   vector:
     container_name: vector
-    image: timberio/vector:0.47.0-alpine
+    build:
+      context: ./logs/vector
+      dockerfile: Dockerfile
     volumes:
-      - ./logs/config/vector.yaml:/etc/vector/vector.yaml:ro
-      - logs_data_nginx:/var/log/nginx:ro
       - logs_data_vector:/var/lib/vector:rw
+      # - ./logs/config/vector.yaml:/etc/vector/vector.yaml:ro
+      # - logs_data_nginx:/var/log/nginx:ro
     ports:
       - 9000:9000
     depends_on:
