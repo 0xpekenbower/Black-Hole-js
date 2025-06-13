@@ -3,8 +3,8 @@ services:
   redis:
     container_name: redis-hole
     build:
-      context: ./infra/dockerfiles
-      dockerfile: Dockerfile.rd
+      context: ./infra/redis
+      dockerfile: Dockerfile
     ports:
       - "${REDIS_PORT:-6379}:6379"
     volumes:
@@ -18,8 +18,8 @@ services:
   postgres_db:
     container_name: postgres_db
     build:
-      context: ./infra/dockerfiles
-      dockerfile: Dockerfile.pg
+      context: ./infra/postgres
+      dockerfile: Dockerfile
     ports:
       - "5432:5432"
     volumes:
@@ -35,8 +35,8 @@ services:
   pgadmin:
     container_name: pgadmin
     build:
-      context: ./infra/dockerfiles
-      dockerfile: Dockerfile.pga
+      context: ./infra/pgadmin
+      dockerfile: Dockerfile
     env_file:
       - .env
     ports:
@@ -48,14 +48,14 @@ services:
   nginx:
     container_name: nginx
     build:
-      context: ./infra/dockerfiles
-      dockerfile: Dockerfile.ng
+      context: ./infra/nginx
+      dockerfile: Dockerfile
     ports:
       - "6969:80"
     volumes:
-      - ./infra/config/default.conf:/etc/nginx/conf.d/default.conf:ro
-      - ./infra/config/nginx.conf:/etc/nginx/nginx.conf:ro
-      - ./infra/config/502.html:/etc/nginx/conf.d/502.html:ro
+      - ./infra/nginx/default.conf:/etc/nginx/conf.d/default.conf:ro
+      - ./infra/nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./infra/nginx/502.html:/etc/nginx/conf.d/502.html:ro
       - logs_data_nginx:/var/log/nginx:rw
     env_file:
       - .env
@@ -65,8 +65,8 @@ services:
 
   kafka:
     build:
-      context: ./infra/dockerfiles
-      dockerfile: Dockerfile.kf
+      context: ./infra/kafka
+      dockerfile: Dockerfile
     container_name: kafka
     ports:
       - "9092:9092"
