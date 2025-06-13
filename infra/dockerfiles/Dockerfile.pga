@@ -1,0 +1,5 @@
+FROM dpage/pgadmin4:9.4.0
+
+ENV PGADMIN_DEFAULT_EMAIL=abdellahelmrabet101@gmail.com \
+    PGADMIN_CONFIG_SERVER_MODE=True \
+    PGADMIN_LISTEN_PORT=8087
