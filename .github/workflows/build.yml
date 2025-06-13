@@ -3,18 +3,97 @@ name: Build and Publish Docker Images
 on:
   push:
     branches: [ master ]
+    paths:
+      - 'frontend/**'
+      - 'services/**'
+      - 'infra/**'
+      - 'logs/**'
+      - 'metrics/**'
+      - '.github/workflows/build.yml'
   pull_request:
     branches: [ master ]
+    paths:
+      - 'frontend/**'
+      - 'services/**'
+      - 'infra/**'
+      - 'logs/**'
+      - 'metrics/**'
+      - '.github/workflows/build.yml'
   workflow_dispatch:
 
 jobs:
+  changes:
+    runs-on: ubuntu-latest
+    outputs:
+      frontend: ${{ steps.filter.outputs.frontend }}
+      auth: ${{ steps.filter.outputs.auth }}
+      chat: ${{ steps.filter.outputs.chat }}
+      game: ${{ steps.filter.outputs.game }}
+      dash: ${{ steps.filter.outputs.dash }}
+      redis: ${{ steps.filter.outputs.redis }}
+      postgres: ${{ steps.filter.outputs.postgres }}
+      kafka: ${{ steps.filter.outputs.kafka }}
+      pgadmin: ${{ steps.filter.outputs.pgadmin }}
+      nginx: ${{ steps.filter.outputs.nginx }}
+      prometheus: ${{ steps.filter.outputs.prometheus }}
+      grafana: ${{ steps.filter.outputs.grafana }}
+      vector: ${{ steps.filter.outputs.vector }}
+      elasticsearch: ${{ steps.filter.outputs.elasticsearch }}
+      kibana: ${{ steps.filter.outputs.kibana }}
+      logstash: ${{ steps.filter.outputs.logstash }}
+      gateway: ${{ steps.filter.outputs.gateway }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - name: Check for file changes
+        uses: dorny/paths-filter@v2
+        id: filter
+        with:
+          filters: |
+            frontend:
+              - 'frontend/**'
+            auth:
+              - 'services/auth/**'
+            chat:
+              - 'services/chat/**'
+            game:
+              - 'services/game/**'
+            dash:
+              - 'services/dash/**'
+            redis:
+              - 'infra/redis/**'
+            postgres:
+              - 'infra/postgres/**'
+            kafka:
+              - 'infra/kafka/**'
+            pgadmin:
+              - 'infra/pgadmin/**'
+            nginx:
+              - 'infra/nginx/**'
+            prometheus:
+              - 'metrics/prometheus/**'
+            grafana:
+              - 'metrics/grafana/**'
+            vector:
+              - 'logs/vector/**'
+            elasticsearch:
+              - 'logs/elasticsearch/**'
+            kibana:
+              - 'logs/kibana/**'
+            logstash:
+              - 'logs/logstash/**'
+            gateway:
+              - 'infra/gateway/**'
+
   build:
+    needs: changes
     runs-on: ubuntu-latest
     permissions:
       contents: read
       packages: write
-      # Add permission for repository variables
-      actions: write
 
     steps:
       - name: Checkout repository
@@ -27,7 +106,7 @@ jobs:
             /repos/${{ github.repository }}/actions/variables/BUILD_STATUS \
             -f name=BUILD_STATUS -f value=in_progress
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ secrets.PAT_TOKEN }}
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v2
@@ -39,231 +118,328 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Build and push frontend image
+      # Build frontend image if there are changes or if workflow was manually triggered
+      - name: Build frontend image
         id: build_frontend
+        if: needs.changes.outputs.frontend == 'true' || github.event_name == 'workflow_dispatch'
         uses: docker/build-push-action@v4
         with:
           context: ./frontend
-          push: false # First build without pushing
+          push: false
           load: true
           tags: ghcr.io/${{ github.repository_owner }}/blackholejs-frontend:latest
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
+          cache-from: type=gha,scope=frontend
+          cache-to: type=gha,mode=max,scope=frontend
         continue-on-error: false
 
-      - name: Build and push auth service image
+      # Build auth service image if there are changes or if workflow was manually triggered
+      - name: Build auth service image
         id: build_auth
+        if: needs.changes.outputs.auth == 'true' || github.event_name == 'workflow_dispatch'
         uses: docker/build-push-action@v4
         with:
           context: ./services/auth
           push: false
           load: true
           tags: ghcr.io/${{ github.repository_owner }}/blackholejs-auth:latest
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
+          cache-from: type=gha,scope=auth
+          cache-to: type=gha,mode=max,scope=auth
         continue-on-error: false
 
-      - name: Build and push chat service image
+      # Build chat service image if there are changes or if workflow was manually triggered
+      - name: Build chat service image
         id: build_chat
+        if: needs.changes.outputs.chat == 'true' || github.event_name == 'workflow_dispatch'
         uses: docker/build-push-action@v4
         with:
           context: ./services/chat
           push: false
           load: true
           tags: ghcr.io/${{ github.repository_owner }}/blackholejs-chat:latest
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
+          cache-from: type=gha,scope=chat
+          cache-to: type=gha,mode=max,scope=chat
         continue-on-error: false
 
-      - name: Build and push game service image
+      # Build game service image if there are changes or if workflow was manually triggered
+      - name: Build game service image
         id: build_game
+        if: needs.changes.outputs.game == 'true' || github.event_name == 'workflow_dispatch'
         uses: docker/build-push-action@v4
         with:
           context: ./services/game
           push: false
           load: true
           tags: ghcr.io/${{ github.repository_owner }}/blackholejs-game:latest
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
+          cache-from: type=gha,scope=game
+          cache-to: type=gha,mode=max,scope=game
         continue-on-error: false
 
-      - name: Build and push dash service image
+      # Build dash service image if there are changes or if workflow was manually triggered
+      - name: Build dash service image
         id: build_dash
+        if: needs.changes.outputs.dash == 'true' || github.event_name == 'workflow_dispatch'
         uses: docker/build-push-action@v4
         with:
           context: ./services/dash
           push: false
           load: true
           tags: ghcr.io/${{ github.repository_owner }}/blackholejs-dash:latest
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
+          cache-from: type=gha,scope=dash
+          cache-to: type=gha,mode=max,scope=dash
         continue-on-error: false
 
-      - name: Build and push redis
+      # Build redis image if there are changes or if workflow was manually triggered
+      - name: Build redis image
         id: build_redis
+        if: needs.changes.outputs.redis == 'true' || github.event_name == 'workflow_dispatch'
         uses: docker/build-push-action@v4
         with:
           context: ./infra/redis
           push: false
           load: true
           tags: ghcr.io/${{ github.repository_owner }}/blackholejs-redis:latest
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
+          cache-from: type=gha,scope=redis
+          cache-to: type=gha,mode=max,scope=redis
         continue-on-error: false
 
-      - name: Build and push postgres
+      # Build postgres image if there are changes or if workflow was manually triggered
+      - name: Build postgres image
         id: build_postgres
+        if: needs.changes.outputs.postgres == 'true' || github.event_name == 'workflow_dispatch'
         uses: docker/build-push-action@v4
         with:
           context: ./infra/postgres
           push: false
           load: true
           tags: ghcr.io/${{ github.repository_owner }}/blackholejs-postgres:latest
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
+          cache-from: type=gha,scope=postgres
+          cache-to: type=gha,mode=max,scope=postgres
         continue-on-error: false
 
-      - name: Build and push kafka
+      # Build kafka image if there are changes or if workflow was manually triggered
+      - name: Build kafka image
         id: build_kafka
+        if: needs.changes.outputs.kafka == 'true' || github.event_name == 'workflow_dispatch'
         uses: docker/build-push-action@v4
         with:
           context: ./infra/kafka
           push: false
           load: true
           tags: ghcr.io/${{ github.repository_owner }}/blackholejs-kafka:latest
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
+          cache-from: type=gha,scope=kafka
+          cache-to: type=gha,mode=max,scope=kafka
         continue-on-error: false
 
-      - name: Build and push pgadmin
+      # Build pgadmin image if there are changes or if workflow was manually triggered
+      - name: Build pgadmin image
         id: build_pgadmin
+        if: needs.changes.outputs.pgadmin == 'true' || github.event_name == 'workflow_dispatch'
         uses: docker/build-push-action@v4
         with:
           context: ./infra/pgadmin
           push: false
           load: true
           tags: ghcr.io/${{ github.repository_owner }}/blackholejs-pgadmin:latest
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
+          cache-from: type=gha,scope=pgadmin
+          cache-to: type=gha,mode=max,scope=pgadmin
         continue-on-error: false
 
-      - name: Build and push nginx
+      # Build nginx image if there are changes or if workflow was manually triggered
+      - name: Build nginx image
         id: build_nginx
+        if: needs.changes.outputs.nginx == 'true' || github.event_name == 'workflow_dispatch'
         uses: docker/build-push-action@v4
         with:
           context: ./infra/nginx
           push: false
           load: true
           tags: ghcr.io/${{ github.repository_owner }}/blackholejs-nginx:latest
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
+          cache-from: type=gha,scope=nginx
+          cache-to: type=gha,mode=max,scope=nginx
         continue-on-error: false
       
-      - name: Build and push prometheus
+      # Build prometheus image if there are changes or if workflow was manually triggered
+      - name: Build prometheus image
         id: build_prometheus
+        if: needs.changes.outputs.prometheus == 'true' || github.event_name == 'workflow_dispatch'
         uses: docker/build-push-action@v4
         with:
           context: ./metrics/prometheus
           push: false
           load: true
           tags: ghcr.io/${{ github.repository_owner }}/blackholejs-prometheus:latest
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
+          cache-from: type=gha,scope=prometheus
+          cache-to: type=gha,mode=max,scope=prometheus
         continue-on-error: false
 
-      - name: Build and push grafana
+      # Build grafana image if there are changes or if workflow was manually triggered
+      - name: Build grafana image
         id: build_grafana
+        if: needs.changes.outputs.grafana == 'true' || github.event_name == 'workflow_dispatch'
         uses: docker/build-push-action@v4
         with:
           context: ./metrics/grafana
           push: false
           load: true
           tags: ghcr.io/${{ github.repository_owner }}/blackholejs-grafana:latest
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
+          cache-from: type=gha,scope=grafana
+          cache-to: type=gha,mode=max,scope=grafana
         continue-on-error: false
 
-      - name: Build and push vector
+      # Build vector image if there are changes or if workflow was manually triggered
+      - name: Build vector image
         id: build_vector
+        if: needs.changes.outputs.vector == 'true' || github.event_name == 'workflow_dispatch'
         uses: docker/build-push-action@v4
         with:
           context: ./logs/vector
           push: false
           load: true
           tags: ghcr.io/${{ github.repository_owner }}/blackholejs-vector:latest
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
+          cache-from: type=gha,scope=vector
+          cache-to: type=gha,mode=max,scope=vector
         continue-on-error: false
 
-      - name: Build and push elasticsearch
+      # Build elasticsearch image if there are changes or if workflow was manually triggered
+      - name: Build elasticsearch image
         id: build_elasticsearch
+        if: needs.changes.outputs.elasticsearch == 'true' || github.event_name == 'workflow_dispatch'
         uses: docker/build-push-action@v4
         with:
           context: ./logs/elasticsearch
           push: false
           load: true
           tags: ghcr.io/${{ github.repository_owner }}/blackholejs-elasticsearch:latest
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
+          cache-from: type=gha,scope=elasticsearch
+          cache-to: type=gha,mode=max,scope=elasticsearch
         continue-on-error: false
 
-      - name: Build and push kibana
+      # Build kibana image if there are changes or if workflow was manually triggered
+      - name: Build kibana image
         id: build_kibana
+        if: needs.changes.outputs.kibana == 'true' || github.event_name == 'workflow_dispatch'
         uses: docker/build-push-action@v4
         with:
           context: ./logs/kibana
           push: false
           load: true
           tags: ghcr.io/${{ github.repository_owner }}/blackholejs-kibana:latest
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
+          cache-from: type=gha,scope=kibana
+          cache-to: type=gha,mode=max,scope=kibana
         continue-on-error: false
 
-      - name: Build and push logstash
+      # Build logstash image if there are changes or if workflow was manually triggered
+      - name: Build logstash image
         id: build_logstash
+        if: needs.changes.outputs.logstash == 'true' || github.event_name == 'workflow_dispatch'
         uses: docker/build-push-action@v4
         with:
           context: ./logs/logstash
           push: false
           load: true
           tags: ghcr.io/${{ github.repository_owner }}/blackholejs-logstash:latest
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
+          cache-from: type=gha,scope=logstash
+          cache-to: type=gha,mode=max,scope=logstash
         continue-on-error: false
       
-      - name: Build and push gateway
+      # Build gateway image if there are changes or if workflow was manually triggered
+      - name: Build gateway image
         id: build_gateway
+        if: needs.changes.outputs.gateway == 'true' || github.event_name == 'workflow_dispatch'
         uses: docker/build-push-action@v4
         with:
           context: ./infra/gateway
           push: false
           load: true
           tags: ghcr.io/${{ github.repository_owner }}/blackholejs-gateway:latest
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
+          cache-from: type=gha,scope=gateway
+          cache-to: type=gha,mode=max,scope=gateway
         continue-on-error: false
 
-      # Push all images if all builds succeeded
-      - name: Push all images
-        if: success()
-        run: |
-          docker push ghcr.io/${{ github.repository_owner }}/blackholejs-frontend:latest
-          docker push ghcr.io/${{ github.repository_owner }}/blackholejs-auth:latest
-          docker push ghcr.io/${{ github.repository_owner }}/blackholejs-chat:latest
-          docker push ghcr.io/${{ github.repository_owner }}/blackholejs-game:latest
-          docker push ghcr.io/${{ github.repository_owner }}/blackholejs-dash:latest
-          docker push ghcr.io/${{ github.repository_owner }}/blackholejs-redis:latest
-          docker push ghcr.io/${{ github.repository_owner }}/blackholejs-postgres:latest
-          docker push ghcr.io/${{ github.repository_owner }}/blackholejs-kafka:latest
-          docker push ghcr.io/${{ github.repository_owner }}/blackholejs-pgadmin:latest
-          docker push ghcr.io/${{ github.repository_owner }}/blackholejs-nginx:latest
-          docker push ghcr.io/${{ github.repository_owner }}/blackholejs-prometheus:latest
-          docker push ghcr.io/${{ github.repository_owner }}/blackholejs-grafana:latest
-          docker push ghcr.io/${{ github.repository_owner }}/blackholejs-vector:latest
-          docker push ghcr.io/${{ github.repository_owner }}/blackholejs-elasticsearch:latest
-          docker push ghcr.io/${{ github.repository_owner }}/blackholejs-kibana:latest
-          docker push ghcr.io/${{ github.repository_owner }}/blackholejs-logstash:latest
-          docker push ghcr.io/${{ github.repository_owner }}/blackholejs-gateway:latest
+      # Push frontend image if it was built
+      - name: Push frontend image
+        if: steps.build_frontend.outcome == 'success'
+        run: docker push ghcr.io/${{ github.repository_owner }}/blackholejs-frontend:latest
+
+      # Push auth image if it was built
+      - name: Push auth image
+        if: steps.build_auth.outcome == 'success'
+        run: docker push ghcr.io/${{ github.repository_owner }}/blackholejs-auth:latest
+
+      # Push chat image if it was built
+      - name: Push chat image
+        if: steps.build_chat.outcome == 'success'
+        run: docker push ghcr.io/${{ github.repository_owner }}/blackholejs-chat:latest
+
+      # Push game image if it was built
+      - name: Push game image
+        if: steps.build_game.outcome == 'success'
+        run: docker push ghcr.io/${{ github.repository_owner }}/blackholejs-game:latest
+
+      # Push dash image if it was built
+      - name: Push dash image
+        if: steps.build_dash.outcome == 'success'
+        run: docker push ghcr.io/${{ github.repository_owner }}/blackholejs-dash:latest
+
+      # Push redis image if it was built
+      - name: Push redis image
+        if: steps.build_redis.outcome == 'success'
+        run: docker push ghcr.io/${{ github.repository_owner }}/blackholejs-redis:latest
+
+      # Push postgres image if it was built
+      - name: Push postgres image
+        if: steps.build_postgres.outcome == 'success'
+        run: docker push ghcr.io/${{ github.repository_owner }}/blackholejs-postgres:latest
+
+      # Push kafka image if it was built
+      - name: Push kafka image
+        if: steps.build_kafka.outcome == 'success'
+        run: docker push ghcr.io/${{ github.repository_owner }}/blackholejs-kafka:latest
+
+      # Push pgadmin image if it was built
+      - name: Push pgadmin image
+        if: steps.build_pgadmin.outcome == 'success'
+        run: docker push ghcr.io/${{ github.repository_owner }}/blackholejs-pgadmin:latest
+
+      # Push nginx image if it was built
+      - name: Push nginx image
+        if: steps.build_nginx.outcome == 'success'
+        run: docker push ghcr.io/${{ github.repository_owner }}/blackholejs-nginx:latest
+
+      # Push prometheus image if it was built
+      - name: Push prometheus image
+        if: steps.build_prometheus.outcome == 'success'
+        run: docker push ghcr.io/${{ github.repository_owner }}/blackholejs-prometheus:latest
+
+      # Push grafana image if it was built
+      - name: Push grafana image
+        if: steps.build_grafana.outcome == 'success'
+        run: docker push ghcr.io/${{ github.repository_owner }}/blackholejs-grafana:latest
+
+      # Push vector image if it was built
+      - name: Push vector image
+        if: steps.build_vector.outcome == 'success'
+        run: docker push ghcr.io/${{ github.repository_owner }}/blackholejs-vector:latest
+
+      # Push elasticsearch image if it was built
+      - name: Push elasticsearch image
+        if: steps.build_elasticsearch.outcome == 'success'
+        run: docker push ghcr.io/${{ github.repository_owner }}/blackholejs-elasticsearch:latest
+
+      # Push kibana image if it was built
+      - name: Push kibana image
+        if: steps.build_kibana.outcome == 'success'
+        run: docker push ghcr.io/${{ github.repository_owner }}/blackholejs-kibana:latest
+
+      # Push logstash image if it was built
+      - name: Push logstash image
+        if: steps.build_logstash.outcome == 'success'
+        run: docker push ghcr.io/${{ github.repository_owner }}/blackholejs-logstash:latest
+
+      # Push gateway image if it was built
+      - name: Push gateway image
+        if: steps.build_gateway.outcome == 'success'
+        run: docker push ghcr.io/${{ github.repository_owner }}/blackholejs-gateway:latest
 
       # Set final build status based on workflow success
       - name: Set build status on success
@@ -273,7 +449,7 @@ jobs:
             /repos/${{ github.repository }}/actions/variables/BUILD_STATUS \
             -f name=BUILD_STATUS -f value=success
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ secrets.PAT_TOKEN }}
 
       # Set build status to failed if any step fails
       - name: Set build status on failure
@@ -283,5 +459,5 @@ jobs:
             /repos/${{ github.repository }}/actions/variables/BUILD_STATUS \
             -f name=BUILD_STATUS -f value=failure
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ secrets.PAT_TOKEN }}
 
