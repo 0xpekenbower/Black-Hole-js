@@ -57,7 +57,7 @@ export default function HomePage() {
   }
 
   const navigateToDashboard = () => {
-    router.push("/Dashboard") 
+    router.push("/dashboard") // TODO Dashboard returns 404
   }
 
   const fadeIn = {

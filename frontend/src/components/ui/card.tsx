@@ -15,6 +15,7 @@ function Card({ className, ...props }: React.ComponentProps<"div">) {
   )
 }
 
+
 function CardHeader({ className, ...props }: React.ComponentProps<"div">) {
   return (
     <div
@@ -81,12 +82,83 @@ function CardFooter({ className, ...props }: React.ComponentProps<"div">) {
   )
 }
 
+
+// NOTE added by abennar
+
+type TitleProps = {
+	children?: React.ReactNode;
+	onClick?: () => void; // Fixed typo: React.ReactNodel -> () => void
+};
+
+const HeadButton = ({ children, onClick }: TitleProps) => (
+	<div
+		onClick={onClick}
+		className="px-4 py-2 rounded-md font-bold text-sm text-slate-300 hover:text-white hover:bg-white/10 
+			transition-colors duration-200 cursor-pointer"
+	>
+		{children}
+	</div>
+);
+
+
+const Button = ({
+	children,
+	className = "",
+	...props
+}: React.ButtonHTMLAttributes<HTMLButtonElement>) => (
+	<button
+		className={`text-white focus:ring-4 focus:ring-blue-300 
+			font-medium rounded-lg text-sm px-5 py-2.5 focus:outline-none ${className}`}
+		{...props}
+	>
+		{children}
+	</button>
+);
+
+const GameModeCard = ({
+	title,
+	description,
+	onClick,
+	buttonClassName = "",
+	buttonDisplayText = "",
+	children
+}: {
+	title: React.ReactNode;
+	description: string;
+	onClick?: () => void;
+	buttonClassName?: string;
+	buttonDisplayText?: string;
+	children?: React.ReactNode
+}) => (
+	<Card>
+		<CardHeader>
+			<CardTitle>{title}</CardTitle>
+		</CardHeader>
+		<CardContent className="text-center w-full max-w-2xl break-words">
+			<p>{description}</p>
+			{children && (
+				<div className="mt-4">
+					{children}
+				</div>
+			)}
+		</CardContent>
+		<CardFooter>
+			<Button onClick={onClick} className={buttonClassName}>
+				{buttonDisplayText}
+			</Button>
+		</CardFooter>
+	</Card >
+);
+
+
 export {
-  Card,
-  CardHeader,
-  CardFooter,
-  CardTitle,
-  CardAction,
-  CardDescription,
-  CardContent,
+	GameModeCard,
+	HeadButton,
+	Card,
+	CardHeader,
+	CardFooter,
+	CardTitle,
+	CardAction,
+	CardDescription,
+	CardContent,
 }
