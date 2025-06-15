@@ -91,7 +91,7 @@ function InvitationCard() {
 
 export default function Home() {
 	const socket = useRef<Socket | null>(null)
-	const [view, setView] = useState<"menu" | "1vs1-options" | "play" | "game">("menu")
+	const [view, setView] = useState<"menu" | "1vs1-options" | "play" | "game" | "tournament">("menu")
 	const [isDisabled, setIsDisabled] = useState(false)
 	const [username, Setusername] = useState("");
 
@@ -204,6 +204,7 @@ export default function Home() {
 								description="Join or create tournaments with multiple players. Compete in bracket-style competitions and win trophies."
 								buttonClassName="bg-amber-600 hover:bg-amber-500 text-white"
 								buttonDisplayText="Join Tournament"
+								onClick={() => setView("tournament")}
 							/>
 						</div>
 					</section>
