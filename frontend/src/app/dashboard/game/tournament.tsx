@@ -9,7 +9,7 @@ import { Group } from "lucide-react"
 interface PlayersGroup {
 	player1: string,
 	player2: string
-};
+}
 
 
 type GroupFieldInput = {
@@ -17,8 +17,6 @@ type GroupFieldInput = {
 	value: PlayersGroup;
 	onChange: (value: PlayersGroup) => void;
 };
-
-
 
 
 function GroupField({ children, value, onChange }: GroupFieldInput) {
@@ -46,34 +44,17 @@ function GroupField({ children, value, onChange }: GroupFieldInput) {
 const Tournament = () => {
 	const [count, setCount] = useState(4);
 	const [mode, setMode] = useState<"lobby" | "playing">("lobby");
+	// const [players, setPlayers] = useState(Array(4).fill(''));
 	const [groups, setGroups] = useState<PlayersGroup[]>(Array(count / 2).fill({ player1: "", player2: "" }));
+
 	const handleCountChange = (e: any) => {
 		const newCount = parseInt(e.target.value);
 		setGroups(Array(newCount / 2).fill({ player1: "", player2: "" }));
 		setCount(newCount);
 	};
 
-	const [matches, setMatches] = useState([]);
-
 	const DisplayGroups = () => {
-		const matchesList = []
-
-		for (let i = 0; i <= (groups.length / 2); i += 2) {
-			const match = [groups[i], groups[i + 1]];
-			matchesList.push(match);
-		}
-
-
-		matchesList.forEach(match => {
-			console.log(match);
-		});
-
-
-		// start matches in order one by one 
-		// push the winners to another list 
-		// repeat until one player os left 
-
-
+		console.log("Groups:", groups);
 	};
 
 	return (

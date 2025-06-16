@@ -7,6 +7,7 @@ import { Socket } from 'socket.io-client'
 import { redirect } from "next/navigation";
 
 import { HeadButton, GameModeCard } from '@/components/ui/card'
+import Tournament from "../test/page";
 // import Game from "@/components/game/render"
 
 
@@ -145,91 +146,91 @@ export default function Home() {
 
 			{/* TODO add goback button */}
 
-			<div className="min-h-screen  from-slate-900 to-slate-800 text-dark dark:text-white">
-				{/* // TODO header buttons and stuff commented here -> add go back here  */}
-				{/* <header className="p-6 border-b border-slate-700 flex items-center justify-between"> */}
-				{/* 	<h1 onClick={() => setView("menu")} className="text-xl font-bold">Pong Arena</h1> */}
-				{/* 	<div className="flex space-x-4"> */}
-				{/* 		{/* <InvitationsDropdown /> */}
-				{/* 		<HeadButton>Settings</HeadButton> */}
-				{/* 		<HeadButton>Profile</HeadButton> */}
-				{/* 	</div> */}
-				{/* </header> */}
+			{/* <div className="min-h-screen  from-slate-900 to-slate-800 text-dark dark:text-white"> */}
+			{/* // TODO header buttons and stuff commented here -> add go back here  */}
+			{/* <header className="p-6 border-b border-slate-700 flex items-center justify-between"> */}
+			{/* 	<h1 onClick={() => setView("menu")} className="text-xl font-bold">Pong Arena</h1> */}
+			{/* 	<div className="flex space-x-4"> */}
+			{/* 		{/* <InvitationsDropdown /> */}
+			{/* 		<HeadButton>Settings</HeadButton> */}
+			{/* 		<HeadButton>Profile</HeadButton> */}
+			{/* 	</div> */}
+			{/* </header> */}
 
-				{view !== "game" && (
-					<section className="py-16 text-center">
-						<h2 className="text-5xl font-bold mb-4">Welcome to Pong Arena</h2>
-						<p className="text-xl max-w-2xl mx-auto text-slate-700 dark:text-slate-300 ">
-							Challenge players in real-time ping pong matches or participate in
-							tournaments to climb the ranks.
-						</p>
-					</section>
-				)}
+			{view !== "game" && view !== "tournament" && (
+				<section className="py-16 text-center">
+					<h2 className="text-5xl font-bold mb-4">Welcome to Pong Arena</h2>
+					<p className="text-xl max-w-2xl mx-auto text-slate-700 dark:text-slate-300 ">
+						Challenge players in real-time ping pong matches or participate in
+						tournaments to climb the ranks.
+					</p>
+				</section>
+			)}
 
-				{view === "game" && (
-					<div className="py-10">
-						{/* <Game /> */}
+			{view === "game" && (
+				<div className="py-10">
+					{/* <Game /> */}
+				</div>
+
+			)}
+
+
+			{/* NOTE first view [1vs1  + Tournament] */}
+			{view === "menu" && (
+
+				<section className="my-6">
+					<h2 className="text-2xl font-bold mb-10 text-center">
+						Select Game Mode
+					</h2>
+					<div className="flex flex-wrap justify-center gap-8">
+						<GameModeCard
+							title={
+								<div className="flex items-center justify-center space-x-2">
+									<Users className="h-6 w-6 text-green-400" />
+									<span>1 vs 1 Match</span>
+								</div>
+							}
+							description="Challenge another player to a direct match. Test your skills in real-time and climb the leaderboard."
+							buttonClassName="bg-green-600 hover:bg-green-500 text-white"
+							buttonDisplayText="Play"
+							onClick={() => setView("1vs1-options")}
+						/>
+						<GameModeCard
+							title={
+								<div className="flex items-center justify-center space-x-2">
+									<Trophy className="text-amber-400" />
+									<span>Tournament</span>
+								</div>
+							}
+							description="Join or create tournaments with multiple players. Compete in bracket-style competitions and win trophies."
+							buttonClassName="bg-amber-600 hover:bg-amber-500 text-white"
+							buttonDisplayText="Join Tournament"
+							onClick={() => setView("tournament")}
+						/>
 					</div>
+				</section>
+			)}
 
-				)}
-
-
-				{/* NOTE first view [1vs1  + Tournament] */}
-				{view === "menu" && (
-
-					<section className="my-6">
-						<h2 className="text-2xl font-bold mb-10 text-center">
-							Select Game Mode
-						</h2>
-						<div className="flex flex-wrap justify-center gap-8">
-							<GameModeCard
-								title={
-									<div className="flex items-center justify-center space-x-2">
-										<Users className="h-6 w-6 text-green-400" />
-										<span>1 vs 1 Match</span>
-									</div>
-								}
-								description="Challenge another player to a direct match. Test your skills in real-time and climb the leaderboard."
-								buttonClassName="bg-green-600 hover:bg-green-500 text-white"
-								buttonDisplayText="Play"
-								onClick={() => setView("1vs1-options")}
-							/>
-							<GameModeCard
-								title={
-									<div className="flex items-center justify-center space-x-2">
-										<Trophy className="text-amber-400" />
-										<span>Tournament</span>
-									</div>
-								}
-								description="Join or create tournaments with multiple players. Compete in bracket-style competitions and win trophies."
-								buttonClassName="bg-amber-600 hover:bg-amber-500 text-white"
-								buttonDisplayText="Join Tournament"
-								onClick={() => setView("tournament")}
-							/>
-						</div>
-					</section>
-				)}
-
-				{/* NOTE 1 vs 1 options  */}
-				{view === "1vs1-options" && (
-					<section className="my-6">
-						<h2 className="text-2xl font-bold mb-10 text-center">
-							Join Online Game
-						</h2>
-						<div className="flex flex-wrap justify-center gap-8">
-							<GameModeCard
-								title={
-									<div className="flex items-center justify-center space-x-2">
-										<Merge className="h-6 w-6 text-blue-400" />
-										<span>Quick Start</span>
-									</div>
-								}
-								description="is simply dummy text of the printing and typesetting industry. Lorem "
-								buttonClassName="bg-blue-400 hover:bg-blue-500 text-white"
-								buttonDisplayText="Queue"
-								onClick={() => setView("game")}
-							/>
-							{/* <GameModeCard
+			{/* NOTE 1 vs 1 options  */}
+			{view === "1vs1-options" && (
+				<section className="my-6">
+					<h2 className="text-2xl font-bold mb-10 text-center">
+						Join Online Game
+					</h2>
+					<div className="flex flex-wrap justify-center gap-8">
+						<GameModeCard
+							title={
+								<div className="flex items-center justify-center space-x-2">
+									<Merge className="h-6 w-6 text-blue-400" />
+									<span>Quick Start</span>
+								</div>
+							}
+							description="is simply dummy text of the printing and typesetting industry. Lorem "
+							buttonClassName="bg-blue-400 hover:bg-blue-500 text-white"
+							buttonDisplayText="Queue"
+							onClick={() => setView("game")}
+						/>
+						{/* <GameModeCard
 								title={
 									<div className="flex items-center justify-center space-x-2">
 										<SmilePlus className="text-fuchsia-600" />
@@ -247,13 +248,16 @@ export default function Home() {
 								/>
 							</GameModeCard> */}
 
-							<InvitationCard />
-						</div>
-					</section>
-				)
-				}
+						{/* <InvitationCard /> */}
+					</div>
+				</section>
+			)}
 
-			</div>
+			{view === "tournament" && (
+				<Tournament />
+			)}
+
+			{/* </div> */}
 		</>
 	)
 }
