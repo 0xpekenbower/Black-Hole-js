@@ -1,27 +1,43 @@
-
 'use client'
 
+import { useEffect, useState, createContext } from "react";
 import { io, Socket } from "socket.io-client";
 
-let socket: Socket | null = null;
+const GameSocketContext = createContext<Socket | null>(null);
 
-export default function getSocket() {
-	if (typeof window === 'undefined') return null;
-	if (!socket) {
-		try {
-			// const token = sessionStorage.getItem('jwtToken')
-			// socket = io(`http://localhost:3001`, {
-			// 	path: '/socket.io',
-			// 	transports: ['websocket'],
-			// 	auth: {
-			// 		token: token
-			// 	},
-			// 	withCredentials: true
-			// });
-		} catch (error) {
-			console.log("[ERROR]", error);
-		}
-	}
+function GameSocketProvider({ children }: { children: React.ReactNode }) {
+	const [socket, setSocket] = useState<Socket | null>(null);
 
-	return socket;
+	useEffect(() => {
+		const token = sessionStorage.getItem('jwtToken');
+		if (!token) return;
+
+		const socketInstance = io("http://localhost:3001", {
+			path: "/socket.io",
+			transports: ["websocket"],
+			auth: { token },
+			withCredentials: true,
+		});
+
+		socketInstance.on("welcome", (msg) => {
+			console.log("[GameSocket connected]:", msg);
+		});
+
+		setSocket(socketInstance);
+
+		return () => {
+			socketInstance.disconnect();
+		};
+	}, []);
+
+	return (
+		<GameSocketContext.Provider value={socket}>
+			{children}
+		</GameSocketContext.Provider>
+	);
 }
+
+export {
+	GameSocketContext,
+	GameSocketProvider
+};

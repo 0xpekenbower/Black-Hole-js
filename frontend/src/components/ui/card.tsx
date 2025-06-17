@@ -104,9 +104,11 @@ const HeadButton = ({ children, onClick }: TitleProps) => (
 const Button = ({
 	children,
 	className = "",
+	disabled = false,
 	...props
 }: React.ButtonHTMLAttributes<HTMLButtonElement>) => (
 	<button
+		disabled={disabled}
 		className={`text-white focus:ring-4 focus:ring-blue-300 
 			font-medium rounded-lg text-sm px-5 py-2.5 focus:outline-none ${className}`}
 		{...props}
