@@ -108,29 +108,81 @@ const Button = ({
 	...props
 }: React.ButtonHTMLAttributes<HTMLButtonElement>) => (
 	<button
+		type="button"
 		disabled={disabled}
-		className={`text-white focus:ring-4 focus:ring-blue-300 
-			font-medium rounded-lg text-sm px-5 py-2.5 focus:outline-none ${className}`}
+		className={`text-white bg-blue-400 hover:bg-blue-500 
+			focus:ring-4 focus:ring-blue-300 font-medium 
+			rounded-lg text-sm px-5 py-2.5 focus:outline-none 
+			disabled:opacity-50 disabled:cursor-not-allowed 
+			${className}`}
 		{...props}
 	>
 		{children}
 	</button>
 );
 
+
+// const Button = ({
+// 	children,
+// 	className = "",
+// 	disabled = false,
+// 	...props
+// }: React.ButtonHTMLAttributes<HTMLButtonElement>) => (
+// 	<button
+// 		disabled={disabled}
+// 		className={`text-white focus:ring-4 focus:ring-blue-300 
+// 			font-medium rounded-lg text-sm px-5 py-2.5 focus:outline-none ${className}`}
+// 		{...props}
+// 	>
+// 		{children}
+// 	</button>
+// );
+
+// const GameModeCard = ({
+// 	title,
+// 	description,
+// 	onClick,
+// 	buttonClassName = "",
+// 	buttonDisplayText = "",
+// 	footer,
+// 	children
+// }: {
+// 	title: React.ReactNode;
+// 	description: string;
+// 	onClick?: () => void;
+// 	buttonClassName?: string;
+// 	buttonDisplayText?: string;
+// 	children?: React.ReactNode
+// 	footer?: React.ReactNode
+// }) => (
+// 	<Card>
+// 		<CardHeader>
+// 			<CardTitle>{title}</CardTitle>
+// 		</CardHeader>
+// 		<CardContent className="text-center w-full max-w-2xl break-words">
+// 			<p>{description}</p>
+// 			{children && (
+// 				<div className="mt-4">
+// 					{children}
+// 				</div>
+// 			)}
+// 		</CardContent>
+// 		<CardFooter>
+// 			{footer}
+// 		</CardFooter>
+// 	</Card >
+// );
+
 const GameModeCard = ({
 	title,
 	description,
-	onClick,
-	buttonClassName = "",
-	buttonDisplayText = "",
+	footer,
 	children
 }: {
 	title: React.ReactNode;
 	description: string;
-	onClick?: () => void;
-	buttonClassName?: string;
-	buttonDisplayText?: string;
-	children?: React.ReactNode
+	footer?: React.ReactNode;
+	children?: React.ReactNode;
 }) => (
 	<Card>
 		<CardHeader>
@@ -138,19 +190,12 @@ const GameModeCard = ({
 		</CardHeader>
 		<CardContent className="text-center w-full max-w-2xl break-words">
 			<p>{description}</p>
-			{children && (
-				<div className="mt-4">
-					{children}
-				</div>
-			)}
+			{children && <div className="mt-4">{children}</div>}
 		</CardContent>
-		<CardFooter>
-			<Button onClick={onClick} className={buttonClassName}>
-				{buttonDisplayText}
-			</Button>
-		</CardFooter>
-	</Card >
+		{footer && <CardFooter>{footer}</CardFooter>}
+	</Card>
 );
+
 
 
 export {

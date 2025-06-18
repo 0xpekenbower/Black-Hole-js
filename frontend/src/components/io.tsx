@@ -1,43 +1,47 @@
 'use client'
 
-import { useEffect, useState, createContext } from "react";
+import { redirect } from "next/navigation";
+import { useEffect, useState, createContext, useRef } from "react";
 import { io, Socket } from "socket.io-client";
 
 const GameSocketContext = createContext<Socket | null>(null);
 
 function GameSocketProvider({ children }: { children: React.ReactNode }) {
-	const [socket, setSocket] = useState<Socket | null>(null);
+	const socketRef = useRef<Socket | null>(null);
+	const [connected, setConnected] = useState(false);
 
 	useEffect(() => {
 		const token = sessionStorage.getItem('jwtToken');
 		if (!token) return;
 
-		const socketInstance = io("http://localhost:3001", {
+		socketRef.current = io("http://localhost:3001", {
 			path: "/socket.io",
 			transports: ["websocket"],
 			auth: { token },
 			withCredentials: true,
 		});
 
-		socketInstance.on("welcome", (msg) => {
-			console.log("[GameSocket connected]:", msg);
+		socketRef.current.on("connect", () => {
+			setConnected(true);
+			console.log("[GameSocket connected]");
 		});
 
-		setSocket(socketInstance);
+		socketRef.current.on("disconnect", () => {
+			setConnected(false);
+			console.log("[GameSocket disconnected]");
+		});
 
 		return () => {
-			socketInstance.disconnect();
+			socketRef.current?.disconnect();
+			socketRef.current = null;
 		};
 	}, []);
 
 	return (
-		<GameSocketContext.Provider value={socket}>
+		<GameSocketContext.Provider value={connected ? socketRef.current : null}>
 			{children}
 		</GameSocketContext.Provider>
 	);
 }
 
-export {
-	GameSocketContext,
-	GameSocketProvider
-};
+export { GameSocketContext, GameSocketProvider };

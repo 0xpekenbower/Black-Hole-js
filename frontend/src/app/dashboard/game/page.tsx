@@ -8,8 +8,7 @@ import Home from "./home"
 
 export default function Lobby() {
 
-	return (
-
+	return(
 		<GameSocketProvider>
 			<Home />
 		</GameSocketProvider>
