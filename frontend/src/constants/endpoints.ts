@@ -4,36 +4,36 @@
 
 const Endpoints = {
   Auth: {
-    Login: "/api/auth/login/",
-    Register: "/api/auth/register/",
-    Logout: "/api/auth/logout/",
-    Send_mail: "/api/auth/send-mail/",
-    Forget_pass: "/api/auth/forget-pass/",
-    Change_password: "/api/auth/change-password/",
-    FortyTwo: "/api/auth/oauth/42/",
-    Google: "/api/auth/oauth/google/",
+    Login: "/auth/login/",
+    Register: "/auth/register/",
+    Logout: "/auth/logout/",
+    Send_mail: "/auth/send-mail/",
+    Forget_pass: "/auth/forget-pass/",
+    Change_password: "/auth/change-password/",
+    FortyTwo: "/auth/oauth/42/",
+    Google: "/auth/oauth/google/",
   },
   Dashboard: {
-      Add_achievements:'/api/dash/add-achievements/', 
-      Update_achievements:'/api/dash/update-achievements/', 
-      My_achievements:'/api/dash/my-achievements/',
+      Add_achievements:'/dash/add-achievements/', 
+      Update_achievements:'/dash/update-achievements/', 
+      My_achievements:'/dash/my-achievements/',
 
-      Get_card: '/api/dash/get-card/',
-      Search: '/api/dash/search/',
-      Edit: '/api/dash/edit/',
+      Get_card: '/dash/get-card/',
+      Search: '/dash/search/',
+      Edit: '/dash/edit/',
 
-      Send_req: '/api/dash/send-req/',
-      Cancel: '/api/dash/cancel/', 
-      Accept_req: '/api/dash/accept-req/' ,
-      Deny_req: '/api/dash/deny-req/',
-      Unfriend: '/api/dash/unfriend/', 
-      Block: '/api/dash/block/', 
-      Unblock: '/api/dash/unblock/',
+      Send_req: '/dash/send-req/',
+      Cancel: '/dash/cancel/', 
+      Accept_req: '/dash/accept-req/' ,
+      Deny_req: '/dash/deny-req/',
+      Unfriend: '/dash/unfriend/', 
+      Block: '/dash/block/', 
+      Unblock: '/dash/unblock/',
     
-      Buy:'/api/dash/store/buy/',
-      Inventory:'/api/dash/inventory/',
+      Buy:'/dash/store/buy/',
+      Inventory:'/dash/inventory/',
       
-      All_relations: '/api/dash/all-relations/',
+      All_relations: '/dash/all-relations/',
   }
 };
 

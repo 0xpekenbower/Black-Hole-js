@@ -1,40 +1,32 @@
-DC = docker compose -f ./docker-compose.yml -f ./infra/infra.yml -f ./services/services.yml -f ./metrics/metrics.yml -f ./logs/logs.yml -p blackholejs
+DCM = docker compose -f docker-compose.yml
 
 all: build up
 
-build:
-	@$(DC) build setup
-	@$(DC) build
-
 up:
-	@$(DC) up -d postgres_db elasticsearch kibana grafana kafka
-	sleep 20
-	@$(DC) up -d setup
-	sleep 20
-	@$(DC) up -d nginx redis pgadmin
-	sleep 20
-	@$(DC) up -d logstash vector prometheus node_exporter cadvisor redis_exporter postgres_exporter kafka-exporter nginx-exporter
-	sleep 30
-	@$(DC) up -d frontend gateway auth dash chat game
-
-logs:
-	@$(DC) logs -f
+	@echo "Starting all services..."
+	docker compose -f ./docker-compose.yml up -d setup
+	until [ "$$(docker inspect -f '{{.State.Status}}' setup 2>/dev/null)" = "exited" ]; do \
+		sleep 1; \
+	done;
+	docker rm setup
+	docker compose -f ./docker-compose.yml up -d
 
 down:
-	@$(DC) down
+	@echo "Stopping all services..."
+	docker compose -f ./docker-compose.yml down
 
-fdown:
-	@$(DC) down -v
+build:
+	@echo "Building all services..."
+	docker compose -f ./docker-compose.yml build
+	docker compose -f ./docker-compose.yml build setup
 
-reload:
-	@echo "Reloading services: $(filter-out $@,$(MAKECMDGOALS))"
-	@$(DC) down $(filter-out $@,$(MAKECMDGOALS))
-	@$(DC) up -d $(filter-out $@,$(MAKECMDGOALS))
+restart:
+	@echo "Restarting all services..."
+	docker compose -f ./docker-compose.yml restart
 
-freload:
-	@echo "Reloading services: $(filter-out $@,$(MAKECMDGOALS))"
-	@$(DC) down -v $(filter-out $@,$(MAKECMDGOALS))
-	@$(DC) up -d $(filter-out $@,$(MAKECMDGOALS))
+logs:
+	docker compose -f ./docker-compose.yml logs -f
 
-%:
-	@:
+clean:
+	@echo "Cleaning up..."
+	docker compose -f ./docker-compose.yml down -v

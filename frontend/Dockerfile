@@ -1,7 +1,11 @@
-FROM node:23-slim AS base
+FROM node:23-slim
+
 WORKDIR /app
 
-FROM base AS dev
+COPY package*.json ./
+RUN npm install --legacy-peer-deps
 COPY . .
-USER node
-CMD ["npm", "run", "dev"]
+
+RUN npm run build
+EXPOSE 3000
+CMD ["npm", "run", "start"]

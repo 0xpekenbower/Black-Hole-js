@@ -36,7 +36,7 @@ export class ApiClient {
    * Create a new API client instance
    */
   constructor() {
-    this.baseUrl = 'http://localhost:6969';
+    this.baseUrl = '/api'; // TODO: change it to nginx address
     this.defaultHeaders = {
       'Content-Type': 'application/json',
       'Accept': 'application/json'

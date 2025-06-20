@@ -1,6 +1,10 @@
-FROM node:23-slim AS base
+FROM node:23-slim
+
 WORKDIR /setup
 
+COPY package*.json ./
+RUN npm install
+
 COPY . .
-USER node
+
 CMD ["npm", "run", "start"]

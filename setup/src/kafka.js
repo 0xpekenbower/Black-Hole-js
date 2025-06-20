@@ -30,8 +30,8 @@ const topics = [
     replicationFactor: 1,
     configEntries: [
       { name: 'cleanup.policy', value: 'delete' },
-      { name: 'retention.ms', value: '604800000' }, // 7 days
-      { name: 'segment.bytes', value: '1073741824' } // 1GB
+      { name: 'retention.ms', value: '86400000' }, // 1 days
+      { name: 'segment.bytes', value: '107374182' } // 100GB
     ]
   },
   {
@@ -41,7 +41,7 @@ const topics = [
     configEntries: [
       { name: 'cleanup.policy', value: 'delete' },
       { name: 'retention.ms', value: '86400000' }, // 1 day
-      { name: 'segment.bytes', value: '536870912' } // 512MB
+      { name: 'segment.bytes', value: '107374182' } // 100MB
     ]
   }
 ];

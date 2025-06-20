@@ -7,7 +7,7 @@
  * API configuration
  */
 export const API_CONFIG = {
-  BASE_URL: 'http://localhost:6969/api',
+  BASE_URL: '/api',
   TIMEOUT: 30000, // 30 seconds
 };
 
@@ -15,8 +15,8 @@ export const API_CONFIG = {
  * Redis configuration
  */
 export const REDIS_CONFIG = {
-  URL: process.env.REDIS_URL || 'redis://localhost:6379',
-  PASSWORD: process.env.REDIS_PASSWORD || '60325451mMadmin',
+  URL: process.env.REDIS_URL || 'redis://redis:6379',
+  PASSWORD: process.env.REDIS_PASSWORD || 'redispassword',
   DB: parseInt(process.env.REDIS_DB || '0', 10),
   CONNECT_TIMEOUT: parseInt(process.env.REDIS_CONNECT_TIMEOUT || '5000', 10), // 5 seconds
 };

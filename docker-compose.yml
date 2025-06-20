@@ -1,18 +1,159 @@
 services:
-
   setup:
     container_name: setup
     build:
       context: ./setup
-      dockerfile: Dockerfile
-    volumes:
-      - ./setup:/setup
     env_file:
       - .env
     restart: on-failure
-    init: true
     profiles:
       - setup
+    init: true
+    depends_on:
+      - postgres_db
+      - redis
+      - kafka
+      - elasticsearch
+      - kibana
+    networks:
+      - blackholejs
+
+  nginx:
+    container_name: nginx
+    build:
+      context: ./infra/nginx
+    volumes:
+      - logs_data_nginx:/var/log/nginx:rw
+    ports:
+      - 80:80
+    env_file:
+      - .env
+    depends_on:
+      - gateway
+      - frontend
+      - kibana
+      - pgadmin
+      - prometheus
+      - grafana
+    restart: on-failure
+    networks:
+      - blackholejs
+
+  redis:
+    container_name: redis
+    build:
+      context: ./infra/redis
+    volumes:
+      - redis_data:/data
+    env_file:
+      - .env
+    restart: on-failure
+    networks:
+      - blackholejs
+
+  postgres_db:
+    container_name: postgres_db
+    build:
+      context: ./infra/postgres
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    # ports:
+    #   - "5432:5432"
+    environment:
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+    env_file:
+      - .env
+    restart: on-failure
+    networks:
+      - blackholejs
+  
+  pgadmin:
+    container_name: pgadmin
+    build:
+      context: ./infra/pgadmin
+    env_file:
+      - .env
+    # ports:
+    #   - 8087:8087
+    networks:
+      - blackholejs
+
+  kafka:
+    container_name: kafka
+    build:
+      context: ./infra/kafka
+    env_file:
+      - .env
+    restart: on-failure
+    # deploy:
+    #   resources:
+    #     limits:
+    #       memory: 256M
+    #     reservations:
+    #       memory: 128M
+    volumes:
+      - kafka_data:/var/lib/kafka/data
+    networks:
+      - blackholejs
+
+  gateway:
+    container_name: gateway
+    build:
+      context: ./infra/gateway
+    env_file:
+      - .env
+    restart: on-failure
+    depends_on:
+      - redis
+      - postgres_db
+      - kafka
+      - vector
+      - auth
+      - chat
+      - game
+      - dash
+    networks:
+      - blackholejs
+
+  auth:
+    container_name: auth
+    build:
+      context: ./services/auth
+    env_file:
+      - .env
+    restart: on-failure
+    networks:
+      - blackholejs
+
+  chat:
+    container_name: chat
+    build:
+      context: ./services/chat
+    env_file:
+      - .env
+    restart: on-failure
+    networks:
+      - blackholejs
+
+  dash:
+    container_name: dash
+    build:
+      context: ./services/dash
+    # ports:
+    #   - "8003:8003"
+    env_file:
+      - .env
+    restart: on-failure
+    networks:
+      - blackholejs
+
+  game:
+    container_name: game
+    build:
+      context: ./services/game
+    env_file:
+      - .env
+    restart: on-failure
     networks:
       - blackholejs
 
@@ -20,23 +161,206 @@ services:
     container_name: frontend
     build:
       context: ./frontend
-      dockerfile: Dockerfile
-    ports:
-      - "3000:3000"
+    env_file:
+      - .env
+    # ports:
+    #   - "3000:3000"
+    restart: on-failure
+    networks:
+      - blackholejs
+
+  elasticsearch:
+    container_name: elasticsearch
+    build:
+      context: ./infra/elasticsearch
+    env_file:
+      - .env
     volumes:
-      - ./frontend:/app
-      - /app/node_modules
+      - elasticsearch:/usr/share/elasticsearch/data:Z
+    environment:
+      - ELASTIC_PASSWORD=${ELASTIC_PASSWORD}
+    # ports:
+    #   - "9200:9200"
+    restart: on-failure
+    networks:
+      - blackholejs
+
+  logstash:
+    container_name: logstash
+    build:
+      context: ./infra/logstash
+    # ports:
+    #   - 5044:5044
+    #   - 50000:50000/tcp
+    #   - 50000:50000/udp
+    #   - 9600:9600
+    environment:
+      LS_JAVA_OPTS: -Xms256m -Xmx256m
+      LOGSTASH_PASSWORD: ${LOGSTASH_PASSWORD:-}
+      LOGSTASH_INTERNAL_PASSWORD: ${LOGSTASH_INTERNAL_PASSWORD:-}
+    depends_on:
+      - elasticsearch
+    restart: unless-stopped
+    env_file:
+      - .env
+    networks:
+      - blackholejs
+
+  kibana:
+    container_name: kibana
+    build:
+      context: ./infra/kibana
+    # ports:
+    #   - 5601:5601
+    environment:
+      KIBANA_SYSTEM_PASSWORD: ${KIBANA_SYSTEM_PASSWORD:-}
+    depends_on:
+      - elasticsearch
+    restart: unless-stopped
+    env_file:
+      - .env
+    networks:
+      - blackholejs
+
+  vector:
+    container_name: vector
+    build:
+      context: ./infra/vector
+    volumes:
+      - logs_data_vector:/var/lib/vector:rw
+    # ports:
+    #   - 9000:9000
+    depends_on:
+      - logstash
+    restart: on-failure
+    networks:
+      - blackholejs
+
+  prometheus:
+    container_name: prometheus
+    build:
+      context: ./infra/prometheus
+    restart: on-failure
+    # ports:
+    #   - "9090:9090"
+    volumes:
+      - prometheus_data:/prometheus
+    depends_on:
+      - redis_exporter
+      - postgres_exporter
+      - kafka-exporter
+      - nginx-exporter
+      - node_exporter
+      - cadvisor
+    networks:
+      - blackholejs
+
+  grafana:
+    container_name: grafana
+    build:
+      context: ./infra/grafana
+    restart: on-failure
+    # ports:
+    #   - "7050:7050"
+    env_file:
+      - .env
+    networks:
+      - blackholejs
+
+  cadvisor:
+    image: gcr.io/cadvisor/cadvisor:v0.52.1
+    container_name: cadvisor
+    restart: on-failure
+    # ports:
+    #   - "8080:8080"
+    volumes:
+      - /:/rootfs:ro
+      - /var/run:/var/run:ro
+      - /sys:/sys:ro
+      - /var/lib/docker/:/var/lib/docker:ro
+    networks:
+      - blackholejs
+
+  node_exporter:
+    image: prom/node-exporter:v1.9.1
+    container_name: node_exporter
+    volumes:
+      - /proc:/host/proc:ro
+      - /sys:/host/sys:ro
+      - /:/rootfs:ro
+      - /run/systemd:/run/systemd:ro
+    command:
+      - --path.procfs=/host/proc
+      - --path.rootfs=/rootfs
+      - --path.sysfs=/host/sys
+      - --collector.processes
+      - --collector.systemd
+      - --collector.filesystem
+    # ports:
+    #   - "9100:9100"
+    restart: unless-stopped
+    networks:
+      - blackholejs
+    pid: host
+    privileged: true
+
+  redis_exporter:
+    container_name: redis_exporter
+    image: bitnami/redis-exporter:1.73.0
+    # ports:
+    #   - "${REDIS_EXPORTER_PORT:-9121}:9121"
+    environment:
+      REDIS_ADDR: "redis://redis:6379"
     env_file:
       - .env
     restart: on-failure
-    # environment:
-    #   - GATEWAY_API=http://localhost:6969
     networks:
       - blackholejs
+
+  postgres_exporter:
+    container_name: postgres_exporter
+    image: bitnami/postgres-exporter:0.17.0
+    # ports:
+    #   - "${POSTGRES_EXPORTER_PORT:-9187}:9187"
+    environment:
+      DATA_SOURCE_NAME: "${DATA_SOURCE_NAME}"
+    env_file:
+      - .env
+    restart: on-failure
+    networks:
+      - blackholejs
+
+  kafka-exporter:
+    container_name: kafka-exporter
+    image: danielqsj/kafka-exporter 
+    command: ["--kafka.server=kafka:9092"]
+    # ports:
+    #   - 9308:9308
+    environment:
+      - KAFKA_BROKERS=kafka:9092
+    restart: on-failure
+    networks:
+      - blackholejs
+
+  nginx-exporter:
+    container_name: nginx-exporter
+    image: nginx/nginx-prometheus-exporter:1.4
+    # ports:
+    #   - "9113:9113"
+    networks:
+      - blackholejs
+    restart: on-failure
+    command:
+      - --nginx.scrape-uri=http://nginx:80/stub_status
 
 volumes:
   logs_data_nginx:
   logs_data_vector:
+  redis_data:
+  postgres_data:
+  elasticsearch:
+  prometheus_data:
+  kafka_data:
 
 networks:
   blackholejs:

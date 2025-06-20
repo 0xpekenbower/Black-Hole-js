@@ -1,9 +1,0 @@
----
-## Default Elasticsearch configuration from Elasticsearch base image.
-## https://github.com/elastic/elasticsearch/blob/main/distribution/docker/src/docker/config/elasticsearch.yml
-#
-cluster.name: blackholejs
-network.host: 0.0.0.0
-
-xpack.license.self_generated.type: basic
-xpack.security.enabled: true

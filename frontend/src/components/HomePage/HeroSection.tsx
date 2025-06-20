@@ -28,7 +28,7 @@ export function HeroSection({ content, headerHeight }: HeroSectionProps) {
   }
 
   const navigateToDashboard = () => {
-    router.push("/Dashboard") 
+    router.push("/dashboard") 
   }
 
   const fadeIn = {

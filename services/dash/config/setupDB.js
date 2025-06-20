@@ -5,10 +5,10 @@ const setupdb = async () => {
     try
     {
         const client = new Client({
-            user: process.env.USER_DB_USER,
+            user: 'dash',
             host: 'postgres_db',
-            database: process.env.USER_DB_NAME,
-            password: process.env.USER_DB_PASSWORD,
+            database: 'dash_db',
+            password: 'YourDashDbPassword123d',
             port: 5432
         });
 
@@ -23,10 +23,10 @@ const setupdb = async () => {
 
 
         const client2 = new Client({
-            user: process.env.USER_DB_USER,
+            user: 'dash',
             host: 'postgres_db',
-            database: process.env.USER_DB_NAME,
-            password: process.env.USER_DB_PASSWORD,
+            database: 'dash_db',
+            password: 'YourDashDbPassword123d',
             port: 5432
         });
 

@@ -4,34 +4,24 @@ const pg = require('pg');
 const { Client } = pg;
 
 const {
-  POSTGRES_USER,
   POSTGRES_PASSWORD,
-  TIMEZONE,
-  AUTH_DB_USER,
   AUTH_DB_PASSWORD,
-  CHAT_DB_USER,
   CHAT_DB_PASSWORD,
-  GAME_DB_USER,
   GAME_DB_PASSWORD,
-  USER_DB_USER,
-  USER_DB_PASSWORD,
-  MONITOR_DB_USER,
+  DASH_DB_PASSWORD,
   MONITOR_DB_PASSWORD,
-  ADMIN_DB_USER,
-  ADMIN_DB_PASSWORD,
-  AUTH_DB_NAME,
-  CHAT_DB_NAME,
-  GAME_DB_NAME,
-  USER_DB_NAME
+  ADMIN_DB_PASSWORD
 } = process.env;
-
+console.log(
+  `${POSTGRES_PASSWORD},${AUTH_DB_PASSWORD}`
+);
 const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
 
 async function waitForPostgres() {
   for (let i = 0; i < 30; i++) {
     try {
       const client = new Client({ 
-        user: POSTGRES_USER,
+        user: 'postgres',
         password: POSTGRES_PASSWORD,
         host: 'postgres_db',
         port: 5432
@@ -50,7 +40,7 @@ async function waitForPostgres() {
 
 async function setupPostgres() {
   const rootClient = new Client({
-    user: POSTGRES_USER,
+    user: 'postgres',
     password: POSTGRES_PASSWORD,
     database: 'postgres',
     host: 'postgres_db',
@@ -58,14 +48,14 @@ async function setupPostgres() {
   });
   await rootClient.connect();
 
-  await rootClient.query(`SET TIME ZONE '${TIMEZONE}';`);
+  await rootClient.query(`SET TIME ZONE 'Africa/Casablanca';`);
   
   const users = [
-    { name: AUTH_DB_USER, password: AUTH_DB_PASSWORD },
-    { name: CHAT_DB_USER, password: CHAT_DB_PASSWORD },
-    { name: GAME_DB_USER, password: GAME_DB_PASSWORD },
-    { name: USER_DB_USER, password: USER_DB_PASSWORD },
-    { name: MONITOR_DB_USER, password: MONITOR_DB_PASSWORD }
+    { name: 'auth', password: AUTH_DB_PASSWORD },
+    { name: 'chat', password: CHAT_DB_PASSWORD },
+    { name: 'game', password: GAME_DB_PASSWORD },
+    { name: 'dash', password: DASH_DB_PASSWORD },
+    { name: 'monitor', password: MONITOR_DB_PASSWORD }
   ];
 
   for (const user of users) {
@@ -89,24 +79,24 @@ async function setupPostgres() {
     await rootClient.query(`
       DO $$
       BEGIN
-        IF NOT EXISTS (SELECT FROM pg_catalog.pg_roles WHERE rolname = '${ADMIN_DB_USER}') THEN
-          CREATE USER "${ADMIN_DB_USER}" WITH 
+        IF NOT EXISTS (SELECT FROM pg_catalog.pg_roles WHERE rolname = 'admin') THEN
+          CREATE USER "admin" WITH 
             SUPERUSER CREATEDB CREATEROLE REPLICATION BYPASSRLS
             PASSWORD '${ADMIN_DB_PASSWORD}';
         END IF;
       END
       $$;
     `);
-    console.log(`Admin user ${ADMIN_DB_USER} created or already exists`);
+    console.log(`Admin user admin created or already exists`);
   } catch (error) {
     console.error(`Error creating admin user:`, error.message);
   }
 
   const databases = [
-    { name: AUTH_DB_NAME, owner: AUTH_DB_USER },
-    { name: CHAT_DB_NAME, owner: CHAT_DB_USER },
-    { name: GAME_DB_NAME, owner: GAME_DB_USER },
-    { name: USER_DB_NAME, owner: USER_DB_USER }
+    { name: 'auth_db', owner: 'auth' },
+    { name: 'chat_db', owner: 'chat' },
+    { name: 'game_db', owner: 'game' },
+    { name: 'dash_db', owner: 'dash' }
   ];
 
   for (const db of databases) {
@@ -128,12 +118,12 @@ async function setupPostgres() {
 
   try {
     await rootClient.query(`
-      GRANT ALL PRIVILEGES ON DATABASE "${AUTH_DB_NAME}" TO "${ADMIN_DB_USER}";
-      GRANT ALL PRIVILEGES ON DATABASE "${CHAT_DB_NAME}" TO "${ADMIN_DB_USER}";
-      GRANT ALL PRIVILEGES ON DATABASE "${GAME_DB_NAME}" TO "${ADMIN_DB_USER}";
-      GRANT ALL PRIVILEGES ON DATABASE "${USER_DB_NAME}" TO "${ADMIN_DB_USER}";
+      GRANT ALL PRIVILEGES ON DATABASE "auth_db" TO "admin";
+      GRANT ALL PRIVILEGES ON DATABASE "chat_db" TO "admin";
+      GRANT ALL PRIVILEGES ON DATABASE "game_db" TO "admin";
+      GRANT ALL PRIVILEGES ON DATABASE "dash_db" TO "admin";
 
-      GRANT pg_monitor, pg_read_all_settings, pg_read_all_stats, pg_stat_scan_tables TO "${MONITOR_DB_USER}";
+      GRANT pg_monitor, pg_read_all_settings, pg_read_all_stats, pg_stat_scan_tables TO "monitor";
     `);
     console.log('Privileges granted successfully');
   } catch (error) {
