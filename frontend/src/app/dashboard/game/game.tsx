@@ -1,105 +1,248 @@
 "use client"
 
 import { useEffect, useRef, useContext, useState } from "react"
-import { Socket } from "socket.io-client";
-import { GameSocketProvider, GameSocketContext } from "@/components/io";
+import { GameSocketContext } from "@/components/io";
 import { useView } from './view'
 import { Button } from "@/components/ui/card";
 
-interface gameOptions {
-	BallRadius: number,
-	PaddleWidth: number,
-	PaddleHeight: number;
-	canvasHeight: number,
-	canvasWidth: number
-}
-
-interface scoreType {
+interface Score {
 	left: number,
 	right: number
 }
 
-interface gameState {
+type ScalableOp = {
+	BallRadius: number,
+	PaddleWidth: number,
+	PaddleHeight: number
+}
+
+type GameState = {
 	LeftX: number,
 	RightX: number,
 	LeftY: number,
 	RightY: number,
 	BallX: number,
 	BallY: number,
-	Score: scoreType
+	Score: Score
 }
+
+const LOGICAL_WIDTH = 600;
+const LOGICAL_HEIGHT = 400;
+const scalableGameOptions: ScalableOp = {
+	BallRadius: 10,
+	PaddleWidth: 10,
+	PaddleHeight: 90
+};
+
+
 
 export default function Game() {
 	const socket = useContext(GameSocketContext);
-	const playerSideRef = useRef("");
+	const sideOnServerRef = useRef<"left" | "right" | "">("");
 	const [isGameOver, setIsGameOver] = useState(false);
 	const canvasRef = useRef<HTMLCanvasElement | null>(null);
 	const ctxRef = useRef<CanvasRenderingContext2D | null>(null);
-	const { view, setView } = useView();
-	const canvasHeight = 400;
-	const canvasWidth = 600;
+	const { setView } = useView();
 	const scaleX = useRef(1);
 	const scaleY = useRef(1);
 
-
-	const _gameOptions: gameOptions = { BallRadius: 10, PaddleWidth: 10, PaddleHeight: 90, canvasHeight: 400, canvasWidth: 600 };
-	const _score: scoreType = { left: 0, right: 0 };
-	const _gameState: gameState = { LeftX: 1, RightX: 589, LeftY: 150, RightY: 150, BallX: canvasHeight / 2, BallY: canvasHeight / 2, Score: _score };
-
-	function putText(text: string, xpos: number, ypos: number) {
-
-		const ctx = ctxRef.current;
-		if (!ctx) return;
-
-		ctx.clearRect(0, 0, 600, 400);
-		ctx.fillStyle = "white";
-		ctx.font = '30px Arial';
-		ctx.textAlign = "center";
-		ctx.textBaseline = "middle";
-
-		ctx.fillText(text, xpos, ypos);
-	}
-
+	const gameStateRef = useRef<GameState>({
+		LeftX: 1,
+		RightX: 589,
+		LeftY: 150,
+		RightY: 150,
+		BallX: LOGICAL_WIDTH / 2,
+		BallY: LOGICAL_HEIGHT / 2,
+		Score: { left: 0, right: 0 }
+	});
 
 	const inputState = {
 		up: false,
 		down: false,
 	};
 
+	function displayMessage(text: string, fontSize = 30, clear = false) {
 
-	function init() {
+		const canvas = canvasRef.current;
 		const ctx = ctxRef.current;
+		if (!canvas || !ctx) return;
+
+		if (clear) ctx.clearRect(0, 0, canvas.width, canvas.height);
+		ctx.fillStyle = "white";
+		ctx.font = `${fontSize}px 'Press Start 2P'`;
+		ctx.textAlign = "center";
+		ctx.textBaseline = "middle";
+		ctx.fillText(text, canvas.width / 2, canvas.height / 2);
+	}
+
+	function drawBackground(ctx: CanvasRenderingContext2D, canvas: HTMLCanvasElement) {
+		const gradient = ctx.createLinearGradient(0, 0, canvas.width, canvas.height);
+		gradient.addColorStop(0, "#000000");
+		gradient.addColorStop(0.5, "#111111");
+		gradient.addColorStop(1, "#000000");
+
+		ctx.fillStyle = gradient;
+		ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+		ctx.setLineDash([10, 10]);
+		ctx.strokeStyle = "#00ffff";
+		ctx.lineWidth = 2;
+
+		ctx.shadowColor = "#00ffff";
+		ctx.shadowBlur = 10;
+
+		ctx.beginPath();
+		ctx.moveTo(canvas.width / 2, 0);
+		ctx.lineTo(canvas.width / 2, canvas.height);
+		ctx.stroke();
+
+		ctx.setLineDash([]);
+		ctx.shadowBlur = 0;
+
+	}
+
+
+	function drawBall(sx: number, sy: number) {
+		const ctx = ctxRef.current;
+		const options = scalableGameOptions;
+		const state = gameStateRef.current;
 		if (!ctx) return;
 
-		ctx.clearRect(0, 0, canvasWidth, canvasHeight);
-		ctx.fillStyle = "white";
-		const playerSide = playerSideRef.current;
+		const x = state.BallX * sx;
+		const y = state.BallY * sy;
+		const radius = options.BallRadius * Math.min(sx, sy);
 
-		ctx.fillStyle = playerSide === 'left' ? "red" : "white"
-		ctx.fillRect(_gameState.LeftX, _gameState.LeftY, _gameOptions.PaddleWidth, _gameOptions.PaddleHeight);
-		ctx.fillStyle = playerSide === 'right' ? "red" : "white"
-		ctx.fillRect(_gameState.RightX, _gameState.RightY, _gameOptions.PaddleWidth, _gameOptions.PaddleHeight);
-	}
+		const gradient = ctx.createRadialGradient(x, y, radius * 0.2, x, y, radius);
+		gradient.addColorStop(0, "#ffffff");
+		gradient.addColorStop(1, "#00ffff");
 
-	function drawCircle(ctx: CanvasRenderingContext2D) {
+		ctx.fillStyle = gradient;
+		ctx.shadowColor = "#00ffff";
+		ctx.shadowBlur = 15;
 		ctx.beginPath();
-		ctx.arc(
-			_gameState.BallX * scaleX.current,
-			_gameState.BallY * scaleY.current,
-			_gameOptions.BallRadius * Math.min(scaleX.current, scaleY.current),
-			0,
-			Math.PI * 2
-		);
-
-		ctx.fillStyle = "white";
+		ctx.arc(x, y, radius, 0, Math.PI * 2);
 		ctx.fill();
+		ctx.shadowBlur = 0; // Reset
 	}
 
 
-	function sendInput() {
-		console.log("[EVENT SENT]");
+	function drawPaddles(sx: number, sy: number, side: string) {
+
+		const ctx = ctxRef.current;
+		const state = gameStateRef.current;
+		const options = scalableGameOptions;
+		if (!ctx) return;
+
+		const paddles = [
+			{
+				x: state.LeftX * sx,
+				y: state.LeftY * sy,
+				color: side === "left" ? "#ff5555" : "white"
+			},
+			{
+				x: state.RightX * sx,
+				y: state.RightY * sy,
+				color: side === "right" ? "#ff5555" : "white"
+			}
+		];
+
+		for (const p of paddles) {
+			ctx.fillStyle = p.color;
+			const width = options.PaddleWidth * sx;
+			const height = options.PaddleHeight * sy;
+			const radius = 6;
+
+			ctx.beginPath();
+			ctx.moveTo(p.x + radius, p.y);
+			ctx.lineTo(p.x + width - radius, p.y);
+			ctx.quadraticCurveTo(p.x + width, p.y, p.x + width, p.y + radius);
+			ctx.lineTo(p.x + width, p.y + height - radius);
+			ctx.quadraticCurveTo(p.x + width, p.y + height, p.x + width - radius, p.y + height);
+			ctx.lineTo(p.x + radius, p.y + height);
+			ctx.quadraticCurveTo(p.x, p.y + height, p.x, p.y + height - radius);
+			ctx.lineTo(p.x, p.y + radius);
+			ctx.quadraticCurveTo(p.x, p.y, p.x + radius, p.y);
+			ctx.fill();
+		}
+	}
+
+
+	function drawScores(state: GameState) {
+		const canvas = canvasRef.current;
+		const ctx = ctxRef.current;
+		const side = sideOnServerRef.current;
+		if (!ctx || !canvas) return;
+
+		const percentX = (p: number) => (p / 100) * canvas.width;
+		const percentY = (p: number) => (p / 100) * canvas.height;
+
+		ctx.font = `bold 36px 'Press Start 2P'`;
+		ctx.fillStyle = "white";
+		ctx.textAlign = "center";
+		ctx.textBaseline = "middle";
+		ctx.shadowColor = "black";
+		ctx.shadowBlur = 8;
+
+		ctx.fillText(state.Score.left.toString(), percentX(side === 'left' ? 40 : 60), percentY(10));
+		ctx.fillText(state.Score.right.toString(), percentX(side === 'left' ? 60 : 40), percentY(10));
+
+		ctx.shadowBlur = 0;
+
+	}
+	// else {
+	// 	ctx.fillText(state.Score.left.toString(), percentX(60), percentY(10));
+	// 	ctx.fillText(state.Score.right.toString(), percentX(40), percentY(10));
+	// }
+
+
+	function render() {
+		const canvas = canvasRef.current;
+		const ctx = ctxRef.current;
+		if (!ctx || !canvas) return;
+
+		ctx.setTransform(1, 0, 0, 1, 0, 0);
+		ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+		if (sideOnServerRef.current === "left") {
+			ctx.translate(canvas.width, 0);
+			ctx.scale(-1, 1);
+		}
+
+		drawBackground(ctx, canvas);
+		drawBall(scaleX.current, scaleY.current);
+		drawPaddles(scaleX.current, scaleY.current, sideOnServerRef.current);
+		ctx.setTransform(1, 0, 0, 1, 0, 0);
+		drawScores(gameStateRef.current);
+
+	}
+
+	const resizeCanvas = () => {
+		const canvas = canvasRef.current;
+		const ctx = ctxRef.current;
+		if (!ctx || !canvas) return;
+
+		const aspectRatio = 3 / 2;
+		let width = window.innerWidth * 0.9;
+		let height = width / aspectRatio;
+
+		if (height > window.innerHeight * 0.8) {
+			height = window.innerHeight * 0.8;
+			width = height * aspectRatio;
+		}
+
+		canvas.width = width;
+		canvas.height = height;
+		scaleX.current = width / LOGICAL_WIDTH;
+		scaleY.current = height / LOGICAL_HEIGHT;
+
+		ctx.clearRect(0, 0, width, height);
+	};
+
+
+	// --- Input handlers ---
+	const sendInput = () => {
 		socket?.emit("game:paddle", inputState);
-	}
+	};
 
 	const keyDownEvent = (e: KeyboardEvent) => {
 		if (e.key === "ArrowUp") inputState.up = true;
@@ -114,130 +257,85 @@ export default function Game() {
 	};
 
 
-	function render() {
-		const ctx = ctxRef.current;
-		const canvas = canvasRef.current;
-		if (!ctx || !canvas) return;
-
-		ctx.clearRect(0, 0, canvas.width, canvas.height);
-		ctx.fillStyle = "white";
-
-		drawCircle(ctx);
-
-		const playerSide = playerSideRef.current;
-		const sx = scaleX.current;
-		const sy = scaleY.current;
-
-		ctx.fillStyle = playerSide === 'left' ? "red" : "white";
-		ctx.fillRect(
-			_gameState.LeftX * sx,
-			_gameState.LeftY * sy,
-			_gameOptions.PaddleWidth * sx,
-			_gameOptions.PaddleHeight * sy
-		);
-
-		ctx.fillStyle = playerSide === 'right' ? "red" : "white";
-		ctx.fillRect(
-			_gameState.RightX * sx,
-			_gameState.RightY * sy,
-			_gameOptions.PaddleWidth * sx,
-			_gameOptions.PaddleHeight * sy
-		);
-
-		ctx.fill();
-	}
-
-
-	const LOGICAL_WIDTH = 600;
-	const LOGICAL_HEIGHT = 400;
-
 	useEffect(() => {
 		const canvas = canvasRef.current;
 		if (!canvas) return;
 
-
-		const ctx = canvas.getContext('2d');
+		const ctx = canvas.getContext("2d");
 		if (!ctx) return;
 		ctxRef.current = ctx;
 
-		const aspectRatio = 3 / 2;
-
-		const resizeCanvas = () => {
-			let width = window.innerWidth * 0.9;
-			let height = width / aspectRatio;
-
-			if (height > window.innerHeight * 0.8) {
-				height = window.innerHeight * 0.8;
-				width = height * aspectRatio;
-			}
-
-			canvas.width = width;
-			canvas.height = height;
-			scaleX.current = width / LOGICAL_WIDTH;
-			scaleY.current = height / LOGICAL_HEIGHT;
-
-			ctx.clearRect(0, 0, width, height);
-		};
-
 		resizeCanvas();
-		window.addEventListener('resize', resizeCanvas);
-		window.addEventListener('keydown', keyDownEvent);
-		window.addEventListener('keyup', keyUpEvent);
+		window.addEventListener("resize", resizeCanvas);
+		window.addEventListener("keydown", keyDownEvent);
+		window.addEventListener("keyup", keyUpEvent);
 
-		socket?.on('game:message', (event) => {
-			console.log("[FRONT GOT MESSAGE]: ", event);
-			putText(event.message, canvas.width / 2, canvas.height / 2);
+		// Socket Events
+		socket?.on("game:message", (event) => {
+			console.log("[FRONT GOT MESSAGE]:", event);
+			displayMessage(event.message, 30, true);
 		});
 
-		socket?.on('game:result', (event) => {
-			console.log("[FRONT GOT MESSAGE]: ", event);
-			putText(event.message, canvas.width / 2, canvas.height / 2);
+		socket?.on("game:result", (event) => {
+			console.log("[FRONT GOT RESULT]:", event);
+			displayMessage(event.message);
 		});
 
-		socket?.on('game:update', (event) => {
-			_gameState.BallX = event.ball.x;
-			_gameState.BallY = event.ball.y;
-			_gameState.LeftY = event.left;
-			_gameState.RightY = event.right;
-			_gameOptions.PaddleWidth * scaleX.current,
-				_gameOptions.PaddleHeight * scaleY.current
+		socket?.on("game:update", (event) => {
+			const state = gameStateRef.current;
+			state.BallX = event.ball.x;
+			state.BallY = event.ball.y;
+			state.LeftY = event.left;
+			state.RightY = event.right;
+			state.Score.left = event.score.left;
+			state.Score.right = event.score.right;
+
 			render();
 		});
 
-		socket?.emit('room:join', { roomid: sessionStorage.getItem('roomId') });
+		socket?.on("game:init", (event) => {
 
-		socket?.on('game:init', (event) => {
-			playerSideRef.current = event.side;
-			console.log("You are:", playerSideRef.current);
-			init();
+			sideOnServerRef.current = event.side;
+			console.log("You are:", event.side);
 		});
 
-
-		socket?.on('game:over', () => {
+		socket?.on("game:over", (event) => {
+			displayMessage("Game Over!!\nYou [eee]", 30, true);
 			setIsGameOver(true);
 		});
 
+		socket?.emit("room:join", { roomid: sessionStorage.getItem("roomId") });
+
 		return () => {
-			window.removeEventListener('resize', resizeCanvas);
-			window.removeEventListener('keydown', keyDownEvent);
-			window.removeEventListener('keyup', keyUpEvent);
+			window.removeEventListener("resize", resizeCanvas);
+			window.removeEventListener("keydown", keyDownEvent);
+			window.removeEventListener("keyup", keyUpEvent);
 		};
 	}, []);
 
-
+	// TODO disable slided bar until game is done 
+	// TODO display result (win)
 
 	return (
-		<>
-			{isGameOver ? (
-				<Button onClick={() => setView('menu')} className="bg-blue-500 hover:bg-blue-600">
-					{"Go lobby"}
+		<div className="relative w-full flex justify-center">
+			<canvas
+				ref={canvasRef}
+				className="bg-black block mx-auto rounded-lg shadow-lg"
+			/>
+
+			{isGameOver && (
+				<Button
+					onClick={() => setView("menu")}
+					className="absolute top-1/2 translate-y-20 px-6 py-2  bg-emerald-700 hover:bg-emerald-800
+					 text-white font-press-start rounded"
+				>
+					Lobby
 				</Button>
-			) : (
-				<canvas
-					ref={canvasRef}
-					className="bg-black block mx-auto rounded-lg shadow-lg"
-				/>
 			)}
-		</>
-	)
+		</div>
+
+	);
 }
+
+
+// https://chatgpt.com/c/685596eb-34dc-800e-b5c9-e6591ac28cc4
