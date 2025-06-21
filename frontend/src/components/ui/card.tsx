@@ -184,15 +184,19 @@ const GameModeCard = ({
 	footer?: React.ReactNode;
 	children?: React.ReactNode;
 }) => (
-	<Card>
+	<Card className="w-full sm:max-w-150 sm:min-w-150  break-words">
 		<CardHeader>
 			<CardTitle>{title}</CardTitle>
 		</CardHeader>
-		<CardContent className="text-center w-full max-w-2xl break-words">
+		<CardContent className="text-center">
 			<p>{description}</p>
 			{children && <div className="mt-4">{children}</div>}
 		</CardContent>
-		{footer && <CardFooter>{footer}</CardFooter>}
+		{footer && (
+			<CardFooter className="flex justify-center items-center">
+				{footer}
+			</CardFooter>
+		)}
 	</Card>
 );
 

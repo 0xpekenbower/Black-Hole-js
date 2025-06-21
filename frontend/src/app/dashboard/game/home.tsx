@@ -9,7 +9,8 @@ import { redirect } from "next/navigation";
 
 import { GameSocketProvider, GameSocketContext } from "@/components/io"
 
-import { HeadButton, GameModeCard, Button } from '@/components/ui/card'
+import { HeadButton, GameModeCard } from '@/components/ui/card'
+import { Button } from "@/components/ui/button";
 import Tournament from "../test/page";
 import Game from "./game"
 
@@ -123,9 +124,9 @@ export default function Home() {
 												setIsQueueDisabled(false);
 												cancelQueueHandler();
 											}}
-											className="bg-red-500 hover:bg-red-600"
+											className=" text-red-500 font-bold bg-transparent hover:bg-black border"
 										>
-											Cancel
+											{"Cancel"}
 										</Button>
 									) : (
 										<Button
@@ -134,10 +135,10 @@ export default function Home() {
 												// setView("game");
 												quickStartHandler();
 											}}
-											className="bg-blue-400 hover:bg-blue-500"
+											className=" text-white font-bold bg-transparent hover:bg-black border"
 											disabled={isQueueDisabled && !canCancelQueue}
 										>
-											{isQueueDisabled ? "...Loading" : "Queue"}
+											{isQueueDisabled ? "...Loading" : "Start"}
 										</Button>
 									)
 								) : (
