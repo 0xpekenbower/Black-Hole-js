@@ -1,5 +1,6 @@
 FROM postgres:17.5-alpine
 
-VOLUME /var/lib/postgresql/data
+# VOLUME /var/lib/postgresql/data
 
-# var/lib/postgresql/log/*.log
+COPY ./postgresql.conf /var/lib/postgresql/postgresql.conf
+# var/lib/postgresql/data/log/*.log

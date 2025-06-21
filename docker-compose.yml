@@ -61,7 +61,7 @@ services:
     #   - "5432:5432"
     environment:
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
-    command: ["postgres", "-c", "log_statement=all", "-c", "logging_collector=on"]
+    command: ["postgres", "-c", "log_statement=all", "-c", "logging_collector=on", "-c", "config_file=/var/lib/postgresql/postgresql.conf"]
     env_file:
       - .env
     restart: on-failure
@@ -210,8 +210,8 @@ services:
     container_name: kibana
     build:
       context: ./infra/kibana
-    # ports:
-    #   - 5601:5601
+    ports:
+      - 5601:5601
     environment:
       KIBANA_SYSTEM_PASSWORD: ${KIBANA_SYSTEM_PASSWORD:-}
     depends_on:

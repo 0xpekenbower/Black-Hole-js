@@ -26,22 +26,24 @@ const kafka = new Kafka({
 const topics = [
   {
     topic: 'newUser',
-    numPartitions: 3,
+    numPartitions: 1,
     replicationFactor: 1,
     configEntries: [
       { name: 'cleanup.policy', value: 'delete' },
-      { name: 'retention.ms', value: '86400000' }, // 1 days
-      { name: 'segment.bytes', value: '107374182' } // 100GB
+      { name: 'retention.ms', value: '43200000' }, // 1 days
+      // { name: 'segment.ms', value: '43200000'}, // 1 day
+      { name: 'segment.bytes', value: '104857600' } // 100GB
     ]
   },
   {
     topic: 'OTP',
-    numPartitions: 3,
+    numPartitions: 1,
     replicationFactor: 1,
     configEntries: [
       { name: 'cleanup.policy', value: 'delete' },
-      { name: 'retention.ms', value: '86400000' }, // 1 day
-      { name: 'segment.bytes', value: '107374182' } // 100MB
+      { name: 'retention.ms', value: '43200000' }, // 1 day
+      // { name: 'segment.ms', value: '43200000'},
+      { name: 'segment.bytes', value: '104857600' } // 100MB
     ]
   }
 ];
