@@ -5,10 +5,11 @@ const axios = require('axios');
 
 const CONFIG_DIR = path.resolve(__dirname, '..', 'config');
 const LOGSTASH_ROLE_FILE = path.join(CONFIG_DIR, 'logstash_writer.json');
+const FILEBEAT_ROLE_FILE = path.join(CONFIG_DIR, 'filebeat_writer.json');
 const GATEWAY_TEMPLATE_FILE = path.join(CONFIG_DIR, 'gateway.json');
 
 const ES_HOST = 'http://elasticsearch:9200';
-const REQUIRED_ENV_VARS = ['ELASTIC_PASSWORD', 'KIBANA_SYSTEM_PASSWORD', 'LOGSTASH_INTERNAL_PASSWORD'];
+const REQUIRED_ENV_VARS = ['ELASTIC_PASSWORD', 'KIBANA_SYSTEM_PASSWORD', 'LOGSTASH_INTERNAL_PASSWORD', 'FILEBEAT_INTERNAL_PASSWORD'];
 
 for (const varName of REQUIRED_ENV_VARS) {
   if (!process.env[varName]) {
@@ -57,6 +58,14 @@ async function createLogstashRole() {
   }
 }
 
+async function createFilebeatRole() {
+  const data = await fs.readFile(FILEBEAT_ROLE_FILE, 'utf8');
+  const res = await axiosInstance.post('/_security/role/filebeat_writer', JSON.parse(data));
+  if (res.status !== 200) {
+    throw new Error('Failed to create role filebeat_writer');
+  }
+}
+
 async function createLogstashUser() {
   const res = await axiosInstance.get('/_security/user/logstash_internal');
   if (res.status === 200) {
@@ -76,6 +85,27 @@ async function createLogstashUser() {
     }
   }
 }
+
+async function createFilebeatUser() {
+  const res = await axiosInstance.get('/_security/user/filebeat_internal');
+  if (res.status === 200) {
+    const update = await axiosInstance.post('/_security/user/filebeat_internal/_password', {
+      password: process.env.FILEBEAT_INTERNAL_PASSWORD
+    });
+    if (update.status !== 200) {
+      throw new Error('Failed to update password for filebeat_internal');
+    }
+  } else {
+    const create = await axiosInstance.post('/_security/user/filebeat_internal', {
+      password: process.env.FILEBEAT_INTERNAL_PASSWORD,
+      roles: ['filebeat_writer']
+    });
+    if (create.status !== 200) {
+      throw new Error('Failed to create user filebeat_internal');
+    }
+  }
+}
+
 
 async function installGatewayTemplateAndPolicy() {
   console.log("Starting Gateway logs setup...");
@@ -99,7 +129,10 @@ async function installGatewayTemplateAndPolicy() {
   if (!templateContent) throw new Error('Template content not found');
 
   const templateRes = await axiosInstance.put(`/_index_template/${templateName}`, templateContent);
-  if (templateRes.status !== 200) throw new Error('Failed to create index template');
+  if (templateRes.status !== 200) {
+    console.error('Template creation error:', JSON.stringify(templateRes.data, null, 2));
+    throw new Error('Failed to create index template');
+  }
   console.log(`✅ Created index template: ${templateName}`);
 }
 
@@ -108,6 +141,8 @@ async function setupElasticsearch() {
   await setKibanaPassword();
   await createLogstashRole();
   await createLogstashUser();
+  await createFilebeatRole();
+  await createFilebeatUser();
   await installGatewayTemplateAndPolicy();
 }
 

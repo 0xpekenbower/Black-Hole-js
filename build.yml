@@ -1,0 +1,98 @@
+version: "3.9"
+
+services:
+  setup:
+    build: ./setup
+    image: blackholejs/setup:latest
+
+  nginx:
+    build: ./infra/nginx
+    image: blackholejs/nginx:latest
+
+  redis:
+    build: ./infra/redis
+    image: blackholejs/redis:latest
+
+  postgres_db:
+    build: ./infra/postgres
+    image: blackholejs/postgres:latest
+
+  pgadmin:
+    build: ./infra/pgadmin
+    image: blackholejs/pgadmin:latest
+
+  kafka:
+    build: ./infra/kafka
+    image: blackholejs/kafka:latest
+
+  gateway:
+    build: ./infra/gateway
+    image: blackholejs/gateway:latest
+
+  auth:
+    build: ./services/auth
+    image: blackholejs/auth:latest
+
+  chat:
+    build: ./services/chat
+    image: blackholejs/chat:latest
+
+  dash:
+    build: ./services/dash
+    image: blackholejs/dash:latest
+
+  game:
+    build: ./services/game
+    image: blackholejs/game:latest
+
+  frontend:
+    build: ./frontend
+    image: blackholejs/frontend:latest
+
+  elasticsearch:
+    build: ./infra/elasticsearch
+    image: blackholejs/elasticsearch:latest
+
+  logstash:
+    build: ./infra/logstash
+    image: blackholejs/logstash:latest
+
+  kibana:
+    build: ./infra/kibana
+    image: blackholejs/kibana:latest
+
+  vector:
+    build: ./infra/vector
+    image: blackholejs/vector:latest
+
+  prometheus:
+    build: ./infra/prometheus
+    image: blackholejs/prometheus:latest
+
+  grafana:
+    build: ./infra/grafana
+    image: blackholejs/grafana:latest
+
+  cadvisor:
+    build: ./infra/cadvisor
+    image: blackholejs/cadvisor:latest
+  
+  node_exporter:
+    build: ./infra/node_exporter
+    image: blackholejs/node_exporter:latest
+  
+  redis_exporter:
+    build: ./infra/redis_exporter
+    image: blackholejs/redis_exporter:latest
+
+  postgres_exporter:
+    build: ./infra/postgres_exporter
+    image: blackholejs/postgres_exporter:latest
+
+  kafka_exporter:
+    build: ./infra/kafka_exporter
+    image: blackholejs/kafka_exporter:latest
+
+  nginx_exporter:
+    build: ./infra/nginx_exporter
+    image: blackholejs/nginx_exporter:latest

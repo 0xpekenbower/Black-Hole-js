@@ -22,8 +22,11 @@
       "names": [
         "logs-generic-default",
         "logs-generic-default-*",
+        "container-logs-*",
+        "container-logs",
         "logstash-*",
-        "ecs-logstash-*"
+        "ecs-logstash-*",
+        "*-*"
       ],
       "privileges": [
         "write",
@@ -37,7 +40,11 @@
     {
       "names": [
         "logstash",
-        "ecs-logstash"
+        "ecs-logstash",
+        "logstash-*",
+        "container-logs-*",
+        "container-logs",
+        "*-*"
       ],
       "privileges": [
         "write",

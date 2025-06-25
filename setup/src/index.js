@@ -5,8 +5,9 @@ const { setupElasticsearch } = require('./elasticsearch');
 
 // List of setup scripts to run
 const setupScripts = [
-  'kibana.js',
-  'postgres.js'
+  // 'kibana.js',
+  // 'postgres.js'
+  'kibana.js'
 ];
 
 const runScript = (scriptPath) => {
@@ -37,10 +38,10 @@ const main = async () => {
     console.log('Elasticsearch setup completed successfully.');
     
     console.log('Starting Kafka topics setup...');
-    const kafkaSetupSuccess = await setupKafkaTopics();
-    if (!kafkaSetupSuccess) {
-      throw new Error('Kafka setup failed');
-    }
+    // const kafkaSetupSuccess = await setupKafkaTopics();
+    // if (!kafkaSetupSuccess) {
+    //   throw new Error('Kafka setup failed');
+    // }
     console.log('Kafka topics setup completed successfully.');
     
     for (const script of setupScripts) {

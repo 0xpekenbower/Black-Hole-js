@@ -1,0 +1,12 @@
+"setup-*",
+"nginx-*",
+"redis-*",
+"postgres_db-*",
+"pgadmin-*",
+"kafka-*",
+"gateway-*",
+"auth-*",
+"chat-*",
+"dash-*",
+"game-*",
+"frontend-*"

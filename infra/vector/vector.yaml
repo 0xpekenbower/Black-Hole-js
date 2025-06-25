@@ -7,7 +7,7 @@ sources:
     mode: tcp
     decoding:
       codec: json
-
+      
 sinks:
   logstash_gateway:
     type: socket

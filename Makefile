@@ -1,32 +1,73 @@
 DCM = docker compose -f docker-compose.yml
 
-all: build up
+# Core Stack
+core-build:
+	$(DCM) --profile core build
 
-up:
-	@echo "Starting all services..."
-	docker compose -f ./docker-compose.yml up -d setup
+core-up:
+	$(DCM) --profile core up -d
+
+core-down:
+	$(DCM) --profile core down
+
+core-restart:
+	$(DCM) --profile core restart
+
+core-clean:
+	$(DCM) --profile core down -v
+
+# Observability Stack
+obsy-build:
+	$(DCM) --profile obsy build
+
+obsy-up:
+	$(DCM) --profile obsy up -d
+
+obsy-down:
+	$(DCM) --profile obsy down
+
+obsy-restart:
+	$(DCM) --profile obsy restart
+
+obsy-clean:
+	$(DCM) --profile obsy down -v
+
+# Monitoring Stack
+monitoring-build:
+	$(DCM) --profile monitoring build
+
+monitoring-up:
+	$(DCM) --profile monitoring up -d
+
+monitoring-down:
+	$(DCM) --profile monitoring down
+
+monitoring-restart:
+	$(DCM) --profile monitoring restart
+
+monitoring-clean:
+	$(DCM) --profile monitoring down -v
+
+# Setup
+setup-build:
+	$(DCM) --profile setup build setup
+
+setup-run:
+	$(DCM) --profile setup up -d
 	until [ "$$(docker inspect -f '{{.State.Status}}' setup 2>/dev/null)" = "exited" ]; do \
 		sleep 1; \
-	done;
+	done
 	docker rm setup
-	docker compose -f ./docker-compose.yml up -d
 
+build: setup-build core-build obsy-build monitoring-build
+up: setup-run core-up obsy-up monitoring-up
 down:
-	@echo "Stopping all services..."
-	docker compose -f ./docker-compose.yml down
-
-build:
-	@echo "Building all services..."
-	docker compose -f ./docker-compose.yml build
-	docker compose -f ./docker-compose.yml build setup
-
+	$(DCM) down
 restart:
-	@echo "Restarting all services..."
-	docker compose -f ./docker-compose.yml restart
-
-logs:
-	docker compose -f ./docker-compose.yml logs -f
-
+	$(DCM) restart
 clean:
-	@echo "Cleaning up..."
-	docker compose -f ./docker-compose.yml down -v
+	$(DCM) down -v
+logs:
+	$(DCM) logs -f
+all: build up
+

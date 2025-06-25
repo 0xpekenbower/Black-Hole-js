@@ -1,0 +1,1 @@
+FROM bitnami/postgres-exporter:0.17.0

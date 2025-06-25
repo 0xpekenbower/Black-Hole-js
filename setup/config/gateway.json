@@ -1,19 +1,32 @@
 {
   "templates": {
     "gateway-logs-template": {
+      "index_patterns": ["gateway-logs-*"],
       "template": {
         "settings": {
           "number_of_shards": 1,
           "number_of_replicas": 0,
           "index.refresh_interval": "5s",
           "index.lifecycle.name": "gateway-logs-policy",
-          "index.lifecycle.rollover_alias": "gateway-logs-template"
+          "index.lifecycle.rollover_alias": "gateway-logs"
         },
         "mappings": {
+          "dynamic_templates": [
+            {
+              "host_as_keyword": {
+                "match": "host",
+                "mapping": {
+                  "type": "keyword"
+                }
+              }
+            }
+          ],
           "properties": {
             "timestamp": { "type": "date" },
             "level": { "type": "keyword" },
             "event_type": { "type": "keyword" },
+            "host": { "type": "keyword" },
+            "host_ip": { "type": "keyword" },
             "frontend": {
               "properties": {
                 "userAgent": { "type": "text" },
@@ -53,7 +66,9 @@
           }
         }
       },
-      "index_patterns": ["gateway-logs-*"]
+      "priority": 100,
+      "composed_of": [],
+      "version": 1
     }
   },
   "policies": {

@@ -1,0 +1,37 @@
+{
+  "cluster": [
+    "manage_index_templates",
+    "monitor",
+    "manage_ilm",
+    "create_index",
+    "write",
+    "create"
+  ],
+  "indices": [
+    {
+      "names": [
+        "setup-*",
+        "nginx-*",
+        "redis-*",
+        "postgres_db-*",
+        "pgadmin-*",
+        "kafka-*",
+        "gateway-*",
+        "auth-*",
+        "chat-*",
+        "dash-*",
+        "game-*",
+        "frontend-*"
+      ],
+      "privileges": [
+        "write",
+        "create",
+        "create_index",
+        "manage",
+        "manage_ilm",
+        "auto_configure",
+        "manage_index_templates"
+      ]
+    }
+  ]
+}
