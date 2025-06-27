@@ -7,6 +7,8 @@ interface PlayersGroup {
 	player2: string;
 }
 
+
+
 function GroupField({
 	value,
 	onChange,
@@ -19,8 +21,8 @@ function GroupField({
 	readonly?: boolean;
 }) {
 	return (
-		<div className="w-full max-w-xl mx-auto bg-gray-800 border border-gray-700 rounded-xl shadow-md p-6 text-white">
-			<h2 className="text-lg sm:text-xl font-bold mb-4 text-center">{title}</h2>
+		<div className="w-full max-w-xl mx-auto bg-gradient-to-br from-gray-900 to-gray-800 border border-gray-700 rounded-2xl shadow-lg p-6 sm:p-8 text-white">
+			<h2 className="text-xl sm:text-2xl font-semibold text-center mb-6 text-indigo-400">{title}</h2>
 
 			<div className="flex flex-col sm:flex-row gap-4">
 				<input
@@ -30,7 +32,7 @@ function GroupField({
 					onChange={(e) =>
 						onChange && onChange({ ...value, player1: e.target.value })
 					}
-					className="flex-1 px-4 py-2 rounded-md bg-gray-700 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
+					className="flex-1 px-4 py-3 rounded-lg bg-gray-700 text-white placeholder-gray-400 border border-gray-600 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition duration-200"
 				/>
 				<input
 					placeholder="Second player"
@@ -39,12 +41,74 @@ function GroupField({
 					onChange={(e) =>
 						onChange && onChange({ ...value, player2: e.target.value })
 					}
-					className="flex-1 px-4 py-2 rounded-md bg-gray-700 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
+					className="flex-1 px-4 py-3 rounded-lg bg-gray-700 text-white placeholder-gray-400 border border-gray-600 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition duration-200"
 				/>
 			</div>
 		</div>
 	);
 }
+
+
+
+interface PongGameProps {
+	players: { player1: string; player2: string };
+	onGameEnd: (winner: string) => void;
+}
+
+const PongGame = ({ players, onGameEnd }: PongGameProps) => {
+	return (
+		<div className="w-full max-w-xl mx-auto bg-gray-900 border border-gray-700 rounded-xl shadow-md p-6 text-white text-center">
+			<h2 className="text-2xl font-bold mb-4">🎮 Pong Match</h2>
+			<p className="mb-6 text-lg">
+				{players.player1} vs {players.player2}
+			</p>
+
+			<p className="text-gray-400 mb-4 italic">[Simulated match in progress...]</p>
+
+			<div className="flex justify-center gap-4">
+				<button
+					className="bg-blue-500 hover:bg-blue-400 text-white px-4 py-2 rounded-md"
+					onClick={() => onGameEnd(players.player1)}
+				>
+					{players.player1} Wins
+				</button>
+				<button
+					className="bg-green-500 hover:bg-green-400 text-white px-4 py-2 rounded-md"
+					onClick={() => onGameEnd(players.player2)}
+				>
+					{players.player2} Wins
+				</button>
+			</div>
+
+
+			<div className="relative w-full flex justify-center">
+				<canvas
+					// ref={canvasRef}
+					className="bg-black block mx-auto rounded-lg shadow-lg"
+				/>
+
+				{/* {isGameOver && (
+			<Button
+				onClick={() => setView("menu")}
+				className="absolute top-1/2 translate-y-20 px-6 py-2  bg-emerald-700 hover:bg-emerald-800
+					 text-white font-press-start rounded"
+			>
+				Lobby
+			</Button>
+		)} */}
+			</div>
+
+		</div>
+
+
+
+
+	);
+};
+
+// export default PongGame;
+
+
 
 const Tournament = () => {
 	const initialGroups: PlayersGroup[] = [
@@ -52,11 +116,12 @@ const Tournament = () => {
 		{ player1: "", player2: "" }
 	];
 
-	const [mode, setMode] = useState<"lobby" | "playing" | "final">("lobby");
+	const [mode, setMode] = useState<"lobby" | "playing" | "final" | "game">("lobby");
 	const [groups, setGroups] = useState<PlayersGroup[]>(initialGroups);
 	const [currentGroupIndex, setCurrentGroupIndex] = useState(0);
 	const [winners, setWinners] = useState<PlayersGroup[]>([]);
 	const [finalWinner, setFinalWinner] = useState<string | null>(null);
+	const [pendingMatch, setPendingMatch] = useState<PlayersGroup | null>(null);
 
 	const handleStart = () => {
 		setCurrentGroupIndex(0);
@@ -65,19 +130,13 @@ const Tournament = () => {
 		setMode("playing");
 	};
 
+	// match func <- 
 	const handleNext = () => {
 		const currentGroup = groups[currentGroupIndex];
-		const winner =
-			Math.random() < 0.5 ? currentGroup.player1 : currentGroup.player2;
 
-		setWinners((prev) => [...prev, { player1: winner, player2: "TBD" }]);
+		setPendingMatch(currentGroup);
+		setMode('game');
 
-		if (currentGroupIndex + 1 < groups.length) {
-			setCurrentGroupIndex((prev) => prev + 1);
-		} else {
-			setCurrentGroupIndex(0);
-			setMode("final");
-		}
 	};
 
 	const handleFinal = () => {
@@ -90,7 +149,8 @@ const Tournament = () => {
 
 		setFinalWinner(finalPick);
 
-		// Delay going back to lobby
+
+		// delay
 		setTimeout(() => {
 			setMode("lobby");
 			setGroups(initialGroups);
@@ -150,6 +210,22 @@ const Tournament = () => {
 					</div>
 				</div>
 			)}
+
+			{mode === "game" && pendingMatch && (
+				<PongGame
+					players={pendingMatch}
+					onGameEnd={(winner) => {
+						setWinners((prev) => [...prev, { player1: winner, player2: "TBD" }]);
+						if (currentGroupIndex + 1 < groups.length) {
+							setCurrentGroupIndex((prev) => prev + 1);
+							setMode("playing");
+						} else {
+							setMode("final");
+						}
+					}}
+				/>
+			)}
+
 
 			{mode === "final" && (
 				<div className="space-y-6 text-center">
