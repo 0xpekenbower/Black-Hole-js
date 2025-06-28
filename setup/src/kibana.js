@@ -84,23 +84,6 @@ const waitForKibana = async () => {
   }
 };
 
-/**
- * Check if a data view exists
- * @param {string} title - Title of the data view
- * @returns {Promise<boolean>} True if data view exists
- */
-const checkDataViewExists = async (title) => {
-  try {
-    const apiClient = createApiClient();
-    const response = await apiClient.get('/api/data_views/data_view');
-    
-    const dataViews = response.data?.data_views || [];
-    return dataViews.some(view => view.title === title);
-  } catch (error) {
-    console.error('❌ Error checking if data view exists:', error.message);
-    return false;
-  }
-};
 
 /**
  * Create a Kibana object via API
@@ -245,18 +228,12 @@ const createStandardDataViews = async () => {
  */
 const setupKibana = async () => {
   try {
-    // Validate required environment variables
     if (!CONFIG.kibana.password) {
       throw new Error('ELASTIC_PASSWORD environment variable is required');
     }
     
-    // Wait for Kibana to be available
     await waitForKibana();
-    
-    // Create standard data views
-    await createStandardDataViews();
-    
-    // Create custom data views from config files
+    await createStandardDataViews();    
     await createCustomDataViews();
     
     console.log('✅ Setup completed successfully!');
@@ -272,7 +249,6 @@ const setupKibana = async () => {
   }
 };
 
-// Run setup if this file is executed directly
 if (require.main === module) {
   setupKibana();
 }

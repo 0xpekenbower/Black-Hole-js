@@ -247,10 +247,8 @@ async function installIndexTemplates() {
   const apiClient = createApiClient();
   console.log("Starting index templates setup...");
   
-  // Create ILM policy first
   await createILMPolicy();
   
-  // Install all templates from indexes directory
   try {
     const files = await fs.readdir(CONFIG.paths.indexesDir);
     
@@ -300,9 +298,7 @@ async function setupElasticsearch() {
     await createRole('logstash_writer', CONFIG.paths.logstashRole);
     await createOrUpdateUser('logstash_internal', CONFIG.credentials.logstash, ['logstash_writer']);
     await createRole('filebeat_writer', CONFIG.paths.filebeatRole);
-    await createOrUpdateUser('filebeat_internal', CONFIG.credentials.filebeat, ['filebeat_writer']);
-    
-    // Set up index templates
+    await createOrUpdateUser('filebeat_internal', CONFIG.credentials.filebeat, ['filebeat_writer']);    
     await installIndexTemplates();
     
     console.log('✅ Elasticsearch setup completed successfully.');

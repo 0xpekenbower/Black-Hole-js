@@ -2,7 +2,6 @@
 const { spawn } = require('child_process');
 const path = require('path');
 const { setupElasticsearch } = require('./elasticsearch');
-const setupKafkaTopics = require('./kafka.js');
 
 /**
  * Configuration for the setup process
