@@ -9,7 +9,7 @@ core-up:
 
 core-down:
 	$(DCM) --profile core down gateway
-	$(DCM) --profile core down
+	$(DCM) --profile core down 
 
 core-restart:
 	$(DCM) --profile core restart
@@ -51,10 +51,6 @@ monitoring-build:
 
 monitoring-up:
 	$(DCM) --profile monitoring up -d
-	until [ "$$(docker inspect -f '{{.State.Status}}' setup 2>/dev/null)" = "exited" ]; do \
-		sleep 1; \
-	done
-	docker rm setup
 
 monitoring-down:
 	$(DCM) --profile monitoring down

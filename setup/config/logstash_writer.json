@@ -8,7 +8,9 @@
     {
       "names": [
         "gateway-*",
-        "gateway"
+        "gateway",
+        "postgres-*",
+        "postgres"
       ],
       "privileges": [
         "write",

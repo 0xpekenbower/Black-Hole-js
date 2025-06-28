@@ -25,7 +25,7 @@ export class TokenManager {
 	static storeTokens(token: string, refreshToken: string, expiresIn: number): void {
 		if (typeof window === 'undefined') return;
 
-		const expiryTime = Date.now() + expiresIn * 10000;
+		const expiryTime = Date.now() + expiresIn * 10000; // 10 seconds
 
 		localStorage.setItem(TOKEN_KEYS.AUTH_TOKEN, token);
 		localStorage.setItem(TOKEN_KEYS.REFRESH_TOKEN, refreshToken);
@@ -59,7 +59,7 @@ export class TokenManager {
 
 		const expiryTime = localStorage.getItem(TOKEN_KEYS.TOKEN_EXPIRY);
 		if (!expiryTime) return true;
-		return Date.now() > parseInt(expiryTime, 10) - 30000;
+		return Date.now() > parseInt(expiryTime, 10) - 30000; // 30 seconds
 	}
 
 	/**
@@ -67,8 +67,8 @@ export class TokenManager {
 	 * @returns True if the user has a valid token, false otherwise
 	 */
 	static isAuthenticated(): boolean {
-		return true;
-		// return !!this.getToken() && !this.isTokenExpired();
+		// return true;
+		return !!this.getToken() && !this.isTokenExpired();
 	}
 
 	/**

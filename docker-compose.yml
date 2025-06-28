@@ -386,8 +386,9 @@ services:
       - blackholejs
 
   node_exporter:
-    image: prom/node-exporter:v1.9.1
     container_name: node_exporter
+    build:
+      context: ./infra/node_exporter
     volumes:
       - /proc:/host/proc:ro
       - /sys:/host/sys:ro
@@ -409,7 +410,8 @@ services:
 
   redis_exporter:
     container_name: redis_exporter
-    image: bitnami/redis-exporter:1.73.0
+    build:
+      context: ./infra/redis_exporter
     environment:
       REDIS_ADDR: "redis://redis:6379"
     env_file:
@@ -421,7 +423,8 @@ services:
 
   postgres_exporter:
     container_name: postgres_exporter
-    image: bitnami/postgres-exporter:0.17.0
+    build:
+      context: ./infra/postgres_exporter
     environment:
       DATA_SOURCE_NAME: "${DATA_SOURCE_NAME}"
     env_file:
@@ -433,7 +436,8 @@ services:
 
   kafka_exporter:
     container_name: kafka_exporter
-    image: danielqsj/kafka-exporter 
+    build:
+      context: ./infra/kafka_exporter
     command: ["--kafka.server=kafka:9092"]
     profiles: [monitoring]
     environment:
@@ -444,7 +448,8 @@ services:
 
   nginx_exporter:
     container_name: nginx_exporter
-    image: nginx/nginx-prometheus-exporter:1.4
+    build:
+      context: ./infra/nginx_exporter
     profiles: [monitoring]
     networks:
       - blackholejs
