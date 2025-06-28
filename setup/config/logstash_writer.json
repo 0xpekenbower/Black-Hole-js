@@ -7,8 +7,8 @@
   "indices": [
     {
       "names": [
-        "gateway-logs-*",
-        "gateway-logs"
+        "gateway-*",
+        "gateway"
       ],
       "privileges": [
         "write",

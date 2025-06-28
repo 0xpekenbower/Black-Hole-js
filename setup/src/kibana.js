@@ -1,284 +1,278 @@
 #!/usr/bin/env node
 const axios = require('axios');
-const fs = require('fs');
+const fs = require('fs/promises');
+const path = require('path');
 
-const KIBANA_URL = process.env.KIBANA_URL || 'http://kibana:5601/kibana';
-const ELASTIC_USERNAME = process.env.ELASTIC_USERNAME || 'elastic';
-const ELASTIC_PASSWORD = process.env.ELASTIC_PASSWORD;
+// Configuration constants
+const CONFIG = {
+  kibana: {
+    url: process.env.KIBANA_URL || 'http://kibana:5601/kibana',
+    username: process.env.ELASTIC_USERNAME || 'elastic',
+    password: process.env.ELASTIC_PASSWORD
+  },
+  paths: {
+    config: path.resolve(__dirname, '..', 'config'),
+    get dataviews() { return path.join(this.config, 'dataviews') }
+  },
+  defaultTimeField: 'timestamp',
+  retryInterval: 5000, // 5 seconds
+  headers: {
+    common: { 'kbn-xsrf': 'true' },
+    json: { 'Content-Type': 'application/json' }
+  }
+};
 
+// Standard index patterns to create data views for
+const STANDARD_INDICES = [
+  {name: "setup", index: "setup-*"},
+  {name: "nginx", index: "nginx-*"},
+  {name: "redis", index: "redis-*"},
+  {name: "postgres_db", index: "postgres_db-*"},
+  {name: "pgadmin", index: "pgadmin-*"},
+  {name: "kafka", index: "kafka-*"},
+  {name: "auth", index: "auth-*"},
+  {name: "chat", index: "chat-*"},
+  {name: "dash", index: "dash-*"},
+  {name: "game", index: "game-*"},
+  {name: "frontend", index: "frontend-*"}
+];
+
+// Special file names that need custom handling
+const SPECIAL_FILES = {
+  gatewaySearch: 'gateway-search.json'
+};
+
+/**
+ * Create an axios instance with authentication
+ * @returns {Object} Axios instance
+ */
+const createApiClient = () => {
+  return axios.create({
+    baseURL: CONFIG.kibana.url,
+    auth: {
+      username: CONFIG.kibana.username,
+      password: CONFIG.kibana.password
+    },
+    headers: CONFIG.headers.common,
+    validateStatus: () => true // Don't throw on non-2xx responses
+  });
+};
+
+/**
+ * Wait for Kibana to be ready
+ */
 const waitForKibana = async () => {
   console.log('Waiting for Kibana to be ready...');
+  const apiClient = createApiClient();
+  
   let isReady = false;
   while (!isReady) {
     try {
-      const response = await axios.get(`${KIBANA_URL}/api/status`, {
-        headers: {
-          'kbn-xsrf': 'true'
-        },
-        auth: {
-          username: ELASTIC_USERNAME,
-          password: ELASTIC_PASSWORD
-        },
-        validateStatus: () => true
-      });
+      const response = await apiClient.get('/api/status');
       
       if (response.status === 200) {
-        console.log('Kibana is ready!');
+        console.log('✅ Kibana is ready!');
         isReady = true;
       } else {
-        console.log('Kibana is not ready yet. Waiting...');
-        await new Promise(resolve => setTimeout(resolve, 5000));
+        console.log('⏳ Kibana is not ready yet. Waiting...');
+        await new Promise(resolve => setTimeout(resolve, CONFIG.retryInterval));
       }
     } catch (error) {
-      console.log('Error connecting to Kibana:', error.message);
-      await new Promise(resolve => setTimeout(resolve, 5000));
+      console.log('❌ Error connecting to Kibana:', error.message);
+      await new Promise(resolve => setTimeout(resolve, CONFIG.retryInterval));
     }
   }
 };
 
-// Function to check if a data view exists
+/**
+ * Check if a data view exists
+ * @param {string} title - Title of the data view
+ * @returns {Promise<boolean>} True if data view exists
+ */
 const checkDataViewExists = async (title) => {
   try {
-    const response = await axios.get(
-      `${KIBANA_URL}/api/data_views/data_view`,
-      {
-        headers: {
-          'kbn-xsrf': 'string',
-        },
-        auth: {
-          username: ELASTIC_USERNAME,
-          password: ELASTIC_PASSWORD
-        }
-      }
-    );
+    const apiClient = createApiClient();
+    const response = await apiClient.get('/api/data_views/data_view');
     
     const dataViews = response.data?.data_views || [];
     return dataViews.some(view => view.title === title);
   } catch (error) {
-    console.error('Error checking if data view exists:', error.message);
+    console.error('❌ Error checking if data view exists:', error.message);
     return false;
   }
 };
 
-// Function to create a data view
-const createDataView = async (dataView) => {
+/**
+ * Create a Kibana object via API
+ * @param {string} endpoint - API endpoint
+ * @param {Object} data - Object data
+ * @param {string} objectType - Type of object being created
+ * @param {string} nameField - Field to use for object name in logs
+ * @returns {Promise<Object>} Created object
+ */
+const createKibanaObject = async (endpoint, data, objectType, nameField) => {
+  const apiClient = createApiClient();
+  const displayName = data[nameField] || (data.attributes && data.attributes.title) || 'unknown';
+  
   try {
-    console.log(`Creating data view: ${dataView.name}`);
+    console.log(`Creating ${objectType}: ${displayName}`);
     
-    const response = await axios.post(
-      `${KIBANA_URL}/api/data_views/data_view`,
-      { data_view: dataView },
-      {
-        headers: {
-          'kbn-xsrf': 'string',
-          'Content-Type': 'application/json'
-        },
-        auth: {
-          username: ELASTIC_USERNAME,
-          password: ELASTIC_PASSWORD
-        }
-      }
-    );
-    console.log(`Data view created: ${dataView.name}`);
-    return response.data;
-  } catch (error) {
-    console.error(`Error creating data view ${dataView.name}:`, error.response?.data || error.message);
-    throw error;
-  }
-};
-
-// Function to create a tag
-const createTag = async (tag) => {
-  try {
-    console.log(`Creating tag: ${tag.attributes.name}`);
+    const response = await apiClient.post(endpoint, data, {
+      headers: CONFIG.headers.json
+    });
     
-    const response = await axios.post(
-      `${KIBANA_URL}/api/saved_objects/tag`,
-      tag,
-      {
-        headers: {
-          'kbn-xsrf': 'string',
-          'Content-Type': 'application/json'
-        },
-        auth: {
-          username: ELASTIC_USERNAME,
-          password: ELASTIC_PASSWORD
-        }
-      }
-    );
-    console.log(`Tag created: ${tag.attributes.name}`);
-    return response.data;
-  } catch (error) {
-    console.error(`Error creating tag ${tag.attributes.name}:`, error.response?.data || error.message);
-    throw error;
-  }
-};
-
-// Function to create a search
-const createSearch = async (search) => {
-  try {
-    console.log(`Creating search: ${search.attributes.title}`);
-    
-    const response = await axios.post(
-      `${KIBANA_URL}/api/saved_objects/search`,
-      search,
-      {
-        headers: {
-          'kbn-xsrf': 'string',
-          'Content-Type': 'application/json'
-        },
-        auth: {
-          username: ELASTIC_USERNAME,
-          password: ELASTIC_PASSWORD
-        }
-      }
-    );
-    console.log(`Search created: ${search.attributes.title}`);
-    return response.data;
-  } catch (error) {
-    console.error(`Error creating search ${search.attributes.title}:`, error.response?.data || error.message);
-    throw error;
-  }
-};
-
-// Main function
-const setupKibana = async () => {
-  try {
-    if (!ELASTIC_PASSWORD) {
-      throw new Error('ELASTIC_PASSWORD environment variable is required');
+    if (response.status >= 200 && response.status < 300) {
+      console.log(`✅ ${objectType} created: ${displayName}`);
+      return response.data;
+    } else {
+      throw new Error(`Status ${response.status}: ${JSON.stringify(response.data)}`);
     }
-    await waitForKibana();
+  } catch (error) {
+    console.error(`❌ Error creating ${objectType} ${displayName}:`, error.response?.data || error.message);
+    throw error;
+  }
+};
+
+/**
+ * Create a data view
+ * @param {Object} dataView - Data view configuration
+ * @returns {Promise<Object>} Created data view
+ */
+const createDataView = async (dataView) => {
+  return createKibanaObject(
+    '/api/data_views/data_view',
+    { data_view: dataView },
+    'data view',
+    'name'
+  );
+};
+
+/**
+ * Create a tag
+ * @param {Object} tag - Tag configuration
+ * @returns {Promise<Object>} Created tag
+ */
+const createTag = async (tag) => {
+  return createKibanaObject(
+    '/api/saved_objects/tag',
+    tag,
+    'tag',
+    'attributes.name'
+  );
+};
+
+/**
+ * Create a saved search
+ * @param {Object} search - Search configuration
+ * @returns {Promise<Object>} Created search
+ */
+const createSearch = async (search) => {
+  return createKibanaObject(
+    '/api/saved_objects/search',
+    search,
+    'search',
+    'attributes.title'
+  );
+};
+
+/**
+ * Create data views from configuration files
+ */
+const createCustomDataViews = async () => {
+  try {
+    const files = await fs.readdir(CONFIG.paths.dataviews);
     
-    const gatewayDataView = {
-      name: 'gateway-logs',
-      title: 'gateway-logs*',
-      timeFieldName: 'timestamp',
+    for (const file of files) {
+      if (!file.endsWith('.json')) continue;
+      
+      console.log(`Processing file: ${file}`);
+      const filePath = path.join(CONFIG.paths.dataviews, file);
+      const fileData = await fs.readFile(filePath, 'utf8');
+      const config = JSON.parse(fileData);
+      
+      try {
+        // Handle special files differently
+        if (file === SPECIAL_FILES.gatewaySearch) {
+          await createSearch(config);
+          console.log(`✅ Gateway saved search created from ${file}`);
+        } else {
+          await createDataView(config);
+          console.log(`✅ Custom data view created from ${file}`);
+        }
+      } catch (error) {
+        console.error(`❌ Error processing ${file}:`, error.message);
+      }
+    }
+  } catch (err) {
+    if (err.code === 'ENOENT') {
+      console.log('ℹ️ No dataviews directory found, skipping custom data views');
+    } else {
+      console.error('❌ Error processing custom data views:', err);
+    }
+  }
+};
+
+/**
+ * Create standard data views for predefined indices
+ */
+const createStandardDataViews = async () => {
+  console.log('Creating standard data views...');
+  
+  for (const index of STANDARD_INDICES) {
+    const dataView = {
+      name: index.name,
+      title: index.index,
+      timeFieldName: CONFIG.defaultTimeField,
       allowHidden: false
     };
     
-    const dataViewExists = await checkDataViewExists(gatewayDataView.title);
-    if (dataViewExists) {
-      console.log('Data view already exists, skipping creation');
-    } else {
-      const dataViewResponse = await createDataView(gatewayDataView);
-      console.log('Data view created with ID:', dataViewResponse.id);
-    }
-    
-    const gatewayTag = {
-      attributes: {
-        color: '#f950ca',
-        description: '',
-        name: 'Gateway'
-      }
-    };
-    
-    const tagResponse = await createTag(gatewayTag);
-    console.log('Tag created with ID:', tagResponse.id);
-    
-    let dataViewId;
-    if (dataViewExists) {
-      const response = await axios.get(
-        `${KIBANA_URL}/api/data_views/data_view`,
-        {
-          headers: {
-            'kbn-xsrf': 'string',
-          },
-          auth: {
-            username: ELASTIC_USERNAME,
-            password: ELASTIC_PASSWORD
-          }
-        }
-      );
-      
-      const dataViews = response.data?.data_views || [];
-      const existingDataView = dataViews.find(view => view.title === gatewayDataView.title);
-      if (existingDataView) {
-        dataViewId = existingDataView.id;
+    try {
+      await createDataView(dataView);
+      console.log(`✅ Standard data view created: ${index.name}`);
+    } catch (error) {
+      // If it's a 409 conflict, the view already exists
+      if (error.response?.status === 409) {
+        console.log(`ℹ️ Data view ${index.name} already exists, skipping`);
+      } else {
+        console.error(`❌ Error creating data view ${index.name}:`, error.message);
       }
     }
+  }
+};
+
+/**
+ * Main setup function
+ */
+const setupKibana = async () => {
+  try {
+    // Validate required environment variables
+    if (!CONFIG.kibana.password) {
+      throw new Error('ELASTIC_PASSWORD environment variable is required');
+    }
     
-    const gatewaySearch = {
-      attributes: {
-        columns: [
-          'timestamp',
-          'level',
-          'event_type',
-          'frontend.clientIp',
-          'frontend.request.method',
-          'frontend.request.url',
-          'frontend.request.referrer',
-          'gateway.forwarded.service',
-          'gateway.response.statusCode',
-          'context.userId',
-          'context.sessionId',
-          'requestId'
-        ],
-        density: 'compact',
-        description: 'Gateway Logs View',
-        grid: {
-          columns: {
-            'level': { width: 80 },
-            'event_type': { width: 120 },
-            'frontend.clientIp': { width: 120 },
-            'frontend.request.method': { width: 80 },
-            'frontend.request.url': { width: 250 },
-            'gateway.forwarded.service': { width: 150 },
-            'gateway.response.statusCode': { width: 100 },
-            'context.userId': { width: 100 },
-            'requestId': { width: 200 }
-          }
-        },
-        headerRowHeight: 5,
-        hideChart: false,
-        isTextBasedQuery: false,
-        kibanaSavedObjectMeta: {
-          searchSourceJSON: JSON.stringify({
-            query: { query: '', language: 'kuery' },
-            filter: []
-          })
-        },
-        refreshInterval: {
-          pause: true,
-          value: 60000
-        },
-        rowHeight: 3,
-        sort: [['timestamp', 'desc']],
-        timeRange: {
-          from: 'now-15m',
-          to: 'now'
-        },
-        timeRestore: true,
-        title: 'gateway-logs'
-      },
-      references: [
-        {
-          id: dataViewId || (dataViewExists ? '' : dataViewResponse.id),
-          name: 'kibanaSavedObjectMeta.searchSourceJSON.index',
-          type: 'index-pattern'
-        },
-        {
-          id: tagResponse.id,
-          name: `tag-ref-${tagResponse.id}`,
-          type: 'tag'
-        }
-      ]
-    };
+    // Wait for Kibana to be available
+    await waitForKibana();
     
-    await createSearch(gatewaySearch);
+    // Create standard data views
+    await createStandardDataViews();
     
-    console.log('All Kibana objects created successfully!');
+    // Create custom data views from config files
+    await createCustomDataViews();
+    
+    console.log('✅ Setup completed successfully!');
+    process.exit(0);
   } catch (error) {
     if (error.response?.status === 400) {
-      console.log('Some objects already exist, continuing...');
+      console.log('ℹ️ Some objects already exist, continuing...');
+      process.exit(0);
     } else {
-      console.error('Setup failed:', error);
+      console.error('❌ Setup failed:', error.message);
       process.exit(1);
     }
   }
-  console.log('Setup completed successfully!');
-  process.exit(0);
 };
 
+// Run setup if this file is executed directly
 if (require.main === module) {
   setupKibana();
 }

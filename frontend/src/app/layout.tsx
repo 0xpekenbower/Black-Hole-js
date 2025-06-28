@@ -38,6 +38,7 @@ export default async function RootLayout({
     <html lang={initialLang} className="no-scrollbar" suppressHydrationWarning>
       <head>
         <ThemeScript />
+        {/* <Head /> */}
       </head>
       {/* ${geistSans.variable} ${geistMono.variable} */}
       <body suppressHydrationWarning className="antialiased no-scrollbar">

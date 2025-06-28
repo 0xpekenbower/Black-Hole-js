@@ -5,13 +5,8 @@
 api.http.host: 0.0.0.0
 
 node.name: logstash
-pipeline.workers: 1
-pipeline.batch.size: 20
-pipeline.batch.delay: 100
-
-queue.type: persisted
-queue.max_bytes: 1024mb
-queue.page_capacity: 64mb
-path.queue: /usr/share/logstash/data/queue
-api.enabled: false
-config.reload.automatic: false
+# pipeline.workers: 2
+# pipeline.batch.size: 125
+# pipeline.batch.delay: 50
+# queue.type: memory
+# queue.max_bytes: 128mb

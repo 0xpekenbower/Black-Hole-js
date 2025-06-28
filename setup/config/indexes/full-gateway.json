@@ -1,0 +1,47 @@
+{
+  "index_patterns": ["gateway-*"],
+  "template": {
+    "settings": {
+      "number_of_shards": 1,
+      "number_of_replicas": 0,
+      "index.refresh_interval": "5s",
+      "index.lifecycle.name": "gateway-logs-policy"
+    },
+    "mappings": {
+      "properties": {
+        "level": { "type": "keyword" },
+        "timestamp": { "type": "date" },
+        "message": { "type": "text" },
+        "log_data": {
+          "properties": {
+            "event_type": { "type": "keyword" },
+            "requestId": { "type": "keyword" },
+            "source": {
+              "properties": {
+                "userAgent": { "type": "text" },
+                "clientIp": { "type": "ip" },
+                "url": { "type": "keyword" },
+                "method": { "type": "keyword" },
+                "referrer": { "type": "keyword" },
+                "userId": { "type": "integer" }
+              }
+            },
+            "target": {
+              "properties": {
+                "service": { "type": "keyword" },
+                "rewritePrefix": { "type": "keyword" }
+              }
+            },
+            "response": {
+              "properties": {
+                "statusCode": { "type": "integer" }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "priority": 100,
+  "version": 1
+} 

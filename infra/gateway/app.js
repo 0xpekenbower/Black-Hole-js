@@ -2,6 +2,7 @@ import Fastify from 'fastify';
 import cors from '@fastify/cors';
 import { cors as corsConfig } from './config/index.js';
 import { registerLifecycleHooks } from './logger/lifecycle.js';
+import { registerApmHooks } from './logger/apm.js';
 
 export async function createApp() {
   const app = Fastify({ 
@@ -10,6 +11,7 @@ export async function createApp() {
   });  
       
   registerLifecycleHooks(app);
+  registerApmHooks(app);
   
   await app.register(cors, corsConfig);
   

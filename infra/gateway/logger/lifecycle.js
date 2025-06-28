@@ -91,31 +91,23 @@ export function createLifecycleLog(request, reply, error = null) {
   const sessionId = getSessionId(request);
 
   const lifecycleLog = {
-    event_type: "request_lifecycle",
+    event_type: "forward_request",
     requestId: requestData.requestId,
-    frontend: {
+    source: {
       userAgent: requestData.userAgent,
       clientIp: requestData.clientIp,
-      request: {
-        url: requestData.url,
-        method: requestData.method,
-        referrer: requestData.referrer
-      }
+      url: requestData.url,
+      method: requestData.method,
+      referrer: requestData.referrer,
+      userId: userId || 0
     },
-    gateway: {
-      forwarded: {
-        service: requestData.service,
-        rewritePrefix: requestData.rewritePrefix
-      },
-      response: {
-        service: error ? "GATEWAY" : requestData.service,
-        statusCode: statusCode,
-        ...(error && { error: error.message })
-      }
+    target: {
+      service: requestData.service,
+      rewritePrefix: requestData.rewritePrefix
     },
-    context: {
-      userId: userId || 0,
-      sessionId: sessionId
+    response: {
+      statusCode: statusCode,
+      ...(error && { error: error.message })
     }
   };
   

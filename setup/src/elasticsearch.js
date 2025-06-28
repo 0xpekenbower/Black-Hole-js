@@ -3,158 +3,317 @@ const fs = require('fs/promises');
 const path = require('path');
 const axios = require('axios');
 
-const CONFIG_DIR = path.resolve(__dirname, '..', 'config');
-const LOGSTASH_ROLE_FILE = path.join(CONFIG_DIR, 'logstash_writer.json');
-const FILEBEAT_ROLE_FILE = path.join(CONFIG_DIR, 'filebeat_writer.json');
-const GATEWAY_TEMPLATE_FILE = path.join(CONFIG_DIR, 'gateway.json');
+// Configuration constants
+const CONFIG = {
+  elasticsearch: {
+    url: process.env.ES_URL || 'http://elasticsearch:9200',
+    username: 'elastic',
+    password: process.env.ELASTIC_PASSWORD
+  },
+  paths: {
+    config: path.resolve(__dirname, '..', 'config'),
+    get logstashRole() { return path.join(this.config, 'logstash_writer.json') },
+    get filebeatRole() { return path.join(this.config, 'filebeat_writer.json') },
+    get indexesDir() { return path.join(this.config, 'indexes') }
+  },
+  credentials: {
+    kibana: process.env.KIBANA_SYSTEM_PASSWORD,
+    logstash: process.env.LOGSTASH_INTERNAL_PASSWORD,
+    filebeat: process.env.FILEBEAT_INTERNAL_PASSWORD
+  },
+  retryInterval: 5000, // 5 seconds
+  maxRetries: 60 // 5 minutes total
+};
 
-const ES_HOST = 'http://elasticsearch:9200';
-const REQUIRED_ENV_VARS = ['ELASTIC_PASSWORD', 'KIBANA_SYSTEM_PASSWORD', 'LOGSTASH_INTERNAL_PASSWORD', 'FILEBEAT_INTERNAL_PASSWORD'];
+// Validate required environment variables
+const REQUIRED_ENV_VARS = [
+  'ELASTIC_PASSWORD', 
+  'KIBANA_SYSTEM_PASSWORD', 
+  'LOGSTASH_INTERNAL_PASSWORD', 
+  'FILEBEAT_INTERNAL_PASSWORD'
+];
 
 for (const varName of REQUIRED_ENV_VARS) {
   if (!process.env[varName]) {
-    console.error(`Error: Missing environment variable ${varName}`);
+    console.error(`❌ Error: Missing environment variable ${varName}`);
     process.exit(1);
   }
 }
 
-const AUTH = {
-  username: 'elastic',
-  password: process.env.ELASTIC_PASSWORD
+/**
+ * Create an axios instance for Elasticsearch API
+ * @returns {Object} Axios instance
+ */
+const createApiClient = () => {
+  return axios.create({
+    baseURL: CONFIG.elasticsearch.url,
+    auth: {
+      username: CONFIG.elasticsearch.username,
+      password: CONFIG.elasticsearch.password
+    },
+    headers: { 'Content-Type': 'application/json' },
+    validateStatus: () => true // Don't throw on non-2xx responses
+  });
 };
 
-const axiosInstance = axios.create({
-  baseURL: ES_HOST,
-  auth: AUTH,
-  headers: { 'Content-Type': 'application/json' },
-  validateStatus: () => true
-});
-
+/**
+ * Wait for Elasticsearch to be ready
+ * @returns {Promise<void>}
+ */
 async function waitForES() {
-  for (let i = 0; i < 60; i++) {
+  console.log('Waiting for Elasticsearch to be ready...');
+  const apiClient = createApiClient();
+  
+  for (let i = 0; i < CONFIG.maxRetries; i++) {
     try {
-      const res = await axiosInstance.get('/');
-      if (res.status === 200) return;
-    } catch {}
-    await new Promise(resolve => setTimeout(resolve, 5000));
+      const res = await apiClient.get('/');
+      if (res.status === 200) {
+        console.log('✅ Elasticsearch is ready!');
+        return;
+      }
+      console.log(`⏳ Elasticsearch returned status ${res.status}, waiting...`);
+    } catch (error) {
+      console.log('⏳ Elasticsearch not ready yet:', error.message);
+    }
+    await new Promise(resolve => setTimeout(resolve, CONFIG.retryInterval));
   }
-  throw new Error('Elasticsearch did not become ready in time');
+  throw new Error('❌ Elasticsearch did not become ready in time');
 }
 
+/**
+ * Set the Kibana system user password
+ * @returns {Promise<void>}
+ */
 async function setKibanaPassword() {
-  const res = await axiosInstance.post('/_security/user/kibana_system/_password', {
-    password: process.env.KIBANA_SYSTEM_PASSWORD
+  const apiClient = createApiClient();
+  console.log('Setting Kibana system user password...');
+  
+  const res = await apiClient.post('/_security/user/kibana_system/_password', {
+    password: CONFIG.credentials.kibana
   });
+  
   if (res.status !== 200) {
-    throw new Error('Failed to update password for kibana_system');
+    throw new Error('❌ Failed to update password for kibana_system');
   }
+  
+  console.log('✅ Kibana system password updated successfully');
 }
 
-async function createLogstashRole() {
-  const data = await fs.readFile(LOGSTASH_ROLE_FILE, 'utf8');
-  const res = await axiosInstance.post('/_security/role/logstash_writer', JSON.parse(data));
-  if (res.status !== 200) {
-    throw new Error('Failed to create role logstash_writer');
-  }
-}
-
-async function createFilebeatRole() {
-  const data = await fs.readFile(FILEBEAT_ROLE_FILE, 'utf8');
-  const res = await axiosInstance.post('/_security/role/filebeat_writer', JSON.parse(data));
-  if (res.status !== 200) {
-    throw new Error('Failed to create role filebeat_writer');
-  }
-}
-
-async function createLogstashUser() {
-  const res = await axiosInstance.get('/_security/user/logstash_internal');
-  if (res.status === 200) {
-    const update = await axiosInstance.post('/_security/user/logstash_internal/_password', {
-      password: process.env.LOGSTASH_INTERNAL_PASSWORD
-    });
-    if (update.status !== 200) {
-      throw new Error('Failed to update password for logstash_internal');
+/**
+ * Create a role in Elasticsearch
+ * @param {string} roleName - Name of the role to create
+ * @param {string} roleFilePath - Path to the role definition file
+ * @returns {Promise<void>}
+ */
+async function createRole(roleName, roleFilePath) {
+  const apiClient = createApiClient();
+  console.log(`Creating role: ${roleName}...`);
+  
+  try {
+    const data = await fs.readFile(roleFilePath, 'utf8');
+    const res = await apiClient.post(`/_security/role/${roleName}`, JSON.parse(data));
+    
+    if (res.status !== 200) {
+      throw new Error(`Failed to create role ${roleName}`);
     }
-  } else {
-    const create = await axiosInstance.post('/_security/user/logstash_internal', {
-      password: process.env.LOGSTASH_INTERNAL_PASSWORD,
-      roles: ['logstash_writer']
-    });
-    if (create.status !== 200) {
-      throw new Error('Failed to create user logstash_internal');
+    
+    console.log(`✅ Role created: ${roleName}`);
+  } catch (error) {
+    console.error(`❌ Error creating role ${roleName}:`, error.message);
+    throw error;
+  }
+}
+
+/**
+ * Create or update a user in Elasticsearch
+ * @param {string} username - Username to create/update
+ * @param {string} password - Password for the user
+ * @param {Array<string>} roles - Roles to assign to the user
+ * @returns {Promise<void>}
+ */
+async function createOrUpdateUser(username, password, roles) {
+  const apiClient = createApiClient();
+  console.log(`Setting up user: ${username}...`);
+  
+  try {
+    // Check if user exists
+    const checkRes = await apiClient.get(`/_security/user/${username}`);
+    
+    if (checkRes.status === 200) {
+      // Update existing user's password
+      const updateRes = await apiClient.post(`/_security/user/${username}/_password`, {
+        password: password
+      });
+      
+      if (updateRes.status !== 200) {
+        throw new Error(`Failed to update password for ${username}`);
+      }
+      
+      console.log(`✅ Updated password for existing user: ${username}`);
+    } else {
+      // Create new user
+      const createRes = await apiClient.post(`/_security/user/${username}`, {
+        password: password,
+        roles: roles
+      });
+      
+      if (createRes.status !== 200) {
+        throw new Error(`Failed to create user ${username}`);
+      }
+      
+      console.log(`✅ Created new user: ${username}`);
+    }
+  } catch (error) {
+    console.error(`❌ Error setting up user ${username}:`, error.message);
+    throw error;
+  }
+}
+
+/**
+ * Create ILM policy for gateway logs
+ * @returns {Promise<void>}
+ */
+async function createILMPolicy() {
+  const apiClient = createApiClient();
+  const policyName = "gateway-logs-policy";
+  
+  console.log(`Creating ILM policy: ${policyName}...`);
+  
+  const policyContent = {
+    phases: {
+      hot: {
+        min_age: "0ms",
+        actions: {
+          rollover: {
+            max_age: "7d",
+            max_size: "10gb"
+          },
+          set_priority: {
+            priority: 100
+          }
+        }
+      },
+      warm: {
+        min_age: "30d",
+        actions: {
+          shrink: {
+            number_of_shards: 1
+          },
+          forcemerge: {
+            max_num_segments: 1
+          },
+          set_priority: {
+            priority: 50
+          }
+        }
+      },
+      cold: {
+        min_age: "60d",
+        actions: {
+          set_priority: {
+            priority: 0
+          }
+        }
+      },
+      delete: {
+        min_age: "90d",
+        actions: {
+          delete: {}
+        }
+      }
+    }
+  };
+
+  try {
+    const policyRes = await apiClient.put(`/_ilm/policy/${policyName}`, { policy: policyContent });
+    
+    if (policyRes.status !== 200) {
+      console.error('❌ Policy creation error:', JSON.stringify(policyRes.data, null, 2));
+      throw new Error('Failed to create ILM policy');
+    }
+    
+    console.log(`✅ Created ILM policy: ${policyName}`);
+  } catch (error) {
+    console.error('❌ Error creating ILM policy:', error.message);
+    throw error;
+  }
+}
+
+/**
+ * Install index templates from configuration files
+ * @returns {Promise<void>}
+ */
+async function installIndexTemplates() {
+  const apiClient = createApiClient();
+  console.log("Starting index templates setup...");
+  
+  // Create ILM policy first
+  await createILMPolicy();
+  
+  // Install all templates from indexes directory
+  try {
+    const files = await fs.readdir(CONFIG.paths.indexesDir);
+    
+    for (const file of files) {
+      if (!file.endsWith('.json')) continue;
+      
+      const templateName = path.basename(file, '.json');
+      console.log(`Processing index template from file: ${file}`);
+      
+      try {
+        const templateData = await fs.readFile(path.join(CONFIG.paths.indexesDir, file), 'utf8');
+        const templateContent = JSON.parse(templateData);
+        
+        const templateRes = await apiClient.put(`/_index_template/${templateName}`, templateContent);
+        
+        if (templateRes.status !== 200) {
+          console.error(`❌ Template creation error for ${templateName}:`, JSON.stringify(templateRes.data, null, 2));
+          throw new Error(`Failed to create index template ${templateName}`);
+        }
+        
+        console.log(`✅ Created index template from file: ${templateName}`);
+      } catch (error) {
+        console.error(`❌ Error processing template ${file}:`, error.message);
+        throw error;
+      }
+    }
+  } catch (err) {
+    if (err.code === 'ENOENT') {
+      console.log('ℹ️ No indexes directory found, skipping custom index templates');
+    } else {
+      console.error('❌ Error processing index templates:', err.message);
+      throw err;
     }
   }
 }
 
-async function createFilebeatUser() {
-  const res = await axiosInstance.get('/_security/user/filebeat_internal');
-  if (res.status === 200) {
-    const update = await axiosInstance.post('/_security/user/filebeat_internal/_password', {
-      password: process.env.FILEBEAT_INTERNAL_PASSWORD
-    });
-    if (update.status !== 200) {
-      throw new Error('Failed to update password for filebeat_internal');
-    }
-  } else {
-    const create = await axiosInstance.post('/_security/user/filebeat_internal', {
-      password: process.env.FILEBEAT_INTERNAL_PASSWORD,
-      roles: ['filebeat_writer']
-    });
-    if (create.status !== 200) {
-      throw new Error('Failed to create user filebeat_internal');
-    }
-  }
-}
-
-
-async function installGatewayTemplateAndPolicy() {
-  console.log("Starting Gateway logs setup...");
-  const fileData = await fs.readFile(GATEWAY_TEMPLATE_FILE, 'utf8');
-  const parsed = JSON.parse(fileData);
-
-  const policyName = Object.keys(parsed.policies || {})[0];
-  if (!policyName) throw new Error('Policy name not found in gateway.json');
-
-  const policyContent = parsed.policies[policyName].policy;
-  if (!policyContent) throw new Error('Policy content not found');
-
-  const policyRes = await axiosInstance.put(`/_ilm/policy/${policyName}`, { policy: policyContent });
-  if (policyRes.status !== 200) throw new Error('Failed to create ILM policy');
-  console.log(`✅ Created ILM policy: ${policyName}`);
-
-  const templateName = Object.keys(parsed.templates || {})[0];
-  if (!templateName) throw new Error('Template name not found');
-
-  const templateContent = parsed.templates[templateName];
-  if (!templateContent) throw new Error('Template content not found');
-
-  const templateRes = await axiosInstance.put(`/_index_template/${templateName}`, templateContent);
-  if (templateRes.status !== 200) {
-    console.error('Template creation error:', JSON.stringify(templateRes.data, null, 2));
-    throw new Error('Failed to create index template');
-  }
-  console.log(`✅ Created index template: ${templateName}`);
-}
-
+/**
+ * Main function to set up Elasticsearch
+ * @returns {Promise<void>}
+ */
 async function setupElasticsearch() {
-  await waitForES();
-  await setKibanaPassword();
-  await createLogstashRole();
-  await createLogstashUser();
-  await createFilebeatRole();
-  await createFilebeatUser();
-  await installGatewayTemplateAndPolicy();
+  try {
+    await waitForES();
+    
+    // Set up users and roles
+    await setKibanaPassword();
+    await createRole('logstash_writer', CONFIG.paths.logstashRole);
+    await createOrUpdateUser('logstash_internal', CONFIG.credentials.logstash, ['logstash_writer']);
+    await createRole('filebeat_writer', CONFIG.paths.filebeatRole);
+    await createOrUpdateUser('filebeat_internal', CONFIG.credentials.filebeat, ['filebeat_writer']);
+    
+    // Set up index templates
+    await installIndexTemplates();
+    
+    console.log('✅ Elasticsearch setup completed successfully.');
+  } catch (err) {
+    console.error('❌ Elasticsearch setup failed:', err.message);
+    process.exit(1);
+  }
 }
 
 module.exports = { setupElasticsearch };
 
 if (require.main === module) {
-  setupElasticsearch()
-    .then(() => {
-      console.log('✅ Elasticsearch setup completed successfully.');
-    })
-    .catch((err) => {
-      console.error('❌ Elasticsearch setup failed:', err.message);
-      process.exit(1);
-    });
+  setupElasticsearch();
 }

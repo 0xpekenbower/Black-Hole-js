@@ -1,0 +1,9 @@
+{
+  "id": "gateway",
+  "title": "gateway-*",
+  "timeFieldName": "timestamp",
+  "fieldFormats": {},
+  "sourceFilters": [],
+  "fieldAttrs": {},
+  "runtimeFieldMap": {}
+}

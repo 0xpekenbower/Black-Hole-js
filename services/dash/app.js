@@ -6,11 +6,56 @@ const appBuilder = async () => {
     await setupdb(process.env.db_name)
 
     const fastify = Fastify({
+        // logger: {
+        //     transport: { 
+        //         // target: 'pino-pretty',
+        //         options: { 
+        //             translateTime: 'HH:MM:ss Z', 
+        //             ignore: 'pid,hostname,reqId',
+        //             messageFormat: '{msg} {req.method} {req.url}',
+        //             levelFirst: true, 
+        //             colorize: true, 
+        //             singleLine: true,
+        //         }
+        //     }
+        // }
+
         logger: {
-            transport: { target: 'pino-pretty',
-            options: { translateTime: 'HH:MM:ss Z', ignore: 'pid,hostname,reqId',
-            messageFormat: '{msg} {req.method} {req.url}',
-            levelFirst: true, colorize: true, singleLine: true,}}}})
+            level: 'info',
+            options: {
+                translateTime: 'HH:MM:ss Z',
+                ignore: 'pid,hostname,reqId',
+                messageFormat: '{message} {req.method} {req.url}',
+                levelFirst: true,
+                colorize: true,
+            },
+            serializers: {
+              req: (req) => ({
+                method: req.method,
+                url: req.url,
+                remoteAddress: req.ip,
+              }),
+              res: (res) => ({
+                statusCode: res.statusCode
+              })
+            },
+            formatters: {
+              level(label) {
+                return { level: label.toUpperCase() };
+              },
+              bindings() {
+                return { logger: 'dash' }; // add your app name here
+              },
+              log(object) {
+                return {
+                  timestamp: new Date().toISOString(),
+                  message: object.msg,
+                  ...object
+                };
+              }
+            }
+        }
+    })
 
 
     fastify.register(import ('@fastify/jwt'),

@@ -1,20 +1,4 @@
 services:
-  setup:
-    container_name: setup
-    build:
-      context: ./setup
-    env_file:
-      - .env
-    restart: on-failure
-    profiles: [obsy]
-    depends_on:
-      - elasticsearch
-    networks:
-      - blackholejs
-    logging:
-      driver: fluentd
-      options:
-        tag: "{{.Name}}.log"
 
   nginx:
     container_name: nginx
@@ -24,7 +8,7 @@ services:
       - 8080:80
     env_file:
       - .env
-    profiles: [core]
+    profiles: [infra]
     restart: on-failure
     networks:
       - blackholejs
@@ -39,8 +23,7 @@ services:
       context: ./infra/redis
     volumes:
       - redis_data:/data
-      - logs:/var/log/redis:rw
-    profiles: [core, setup]
+    profiles: [infra]
     env_file:
       - .env
     restart: on-failure
@@ -57,7 +40,7 @@ services:
       context: ./infra/postgres
     volumes:
       - postgres_data:/var/lib/postgresql/data
-    profiles: [core, setup]
+    profiles: [infra]
     environment:
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
     command: ["postgres", "-c", "config_file=/var/lib/postgresql/postgresql.conf"]
@@ -105,11 +88,8 @@ services:
       KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
       KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
       KAFKA_NUM_PARTITIONS: 1
-    profiles: [core, setup]
+    profiles: [infra]
     restart: on-failure
-    volumes:
-      - kafka_data:/var/lib/kafka/data
-      - logs:/var/log/kafka:rw
     networks:
       - blackholejs
     logging:
@@ -126,10 +106,9 @@ services:
       - .env
     restart: on-failure
     profiles: [core]
-    depends_on:
-      - redis
-      - postgres_db
-      - kafka
+    volumes:
+      - ./infra/gateway:/gateway
+      - /gateway/node_modules
     networks:
       - blackholejs
     logging:
@@ -163,8 +142,6 @@ services:
       - .env
     depends_on:
       - gateway
-    volumes:
-      - logs:/var/log/chat:rw
     restart: on-failure
     networks:
       - blackholejs
@@ -180,8 +157,6 @@ services:
     env_file:
       - .env
     profiles: [core]
-    volumes:
-      - logs:/var/log/dash:rw
     restart: on-failure
     depends_on:
       - gateway
@@ -199,8 +174,6 @@ services:
     env_file:
       - .env
     profiles: [core]
-    volumes:
-      - logs:/var/log/game:rw
     restart: on-failure
     depends_on:
       - gateway
@@ -221,10 +194,31 @@ services:
     restart: on-failure
     networks:
       - blackholejs
+    # volumes:
+    #   - ./frontend:/app
+    #   - /app/node_modules
     logging:
       driver: fluentd
       options:
         tag: "{{.Name}}.log"
+
+  setup:
+    container_name: setup
+    build:
+      context: ./setup
+    env_file:
+      - .env
+    restart: on-failure
+    profiles: [obsy]
+    depends_on:
+      - elasticsearch
+    networks:
+      - blackholejs
+    logging:
+      driver: fluentd
+      options:
+        tag: "{{.Name}}.log"
+        
   elasticsearch:
     container_name: elasticsearch
     build:
@@ -240,31 +234,31 @@ services:
     networks:
       - blackholejs
 
-  filebeat:
-    container_name: filebeat
-    build:
-      context: ./infra/filebeat
-    user: root
-    command:
-      - -e
-      - --strict.perms=false
-    volumes:
-      - type: bind
-        source: /home/aelmrabe/goinfre/docker/containers
-        target: /var/lib/docker/containers
-        read_only: true
-      - logs:/var/log/filebeat:rw
-    environment:
-      FILEBEAT_INTERNAL_PASSWORD: ${FILEBEAT_INTERNAL_PASSWORD:-}
-    networks:
-      - blackholejs
-    restart: unless-stopped
-    profiles: [obsy]
-    env_file:
-      - .env
-    depends_on:
-      - elasticsearch
-      - logstash
+  # filebeat:
+  #   container_name: filebeat
+  #   build:
+  #     context: ./infra/filebeat
+  #   user: root
+  #   command:
+  #     - -e
+  #     - --strict.perms=false
+  #   volumes:
+  #     - type: bind
+  #       source: /home/aelmrabe/goinfre/docker/containers
+  #       target: /var/lib/docker/containers
+  #       read_only: true
+  #     - logs:/var/log/filebeat:rw
+  #   environment:
+  #     FILEBEAT_INTERNAL_PASSWORD: ${FILEBEAT_INTERNAL_PASSWORD:-}
+  #   networks:
+  #     - blackholejs
+  #   restart: unless-stopped
+  #   profiles: [obsy]
+  #   env_file:
+  #     - .env
+  #   depends_on:
+  #     - elasticsearch
+  #     - logstash
 
   logstash:
     container_name: logstash
@@ -272,9 +266,6 @@ services:
       context: ./infra/logstash
     ports:
       - 5044:5044
-      - 50000:50000/tcp
-      - 50000:50000/udp
-      - 9600:9600
     profiles: [obsy]
     environment:
       LOGSTASH_PASSWORD: ${LOGSTASH_PASSWORD:-}
@@ -304,23 +295,53 @@ services:
     networks:
       - blackholejs
     
-
-  vector:
-    container_name: vector
+  fluentd:
+    container_name: fluentd
     build:
-      context: ./infra/vector
-    volumes:
-      - logs_data_vector:/var/lib/vector:rw
-      - logs:/var/log/containers:rw
+      context: ./infra/fluentd
+    profiles: [infra]
+    restart: on-failure
+    command:
+      - /fluent-bit/bin/fluent-bit
+      - --config=/etc/fluent-bit/fluent-bit.conf
     ports:
-      - 9000:9000
-      - 8686:8686
+      - "24224:24224"
+      - "24224:24224/udp"
+    networks:
+      - blackholejs
+    env_file:
+      - .env
+    volumes:
+      - fluentbit_storage:/var/log/flb-storage:rw
+
+
+  apm-server:
+    container_name: apm-server
+    build:
+      context: ./infra/apm
     profiles: [obsy]
-    depends_on:
-      - logstash
     restart: on-failure
     networks:
       - blackholejs
+    env_file:
+      - .env
+
+  # vector:
+  #   container_name: vector
+  #   build:
+  #     context: ./infra/vector
+  #   volumes:
+  #     - logs_data_vector:/var/lib/vector:rw
+  #     - logs:/var/log/containers:rw
+  #   ports:
+  #     - 9000:9000
+  #     - 8686:8686
+  #   profiles: [obsy]
+  #   depends_on:
+  #     - logstash
+  #   restart: on-failure
+  #   networks:
+  #     - blackholejs
 
   prometheus:
     container_name: prometheus
@@ -431,36 +452,11 @@ services:
     command:
       - --nginx.scrape-uri=http://nginx:80/stub_status
 
-  fluentd:
-    container_name: fluentd
-    build:
-      context: ./infra/fluentd
-    profiles: [core]
-    restart: on-failure
-    command:
-      - /fluent-bit/bin/fluent-bit
-      - --config=/etc/fluent-bit/fluent-bit.conf
-    ports:
-      - "24224:24224"
-      - "24224:24224/udp"
-    networks:
-      - blackholejs
-    env_file:
-      - .env
-    volumes:
-      - fluentbit_storage:/var/log/flb-storage:rw
-    environment:
-      - ELASTIC_PASSWORD=${ELASTIC_PASSWORD}
-
-
 volumes:
-  logs_data_vector:
   redis_data:
   postgres_data:
   elasticsearch:
   prometheus_data:
-  kafka_data:
-  logs:
   fluentbit_storage:
 
 networks:

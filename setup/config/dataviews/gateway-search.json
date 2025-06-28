@@ -1,0 +1,32 @@
+{
+  "attributes": {
+    "title": "Gateway Logs",
+    "description": "Gateway logs with selected fields",
+    "columns": [
+      "timestamp",
+      "log_data.event_type",
+      "log_data.response.statusCode",
+      "log_data.source.clientIp",
+      "log_data.source.method",
+      "log_data.source.referrer",
+      "log_data.source.url",
+      "log_data.source.userAgent",
+      "log_data.source.userId",
+      "log_data.target.rewritePrefix",
+      "log_data.target.service",
+      "log_data.requestId",
+      "message"
+    ],
+    "sort": [["timestamp", "desc"]],
+    "kibanaSavedObjectMeta": {
+      "searchSourceJSON": "{\"query\":{\"query\":\"\",\"language\":\"kuery\"},\"filter\":[],\"indexRefName\":\"kibanaSavedObjectMeta.searchSourceJSON.index\"}"
+    }
+  },
+  "references": [
+    {
+      "name": "kibanaSavedObjectMeta.searchSourceJSON.index",
+      "type": "index-pattern",
+      "id": "gateway"
+    }
+  ]
+} 

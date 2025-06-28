@@ -1,18 +1,26 @@
+#!/usr/bin/env node
 const { spawn } = require('child_process');
 const path = require('path');
-const setupKafkaTopics = require('./kafka.js');
 const { setupElasticsearch } = require('./elasticsearch');
+const setupKafkaTopics = require('./kafka.js');
 
-// List of setup scripts to run
-const setupScripts = [
-  // 'kibana.js',
-  // 'postgres.js'
-  'kibana.js'
-];
+/**
+ * Configuration for the setup process
+ */
+const CONFIG = {
+  setupScripts: [
+    'kibana.js'
+  ]
+};
 
+/**
+ * Run a Node.js script and return a promise
+ * @param {string} scriptPath - Path to the script to run
+ * @returns {Promise<void>} Promise that resolves when script completes successfully
+ */
 const runScript = (scriptPath) => {
   return new Promise((resolve, reject) => {
-    console.log(`Running setup script: ${scriptPath}`);
+    console.log(`🔄 Running setup script: ${scriptPath}`);
     
     const child = spawn('node', [scriptPath], {
       stdio: 'inherit',
@@ -21,38 +29,40 @@ const runScript = (scriptPath) => {
     
     child.on('close', (code) => {
       if (code === 0) {
-        console.log(`Successfully completed: ${scriptPath}`);
+        console.log(`✅ Successfully completed: ${scriptPath}`);
         resolve();
       } else {
-        console.error(`Failed to run: ${scriptPath} with exit code: ${code}`);
+        console.error(`❌ Failed to run: ${scriptPath} with exit code: ${code}`);
         reject(new Error(`Script ${scriptPath} exited with code ${code}`));
       }
     });
   });
 };
 
+/**
+ * Main setup function
+ */
 const main = async () => {
   try {
-    console.log('Starting Elasticsearch setup...');
+    // Set up Elasticsearch
+    console.log('🔄 Starting Elasticsearch setup...');
     await setupElasticsearch();
-    console.log('Elasticsearch setup completed successfully.');
-    
-    console.log('Starting Kafka topics setup...');
-    // const kafkaSetupSuccess = await setupKafkaTopics();
-    // if (!kafkaSetupSuccess) {
-    //   throw new Error('Kafka setup failed');
-    // }
-    console.log('Kafka topics setup completed successfully.');
-    
-    for (const script of setupScripts) {
+    console.log('✅ Elasticsearch setup completed successfully.');
+    for (const script of CONFIG.setupScripts) {
       await runScript(script);
     }
     
-    console.log('All setup scripts completed successfully.');
+    console.log('✅ All setup scripts completed successfully.');
+    process.exit(0);
   } catch (error) {
-    console.error('Setup failed:', error);
+    console.error('❌ Setup failed:', error.message);
     process.exit(1);
   }
 };
 
-main(); 
+// Run the main function
+if (require.main === module) {
+  main();
+}
+
+module.exports = { main }; 
