@@ -14,7 +14,7 @@ function GameSocketProvider({ children }: { children: React.ReactNode }) {
 		const token = sessionStorage.getItem('jwtToken');
 		if (!token) return;
 
-		socketRef.current = io("http://localhost:3001", {
+		socketRef.current = io("http://localhost:8004", {
 			path: "/socket.io",
 			transports: ["websocket"],
 			auth: { token },
