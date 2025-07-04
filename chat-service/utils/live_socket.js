@@ -33,7 +33,6 @@ const online_state = (fastify, options, done) => {
                         const user2 = Math.min(socket.decoded.id, receiver)
                         
                         io.to(online_users.get(receiver)).emit("msg", data)
-                        console.log(user1, user2, socket.decoded.id, data)
                         await pool.query('INSERT INTO msg(user1, user2, sender, data) \
                             VALUES($1, $2, $3, $4)', [user1, user2, socket.decoded.id, data])
                     }

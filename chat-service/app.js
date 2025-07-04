@@ -37,6 +37,7 @@ const appBuilder = async () => {
         fastify.register(import ('./utils/live_socket.js'))
         fastify.register(import ('./routes/convR.js'))
         fastify.register(import ('./routes/sideBarR.js'))
+        fastify.register(import ('./routes/sendMsgR.js'))
     }
     return fastify
 }

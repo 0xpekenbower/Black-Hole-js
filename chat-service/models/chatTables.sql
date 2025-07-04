@@ -13,7 +13,16 @@ CREATE TABLE IF NOT EXISTS chatter(
 --     id SERIAL PRIMARY KEY,
 --     user1 INT REFERENCES chatter(id),
 --     user2 INT REFERENCES chatter(id),
---     last_msg TEXT NOT NULL,
+--     last_msg1 TEXT NOT NULL,
+--     last_msg2 TEXT NOT NULL,
+--     sender INT REFERENCES chatter(id),
+--     created_at TIMESTAMP DEFAULT NOW()
+-- );
+-- CREATE TABLE IF NOT EXISTS conversation(
+--     id SERIAL PRIMARY KEY,
+--     user1 INT REFERENCES chatter(id),
+--     user2 INT REFERENCES chatter(id),
+--     msg1 TEXT 3
 --     sender INT REFERENCES chatter(id),
 --     created_at TIMESTAMP DEFAULT NOW()
 -- );
