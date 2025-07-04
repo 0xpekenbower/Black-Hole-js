@@ -28,4 +28,5 @@ CREATE TABLE IF NOT EXISTS msg(
 );
 
 -- WITH conv AS (SELECT *, GREATEST(user1, user2) AS u1, LEAST(user1, user2) AS u2 FROM msg WHERE user1 = 9 OR user2 = 9),
--- last_msg AS (SELECT *, ROW_NUMBER() OVER (PARTITION BY u1, u2 ORDER BY created_at DESC) FROM conv)  SELECT * FROM last_msg WHERE row_number = 1;
+-- last_msg AS (SELECT *, ROW_NUMBER() OVER (PARTITION BY u1, u2 ORDER BY created_at DESC) FROM conv)
+-- SELECT chatter.id, chatter.username, chatter.first_name, chatter.last_name, chatter.avatar, chatter.background, last_msg.data AS last_message FROM chatter INNER JOIN last_msg ON (id = (CASE WHEN user1 != 9 THEN user1 ELSE user2 END) AND (row_number = 1))
