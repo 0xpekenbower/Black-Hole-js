@@ -55,7 +55,7 @@ const DashboardSidebar = () => {
         if (response.status.success && response.data) {
           const enhancedResults = response.data.map(user => ({
             ...user,
-            avatarUrl: "/data/avatars/default.png"
+            avatarUrl: user.avatar || "/data/avatars/default.png"
           }))
           setSearchResults(enhancedResults)
         } else {

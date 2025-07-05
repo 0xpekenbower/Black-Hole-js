@@ -6,6 +6,90 @@ apm-server:
   # Defines the host and port the server is listening on. Use "unix:/path/to.sock" to listen on a unix domain socket.
   host: "0.0.0.0:8200"
 
+  # Logging configuration
+  logging:
+    level: info
+    to_files: true
+    files:
+      path: /var/log/apm-server
+      name: apm-server.log
+      keepfiles: 7
+      permissions: 0644
+
+  # Enable intake of logs
+  intake:
+    logs:
+      enabled: true
+      event_rate:
+        limit: 10000
+        burst_limit: 20000
+
+  # Enable Real User Monitoring (RUM) Support. By default RUM is disabled.
+  rum:
+    enabled: true
+
+    #-- General RUM settings
+
+    # A list of permitted origins for real user monitoring.
+    # User-agents will send an origin header that will be validated against this list.
+    # An origin is made of a protocol scheme, host and port, without the url path.
+    # Allowed origins in this setting can have * to match anything (eg.: http://*.example.com)
+    # If an item in the list is a single '*', everything will be allowed.
+    allow_origins: ['*']
+
+    # A list of Access-Control-Allow-Headers to allow RUM requests, in addition to "Content-Type",
+    # "Content-Encoding", and "Accept"
+    #allow_headers: []
+
+    # Custom HTTP headers to add to RUM responses, e.g. for security policy compliance.
+    #response_headers:
+    #  X-My-Header: Contents of the header
+
+    # Regexp to be matched against a stacktrace frame's `file_name` and `abs_path` attributes.
+    # If the regexp matches, the stacktrace frame is considered to be a library frame.
+    #library_pattern: "node_modules|bower_components|~"
+
+    # Regexp to be matched against a stacktrace frame's `file_name`.
+    # If the regexp matches, the stacktrace frame is not used for calculating error groups.
+    # The default pattern excludes stacktrace frames that have a filename starting with '/webpack'
+    #exclude_from_grouping: "^/webpack"
+
+    # If a source map has previously been uploaded, source mapping is automatically applied.
+    # to all error and transaction documents sent to the RUM endpoint.
+    #source_mapping:
+
+      # Sourcemapping is enabled by default.
+      #enabled: true
+
+      # Timeout for fetching source maps.
+      #timeout: 5s
+
+      # The `cache.expiration` determines how long a source map should be cached in memory.
+      # Note that values configured without a time unit will be interpreted as seconds.
+      #cache.expiration: 5m
+
+      # Source map retrieval location.
+      #
+      # If using an output other than Elasticsearch that is writing to Elasticsearch, you must
+      # set this option. If not set, the standard output elasticsearch configuration is used.
+      #elasticsearch:
+        # Array of hosts to connect to.
+        # Scheme and port can be left out and will be set to the default (`http` and `9200`).
+        # In case you specify and additional path, the scheme is required: `http://localhost:9200/path`.
+        # IPv6 addresses should always be defined as: `https://[2001:db8::1]:9200`.
+        #hosts: ["localhost:9200"]
+
+        # Protocol - either `http` (default) or `https`.
+        #protocol: "https"
+
+        # Authentication credentials - either API key or username/password.
+        #api_key: "id:api_key"
+        #username: "elastic"
+        #password: "changeme"
+
+      # Index pattern in which to search for source maps, when fetching source maps from Elasticsearch.
+      #index_pattern: "apm-*-sourcemap*"
+
   # Agent authorization configuration. If no methods are defined, all requests will be allowed.
   auth:
     # Agent authorization using Elasticsearch API Keys.
@@ -25,11 +109,7 @@ apm-server:
       # By default anonymous auth is automatically enabled when either auth.api_key or
       # auth.secret_token is enabled, and RUM is enabled. Otherwise, anonymous auth is
       # disabled by default.
-      #
-      # When anonymous auth is enabled, only agents matching allow_agent and services
-      # matching allow_service are allowed. See below for details on default values for
-      # allow_agent.
-      enabled:
+      enabled: true
 
       # Allow anonymous access only for specified agents.
       allow_agent: ['*']
@@ -121,76 +201,6 @@ apm-server:
 
     # Configure curve types for ECDHE based cipher suites.
     #curve_types: []
-
-  #---------------------------- APM Server - RUM Real User Monitoring ----------------------------
-
-  # Enable Real User Monitoring (RUM) Support. By default RUM is disabled.
-  # RUM does not support token based authorization. Enabled RUM endpoints will not require any authorization
-  # token configured for other endpoints.
-  rum:
-    enabled: true
-
-    #-- General RUM settings
-
-    # A list of permitted origins for real user monitoring.
-    # User-agents will send an origin header that will be validated against this list.
-    # An origin is made of a protocol scheme, host and port, without the url path.
-    # Allowed origins in this setting can have * to match anything (eg.: http://*.example.com)
-    # If an item in the list is a single '*', everything will be allowed.
-    allow_origins: ['*']
-
-    # A list of Access-Control-Allow-Headers to allow RUM requests, in addition to "Content-Type",
-    # "Content-Encoding", and "Accept"
-    #allow_headers: []
-
-    # Custom HTTP headers to add to RUM responses, e.g. for security policy compliance.
-    #response_headers:
-    #  X-My-Header: Contents of the header
-
-    # Regexp to be matched against a stacktrace frame's `file_name` and `abs_path` attributes.
-    # If the regexp matches, the stacktrace frame is considered to be a library frame.
-    #library_pattern: "node_modules|bower_components|~"
-
-    # Regexp to be matched against a stacktrace frame's `file_name`.
-    # If the regexp matches, the stacktrace frame is not used for calculating error groups.
-    # The default pattern excludes stacktrace frames that have a filename starting with '/webpack'
-    #exclude_from_grouping: "^/webpack"
-
-    # If a source map has previously been uploaded, source mapping is automatically applied.
-    # to all error and transaction documents sent to the RUM endpoint.
-    #source_mapping:
-
-      # Sourcemapping is enabled by default.
-      #enabled: true
-
-      # Timeout for fetching source maps.
-      #timeout: 5s
-
-      # The `cache.expiration` determines how long a source map should be cached in memory.
-      # Note that values configured without a time unit will be interpreted as seconds.
-      #cache.expiration: 5m
-
-      # Source map retrieval location.
-      #
-      # If using an output other than Elasticsearch that is writing to Elasticsearch, you must
-      # set this option. If not set, the standard output elasticsearch configuration is used.
-      #elasticsearch:
-        # Array of hosts to connect to.
-        # Scheme and port can be left out and will be set to the default (`http` and `9200`).
-        # In case you specify and additional path, the scheme is required: `http://localhost:9200/path`.
-        # IPv6 addresses should always be defined as: `https://[2001:db8::1]:9200`.
-        #hosts: ["localhost:9200"]
-
-        # Protocol - either `http` (default) or `https`.
-        #protocol: "https"
-
-        # Authentication credentials - either API key or username/password.
-        #api_key: "id:api_key"
-        #username: "elastic"
-        #password: "changeme"
-
-      # Index pattern in which to search for source maps, when fetching source maps from Elasticsearch.
-      #index_pattern: "apm-*-sourcemap*"
 
   #---------------------------- APM Server - Agent Configuration ----------------------------
 

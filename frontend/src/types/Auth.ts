@@ -55,17 +55,6 @@ export interface LoginResponse {
   Error?: string;
 }
 
-// OAuth
-export interface OAuthRequest {
-  code: string;
-}
-
-export interface OAuthResponse {
-  Success: string;
-  token: string;
-  Error?: string;
-}
-
 // Password Management
 export interface ChangePasswordRequest {
   old_pass: string;

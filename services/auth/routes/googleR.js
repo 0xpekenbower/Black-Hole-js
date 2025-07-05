@@ -46,6 +46,10 @@ const oauth2google = (fastify, options, done) => {
             clientSecret: process.env.CLIENT_SECRET_GOOGLE,
             redirectUri: process.env.GOOGLE_REDIRECT
         })
+        if (!oauth2C) {
+            res.status(500).send({Error: 'Failed to create OAuth2 client'})
+            return
+        }
 
         const authURL = oauth2C.generateAuthUrl({
             access_type: 'offline',

@@ -21,7 +21,8 @@ import {
 } from "@/components/ui/form"
 import Link from "next/link"
 import { loginSchema, LoginFormValues } from "@/utils/validation"
-import { useAuth } from "@/context/AuthContext"
+import { useSearchParams, useRouter } from 'next/navigation'
+import { useAuth } from '@/context/AuthContext';
 
 interface LoginFormProps extends React.ComponentProps<"div"> {
   handleLogin?: (username: string, password: string) => Promise<void>
@@ -75,6 +76,10 @@ function LoginFormContent({ content, handleLogin, externalIsLoading, externalErr
   const [internalIsLoading, setInternalIsLoading] = useState(false)
   const isLoading = externalIsLoading !== undefined ? externalIsLoading : internalIsLoading
   const [showPassword, setShowPassword] = useState(false)
+  const searchParams = useSearchParams()
+  const router = useRouter()
+  const { loginWithToken, isLoading: contextLoading } = useAuth();
+  const loading = isLoading || contextLoading;
   
   const form = useForm<LoginFormValues>({
     resolver: zodResolver(loginSchema),
@@ -83,6 +88,19 @@ function LoginFormContent({ content, handleLogin, externalIsLoading, externalErr
       password: "",
     },
   })
+
+  useEffect(() => {
+    // Check for token in URL (after redirect from backend OAuth flow)
+    const token = searchParams.get('token');
+    if (token) {
+      loginWithToken(token);
+      // Remove token from URL after processing
+      const params = new URLSearchParams(window.location.search);
+      params.delete('token');
+      const newUrl = window.location.pathname + (params.toString() ? '?' + params.toString() : '');
+      window.history.replaceState({}, '', newUrl);
+    }
+  }, [searchParams, loginWithToken]);
 
   useEffect(() => {
     if (externalError) {
@@ -127,6 +145,14 @@ function LoginFormContent({ content, handleLogin, externalIsLoading, externalErr
 
   const togglePasswordVisibility = () => {
     setShowPassword(!showPassword)
+  }
+
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center min-h-[200px]">
+        <span className="text-muted-foreground text-lg">Logging you in...</span>
+      </div>
+    );
   }
 
   return (
@@ -273,12 +299,14 @@ function LoginButton({ isLoading, content }: { isLoading: boolean, content: type
 }
 
 function SocialLoginSection({ content }: { content: typeof en.login }) {
-  const intra_url = "https://api.intra.42.fr/oauth/authorize?client_id=u-s4t2ud-dab9da0b99160e0756601aec6a6ae08f4338d122732b36827e83ba80c71d7035&redirect_uri=http%3A%2F%2Flocalhost%3A6969%2Fapi%2Fauth%2Foauth%2F42%2F&response_type=code";
-  // const google_url = process.env.API_GOOGLE;
-
   const handleIntraLogin = () => {
-    window.location.href = intra_url || '';
+    window.location.href = "/api/auth/42/";
   }
+  
+  const handleGoogleLogin = () => {
+    window.location.href = "/api/auth/google/";
+  }
+
   return (
     <>
       <div className="relative text-center text-xs sm:text-sm after:absolute after:inset-0 after:top-1/2 after:z-0 after:flex after:items-center after:border-t after:border-border">
@@ -295,7 +323,7 @@ function SocialLoginSection({ content }: { content: typeof en.login }) {
         <SocialButton 
           provider="google" 
           className="h-8 sm:h-9 text-xs sm:text-sm"
-          // onClick={}
+          onClick={handleGoogleLogin}
         />
       </div>
     </>

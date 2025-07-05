@@ -31,6 +31,7 @@ export interface User {
  * Authentication context state
  */
 interface AuthContextState {
+  loginWithToken: (token: string) => Promise<void>; // Add this method
   user: User | null;
   isLoading: boolean;
   isAuthenticated: boolean;
@@ -56,6 +57,9 @@ const AuthContext = createContext<AuthContextState | undefined>(undefined);
  * Authentication context provider component
  */
 export function AuthProvider({ children }: AuthProviderProps): React.ReactElement {
+  // ...existing state
+
+
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
@@ -82,7 +86,7 @@ export function AuthProvider({ children }: AuthProviderProps): React.ReactElemen
             });            
             // TODO: Implement profile fetching
           }
-        }
+        };
       } catch (err) {
         console.error('Authentication initialization error:', err);
         TokenManager.clearTokens();
@@ -129,6 +133,40 @@ export function AuthProvider({ children }: AuthProviderProps): React.ReactElemen
     }
   };
 
+  /**
+   * Handle user login
+   */
+  const loginIntra = async (): Promise<void> => {
+    setIsLoading(true);
+    setError(null);
+    
+    try {
+      const response = await authService.loginIntra();
+      if (response.status.success && response.data?.token) {
+        const { token } = response.data;
+        TokenManager.updateToken(token, 3600);
+        authService.setAuthToken(token);
+        setUser({
+          id: '1',
+          firstName: '',
+          lastName: '',
+          username: '',
+          email: '',
+          createdAt: new Date(),
+          avatar: '',
+          bio: '',
+          background: '',
+        });
+        router.replace('/dashboard');
+      } else {
+        throw new Error(response.status.message);
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Login failed');
+    } finally {
+      setIsLoading(false);
+    }
+  };
   /**
    * Handle user registration
    */
@@ -223,11 +261,40 @@ export function AuthProvider({ children }: AuthProviderProps): React.ReactElemen
     setError(null);
   };
 
+  /**
+   * Login with token
+   */
+  const loginWithToken = async (token: string): Promise<void> => {
+    setIsLoading(true);
+    setError(null);
+    try {
+      TokenManager.updateToken(token, 3600);
+      authService.setAuthToken(token);
+      setUser({
+        id: '1',
+        firstName: '',
+        lastName: '',
+        username: '',
+        email: '',
+        createdAt: new Date(),
+        avatar: '',
+        bio: '',
+        background: '',
+      });
+      router.replace('/dashboard');
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to login with token');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   const value: AuthContextState = {
     user,
     isLoading,
-    isAuthenticated: TokenManager.isAuthenticated(),
+    isAuthenticated: !!user,
     login,
+    loginWithToken,
     register,
     logout,
     getOTP,
@@ -236,7 +303,11 @@ export function AuthProvider({ children }: AuthProviderProps): React.ReactElemen
     clearError,
   };
 
-  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
+  return (
+    <AuthContext.Provider value={value}>
+      {children}
+    </AuthContext.Provider>
+  );
 }
 
 /**

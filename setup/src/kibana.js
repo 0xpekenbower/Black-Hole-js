@@ -25,6 +25,7 @@ const CONFIG = {
 // Standard index patterns to create data views for
 const STANDARD_INDICES = [
   {name: "setup", index: "setup-*"},
+  {name: "gateway", index: "gateway-*"},
   {name: "nginx", index: "nginx-*"},
   {name: "redis", index: "redis-*"},
   {name: "postgres_db", index: "postgres_db-*"},
@@ -135,65 +136,65 @@ const createDataView = async (dataView) => {
  * @param {Object} tag - Tag configuration
  * @returns {Promise<Object>} Created tag
  */
-const createTag = async (tag) => {
-  return createKibanaObject(
-    '/api/saved_objects/tag',
-    tag,
-    'tag',
-    'attributes.name'
-  );
-};
+// const createTag = async (tag) => {
+//   return createKibanaObject(
+//     '/api/saved_objects/tag',
+//     tag,
+//     'tag',
+//     'attributes.name'
+//   );
+// };
 
 /**
  * Create a saved search
  * @param {Object} search - Search configuration
  * @returns {Promise<Object>} Created search
  */
-const createSearch = async (search) => {
-  return createKibanaObject(
-    '/api/saved_objects/search',
-    search,
-    'search',
-    'attributes.title'
-  );
-};
+// const createSearch = async (search) => {
+//   return createKibanaObject(
+//     '/api/saved_objects/search',
+//     search,
+//     'search',
+//     'attributes.title'
+//   );
+// };
 
 /**
  * Create data views from configuration files
  */
-const createCustomDataViews = async () => {
-  try {
-    const files = await fs.readdir(CONFIG.paths.dataviews);
+// const createCustomDataViews = async () => {
+//   try {
+//     const files = await fs.readdir(CONFIG.paths.dataviews);
     
-    for (const file of files) {
-      if (!file.endsWith('.json')) continue;
+//     for (const file of files) {
+//       if (!file.endsWith('.json')) continue;
       
-      console.log(`Processing file: ${file}`);
-      const filePath = path.join(CONFIG.paths.dataviews, file);
-      const fileData = await fs.readFile(filePath, 'utf8');
-      const config = JSON.parse(fileData);
+//       console.log(`Processing file: ${file}`);
+//       const filePath = path.join(CONFIG.paths.dataviews, file);
+//       const fileData = await fs.readFile(filePath, 'utf8');
+//       const config = JSON.parse(fileData);
       
-      try {
-        // Handle special files differently
-        if (file === SPECIAL_FILES.gatewaySearch) {
-          await createSearch(config);
-          console.log(`✅ Gateway saved search created from ${file}`);
-        } else {
-          await createDataView(config);
-          console.log(`✅ Custom data view created from ${file}`);
-        }
-      } catch (error) {
-        console.error(`❌ Error processing ${file}:`, error.message);
-      }
-    }
-  } catch (err) {
-    if (err.code === 'ENOENT') {
-      console.log('ℹ️ No dataviews directory found, skipping custom data views');
-    } else {
-      console.error('❌ Error processing custom data views:', err);
-    }
-  }
-};
+//       try {
+//         // Handle special files differently
+//         if (file === SPECIAL_FILES.gatewaySearch) {
+//           await createSearch(config);
+//           console.log(`✅ Gateway saved search created from ${file}`);
+//         } else {
+//           await createDataView(config);
+//           console.log(`✅ Custom data view created from ${file}`);
+//         }
+//       } catch (error) {
+//         console.error(`❌ Error processing ${file}:`, error.message);
+//       }
+//     }
+//   } catch (err) {
+//     if (err.code === 'ENOENT') {
+//       console.log('ℹ️ No dataviews directory found, skipping custom data views');
+//     } else {
+//       console.error('❌ Error processing custom data views:', err);
+//     }
+//   }
+// };
 
 /**
  * Create standard data views for predefined indices
@@ -205,7 +206,7 @@ const createStandardDataViews = async () => {
     const dataView = {
       name: index.name,
       title: index.index,
-      timeFieldName: CONFIG.defaultTimeField,
+      // timeFieldName: CONFIG.defaultTimeField,
       allowHidden: false
     };
     
@@ -234,7 +235,7 @@ const setupKibana = async () => {
     
     await waitForKibana();
     await createStandardDataViews();    
-    await createCustomDataViews();
+    // await createCustomDataViews();
     
     console.log('✅ Setup completed successfully!');
     process.exit(0);

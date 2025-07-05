@@ -68,6 +68,7 @@ export default {
                 return fr.sender
             return fr.receiver
         })
+        console.log(user_data);
         return {
             "User": user_data,
             "Level": level_data.rows[0],
@@ -81,7 +82,7 @@ export default {
 
     async searchS(username)
     {
-        const res = await pool.query("SELECT id, username FROM player WHERE \
+        const res = await pool.query("SELECT id, username, avatar FROM player WHERE \
             username LIKE $1 LIMIT 5;", [`%${username}%`])
         return res.rows
     },
@@ -95,9 +96,7 @@ export default {
             { headers: { Authorization: TOKEN } }
         )
     },
-    // TODO: you should expect the avatar and background will be from the store so should be just identifiers , and you will
-    // use the id to check if the item is owned or not and then just put path of the item in the database frontend will handle the rest
-    // remember check is necessary , no more uploads
+
     async editS(accountID, first_name, last_name, bio, avatar, background)
     {
         await pool.query('UPDATE player SET \

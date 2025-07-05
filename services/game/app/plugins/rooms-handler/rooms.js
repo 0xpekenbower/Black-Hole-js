@@ -9,7 +9,7 @@ class RoomsManager {
 	constructor(fastify) {
 		this.curRooms = new Map();
 		this.playingRooms = [];
-		this.occupiedRooms = [];
+		// this.occupiedRooms = [];
 		this.app = fastify;
 	}
 
@@ -38,6 +38,9 @@ class RoomsManager {
 				console.log("Game Over: ", data)
 				await this.app.UserDataBase.updateState(id1, 'lobby');
 				await this.app.UserDataBase.updateState(id2, 'lobby');
+
+				this.app.UserDataBase.createHistory({ player_id: id1, rival_id: id2, winner_id: data.winner })
+				this.app.UserDataBase.createHistory({ player_id: id2, rival_id: id1, winner_id: data.winner })
 
 			});
 		}

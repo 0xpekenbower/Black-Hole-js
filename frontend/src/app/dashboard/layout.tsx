@@ -4,6 +4,7 @@ import { ProtectedRoute } from "@/lib/auth/ProtectedRoute"
 import DashboardHeader from "@/components/DashboardHeader"
 import DashboardSidebar from "@/components/layouts/DashboardSidebar"
 import { WalletProvider } from "@/context/walletContext"
+import { ReactNode } from "react"
 
 /**
  * Dashboard layout with authentication protection
@@ -12,7 +13,7 @@ import { WalletProvider } from "@/context/walletContext"
  */
 export default function DashboardLayout({
   children,
-}: Readonly<{ children: React.ReactNode }>) {
+}: Readonly<{ children: ReactNode }>) {
   return (
     <ProtectedRoute>
       <WalletProvider>

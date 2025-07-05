@@ -30,6 +30,9 @@
     "nodemon": "^3.1.10",
     "pino": "^8.16.0",
     "pino-pretty": "^10.2.3",
-    "pino-socket": "^7.4.0"
+    "pino-socket": "^7.4.0",
+    "kafkajs": "^2.2.4",
+    "redis": "^5.5.6",
+    "socket.io": "^4.7.2"
   }
 }

@@ -74,8 +74,47 @@ const forgetPassR = (fastify, options, done) => {
         handler: forgetPassC.forget_passC
     }
 
+
+    const checkCodeSchema = {
+        schema:
+        {
+            body:
+            {
+                type: 'object',
+                required: ['email', 'code'],
+                properties: { 
+                    email: {type:'string'},
+                    code: { type:'string',
+                        maxLength: 6,
+                        minLength: 6
+                    }
+                }
+            },
+            response:
+            {
+                '200':
+                {
+                    type : 'null',
+                },
+                '4xx':
+                {
+                    type:'object',
+                    properties:
+                    {
+                        Error:{type:'string'}
+                    }
+                }
+            }
+        },
+        handler: forgetPassC.checkCodeC
+    }
+
+
+
+
     fastify.post('/api/auth/send-mail/', send_mail_schema)
     fastify.post('/api/auth/forget-pass/', forgetPassSchema)
+    fastify.post('/api/auth/check/', checkCodeSchema)
 
     done()
 }

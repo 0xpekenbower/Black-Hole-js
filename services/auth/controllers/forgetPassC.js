@@ -17,6 +17,20 @@ export default {
         }
     },
 
+    async checkCodeC(req, res) {
+        try
+        {
+            const {email, code} = req.body
+
+            await forgetPassS.checkCodeS(email, code)
+            res.status(200)
+        }
+        catch(err)
+        {
+            res.status(400).send({Error: err.message})
+        }
+    },
+
     async forget_passC(req, res) {
         try
         {

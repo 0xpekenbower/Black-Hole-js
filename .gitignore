@@ -1,2 +1,5 @@
 .env
 node_modules
+certs
+smtp/dkim.private.key
+smtp/dkim.public.key

@@ -23,6 +23,9 @@ const initKafkaConsumer = async (app) => {
     // Subscribe to topics
     await consumer.subscribe({ topic: kafkaConfig.topics.notifications, fromBeginning: false });
     await consumer.subscribe({ topic: kafkaConfig.topics.userEvents, fromBeginning: false });
+    // await consumer.subscribe({ topic: 'newUser', fromBeginning: false });
+    // await consumer.subscribe({ topic: 'OTP', fromBeginning: false });
+
     
     await consumer.run({
       eachMessage: async ({ topic, partition, message }) => {

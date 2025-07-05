@@ -5,8 +5,8 @@
 	"main": "app/index.js",
 	"type": "module",
 	"scripts": {
-		"start": "node app/index.js",
-		"dev": "nodemon app/index.js",
+		"start": "node app/index.js -p 8004",
+		"dev": "nodemon app/index.js -p 8004",
 		"test": "echo \"Error: no test specified\" && exit 1"
 	},
 	"author": "a-bennar",
@@ -23,7 +23,10 @@
 		"@fastify/cookie": "^11.0.2",
 		"@fastify/cors": "^11.0.1",
 		"@fastify/jwt": "^9.1.0",
+		"bg": "^1.0.0",
 		"fastify": "^5.4.0",
+		"kafkajs": "^2.2.4",
+		"pg": "^8.16.3",
 		"sqlite3": "^5.1.7"
 	}
 }

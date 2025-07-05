@@ -20,10 +20,10 @@ import { assert } from 'console';
 const PaddleWidth = 10;
 const PaddleHeight = 90;
 const PaddleSpeed = 600;
-const FramesPerSecond = 120;
-const BallStartSpeed = 500;
+const FramesPerSecond = 30;
+const BallStartSpeed = 400;
 // const BallMaxSpeed = 600;
-const finalScore = 3;
+const finalScore = 5;
 
 const BALL_RADIUS = 10;
 const TABLE_HEIGHT = 400;
@@ -120,7 +120,7 @@ class PongGame {
 			this.ball.x = PaddleWidth + BALL_RADIUS + 1;
 	}
 
-	// TODO push the ball away from the collation area 
+	// TODO push the ball away from the paddle area 
 	update() {
 		try {
 
@@ -134,10 +134,10 @@ class PongGame {
 				this.paddles[`${side}`] = Math.max(0, Math.min(this.paddles[`${side}`], TABLE_HEIGHT - PaddleHeight));
 			})
 
-			if ((this.ball.x <= (PaddleWidth + BALL_RADIUS)))
-				this.ball.dx = -this.ball.dx;
-			// && (this.ball.y >= this.paddles.left && this.ball.y <= this.paddles.left + PaddleHeight)) // TODO Only One Side is Playable for testing 
-			// this.bouncing_paddle(this.paddles.left);
+			if (this.ball.x <= (PaddleWidth + BALL_RADIUS)
+				&& (this.ball.y >= this.paddles.left && this.ball.y <= this.paddles.left + PaddleHeight)) // TODO Only One Side is Playable for testing 
+				this.bouncing_paddle(this.paddles.left, true);
+			// this.ball.dx = -this.ball.dx;
 
 			else if (this.ball.x >= TABLE_WIDTH - (PaddleWidth + BALL_RADIUS)
 				&& (this.ball.y >= this.paddles.right && this.ball.y <= this.paddles.right + PaddleHeight))
@@ -181,17 +181,18 @@ class PongGame {
 
 	async start() {
 		try {
-			assert(this.players.size === 2, "[THERE IS NOT 2 PLAYERS ON START]");
+			if (this.players.size !== 2) return;
+
 			this.players.forEach((player, key) => {
 				console.log("sended to: ", player.socket.user);
 				player.socket.emit('game:init', { side: key });
 			});
 
 			this.players.forEach(player => {
-				player.socket.emit('game:message', { message: "2 Players Joined..." });
+				player.socket.emit('game:message', "2 Players Joined...");
 			});
 
-			this.paddleHandlers = new Map();
+			// this.paddleHandlers = new Map();
 
 			['left', 'right'].forEach(side => {
 				const player = this.players.get(side);
@@ -206,19 +207,13 @@ class PongGame {
 			});
 
 
-
-			this.players.forEach(player => {
-				player.socket.emit('game:init', { message: "2 Players Joined..." });
-			});
-
-
 			await new Promise((resolve) => {
-				let i = 3;
+				let i = 4;
 
 				const intervalId = setInterval(() => {
 					this.players.forEach((player, key) => {
 						console.log(`[COUNTDOWN] Emitting to ${key}:`, player.socket.id, player.socket.user);
-						player.socket.emit('game:message', `${i}`);
+						player.socket.emit('game:message', `${i - 1}`);
 					});
 
 					i--;

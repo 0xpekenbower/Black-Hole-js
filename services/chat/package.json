@@ -1,21 +1,35 @@
 {
-  "name": "chat",
+  "name": "chat-service",
   "version": "1.0.0",
-  "description": "chat service using fastify",
   "main": "app.js",
+  "directories": {
+    "test": "test"
+  },
   "scripts": {
-    "start": "fastify start -l info app.js --port 8004",
-    "dev": "fastify start -w -l info app.js --port 8004"
+    "start": "node server",
+    "dev": "cross-env db_name=chatdb nodemon --env-file=./config/.env server",
+    "test": "cross-env db_name=testdb node --env-file=./config/.env --experimental-vm-modules node_modules/jest/bin/jest.js",
+    "lint": "eslint ."
   },
   "keywords": [],
-  "author": "0xpekenbower",
+  "author": "",
   "license": "ISC",
+  "description": "",
   "dependencies": {
+    "@fastify/cors": "^11.0.1",
+    "@fastify/jwt": "^9.1.0",
+    "@fastify/swagger": "^9.5.1",
+    "@fastify/swagger-ui": "^5.2.3",
+    "cross-env": "^7.0.3",
+    "eslint": "^9.28.0",
     "fastify": "^5.3.3",
-    "fastify-plugin": "^5.0.1",
-    "@fastify/autoload": "^6.3.0",
-    "@fastify/sensible": "^6.0.3",
-    "fastify-cli": "^7.4.0"
-  },
-  "devDependencies": {}
+    "jest": "^29.7.0",
+    "kafkajs": "^2.2.4",
+    "nodemon": "^3.1.10",
+    "pg": "^8.15.6",
+    "pino-pretty": "^13.0.0",
+    "run": "^1.5.0",
+    "socket.io": "^4.8.1",
+    "supertest": "^7.1.1"
+  }
 }

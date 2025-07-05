@@ -26,10 +26,7 @@ elasticsearch.password: ${KIBANA_SYSTEM_PASSWORD}
 xpack.encryptedSavedObjects.encryptionKey: 006b50bf0027c88bcf02140fc4e8fed1
 xpack.reporting.encryptionKey: 74409111d0f5d9525da06ad4f342caee
 xpack.security.encryptionKey: dae17f24ff0ddcbc39980ad777d85628
-server.rewriteBasePath: true
 server.basePath: /kibana
-server.publicBaseUrl: http://localhost:5601/kibana
-
-
-
+server.rewriteBasePath: true
+server.publicBaseUrl: http://blackholejs.art/kibana
 

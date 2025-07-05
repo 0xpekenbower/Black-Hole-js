@@ -20,7 +20,6 @@ export default {
         try
         {
             let data;
-
             if (req.query['id'])
                 data = await dp.display_profile(req.query['id'], req.user.id)
             else
@@ -30,7 +29,8 @@ export default {
         }
         catch(err)
         {
-            res.status(400).send({ Error:err.message })
+            // res.status(400).send({ Error:err.message })
+            res.status(400).send({ error: err})
         }
     },
 
@@ -38,7 +38,6 @@ export default {
         try
         {
             const data = await dp.searchS(req.query['q'])
-            console.log(data)
             res.status(200).send(data)
         }
         catch(err)

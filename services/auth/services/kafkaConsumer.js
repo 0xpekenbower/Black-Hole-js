@@ -9,6 +9,7 @@ const kafkaConsumer = async (fastify) => {
         await consumer.connect()
         await consumer.subscribe({ topic: 'OTP', fromBeginning: false})
 
+
         consumer.run({
             eachMessage: async ({ topic, message }) => {
                 

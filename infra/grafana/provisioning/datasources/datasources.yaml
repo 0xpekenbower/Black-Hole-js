@@ -4,6 +4,10 @@ datasources:
   - name: Prometheus
     type: prometheus
     url: http://prometheus:9090/prometheus
+    withCredentials: true
+    basicAuth: true
+    basicAuthUser: ${PROMETHEUS_USER}
+    basicAuthPassword: ${PROMETHEUS_PASSWORD}
     isDefault: true
     editable: true
     jsonData:

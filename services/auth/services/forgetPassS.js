@@ -41,6 +41,7 @@ export default {
         if (errs.length)
             throw new Error(errs)
 
+        //RECHECK
         const check = await pool.query('SELECT EXISTS(SELECT 1 FROM change_pass \
             WHERE email = $1 AND otp_code = $2);', [email, code])
         if (!check.rows[0].exists)
@@ -58,4 +59,10 @@ export default {
         await pool.query('UPDATE account SET password = $1 WHERE email = $2;', [new_hashed, email])
     },
 
+    async checkCodeS(email, code) {
+        const check = await pool.query('SELECT EXISTS(SELECT 1 FROM change_pass \
+            WHERE email = $1 AND otp_code = $2);', [email, code])
+        if (!check.rows[0].exists)
+            throw new Error('Incorrect email/code')
+    }
 }

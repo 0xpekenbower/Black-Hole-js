@@ -1,6 +1,5 @@
-CREATE TABLE connected_users (
+CREATE TABLE IF NOT EXISTS connected_users (
     user_id             TEXT PRIMARY KEY,
-    socket_id           TEXT,
     state               TEXT NOT NULL DEFAULT 'offline' CHECK (
                             state IN ('offline', 'lobby', 'queued', 'playing', 'disconnected', 'spectating')
                         ),

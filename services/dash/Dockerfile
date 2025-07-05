@@ -5,6 +5,6 @@ WORKDIR /dash
 COPY package*.json ./
 RUN npm install
 
-COPY . .
+# COPY . .
 
-CMD ["npm", "run", "start"]
+CMD ["npm", "run", "dev"]

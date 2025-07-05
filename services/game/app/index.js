@@ -11,23 +11,37 @@ import FastifySocketIO from '@ericedouard/fastify-socket.io';
 import newCache from './plugins/match-making/queue.js';
 import gameRooms from './plugins/rooms-handler/rooms.js';
 import dbPlugin from './plugins/data-base/player-state.js';
+import kafkaPlug from './plugins/kafka-client/kafka.js';
+import { decode } from 'punycode';
 // import SCHEMA from './schemas.js';
 
 
 // 'offline', 'lobby', 'queued', 'playing', 'disconnected', 'spectating'
 
 const app = fastify({
-	logger:
-	{
-		transport: {
-			target: "@fastify/one-line-logger",
+	// logger:
+	// {
+
+	// 	// transport: {
+	// 	// 	target: "@fastify/one-line-logger",
+	// 	// },
+	// 	level: 'debug'
+	// }
+	logger: {
+		level: process.env.LOG_LEVEL || 'info',
+		ignore: 'pid,hostname,reqId',
+		formatters: {
+			level: (label) => ({ level: label }),
+			bindings: () => ({})
 		},
-		level: 'debug'
+		base: undefined,
+		timestamp: () => `,"timestamp":"${new Date().toISOString()}"`,
+		hostname: false
 	}
 });
 
 const Cors = {
-	origin: 'http://localhost:3000',
+	origin: ['http://frontend:3000', 'http://nginx:80', "https://blackholejs.art"], // FIXME change cors !!!
 	credentials: true,
 	allowedHeaders: ['Content-Type', 'Authorization'],
 	methods: ['GET', 'POST', 'OPTIONS'],
@@ -40,12 +54,14 @@ app.register(FastifyCors, Cors);
 app.register(newCache);
 app.register(gameRooms);
 app.register(dbPlugin);
+app.register(kafkaPlug);
 
 app.register(FastifySocketIO, {
-	cors: Cors
+	cors: Cors,
+	transports: ['websocket']
 });
 
-app.register(FastifyJwt, { secret: "very-super-secret" });
+app.register(FastifyJwt, { secret: "71821d592d349c450834bab1178d681d13f5937bdd35fc60bf41ae5a0bc394fda1ba230206c983129e0c4f0ee919d09b6e9989e0d157645b4d727103a0a03a10" });
 
 
 app.register(async function () {
@@ -53,8 +69,9 @@ app.register(async function () {
 	app.io.use((socket, next) => {
 		try {
 			const token = socket.handshake.auth.token;
-			const { identity } = app.jwt.verify(token);
-			socket.user = identity;
+			console.log(token);
+			const { id } = app.jwt.verify(token);
+			socket.user = id;
 
 			next();
 		} catch {
@@ -160,50 +177,74 @@ app.register(async function () {
 		});
 
 		socket.on('message', (message) => {
-			console.log("message event ", message);
+			console.log("message event ", message); ``
 		});
 
 	});
 });
 
 
-app.post("/login", async (request, reply) => {
+app.get("/api/game/history", async (request, reply) => { // TODO return data based on use history 
 	try {
-		const { username, password } = request.body;
 
-		console.log("Login attempt with: ", [username, password]);
+		const data = await app.UserDataBase.getHistory(3);
+		console.log(data);
 
-		password;
-		const newUser = await app.UserDataBase.createUser(username);
+		// const decoded = app.jwt.verify();
 
-		const payload = {
-			identity: username,
-			role: 'user'
-		};
 
-		console.log("New user created: ", newUser);
-
-		const jwtToken = app.jwt.sign(payload);
-		console.log("Login Token: ", jwtToken);
-
-		return reply
-			.code(200)
-			.header('Authorization', `Bearer ${jwtToken}`)
-			.send({ message: "User Created and Logged In Successfully" });
-
+		// console.log(`user: ${decoded.id} Requestd get history`);
+		return reply.send(data);
 	} catch (err) {
-		return reply.code(400).send({ error: err });
+		return reply.code(401).send(err);
 	}
 });
 
+// app.post("/login", async (request, reply) => {
+// 	try {
+// 		const { username, password } = request.body;
+
+// 		console.log("Login attempt with: ", [username, password]);
+
+// 		password;
+// 		const newUser = await app.UserDataBase.createUser(username);
+
+// 		const payload = {
+// 			identity: username,
+// 			role: 'user'
+// 		};
+
+// 		console.log("New user created: ", newUser);
+
+// 		const jwtToken = app.jwt.sign(payload);
+// 		console.log("Login Token: ", jwtToken);
+
+// 		return reply
+// 			.code(200)
+// 			.header('Authorization', `Bearer ${jwtToken}`)
+// 			.send({ message: "User Created and Logged In Successfully" });
+
+// 	} catch (err) {
+// 		return reply.code(400).send({ error: err });
+// 	}
+// });
+
+
+app.post("/ping", async (request, reply) => {
+	console.log("ping");
+});
 
 
 
 (async () => {
 	await app.ready();
 	await app.UserDataBase.resetUsersState();
+	await app.UserDataBase.createUser('1');
+	await app.UserDataBase.createUser('2');
+	await app.UserDataBase.createUser('3');
+	await app.UserDataBase.createUser('4');
 	// console.log(app.printRoutes());
-	await app.listen({ port: 8004, address: "0.0.0.0" }, (err) => {
+	await app.listen({ port: 8004, host: "0.0.0.0" }, (err) => {
 		if (err) {
 			console.error('Server error:', err);
 		}

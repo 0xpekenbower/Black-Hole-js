@@ -65,7 +65,8 @@ const appBuilder = async () => {
         if (req.url.startsWith('/docs') || req.url.startsWith('/documentation')) {
             return
           }
-        await req.jwtVerify() })
+        await req.jwtVerify()
+      })
             
     fastify.register(import ('@fastify/swagger'))
     fastify.register(import ('@fastify/swagger-ui'), {routePrefix: '/docs',})

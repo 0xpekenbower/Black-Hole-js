@@ -36,7 +36,7 @@ export class ApiClient {
    * Create a new API client instance
    */
   constructor() {
-    this.baseUrl = '/api'; // TODO: change it to nginx address
+    this.baseUrl = 'http://blackholejs.art/api/'; // TODO: change it to nginx address
     this.defaultHeaders = {
       'Content-Type': 'application/json',
       'Accept': 'application/json'
@@ -72,7 +72,7 @@ export class ApiClient {
     body?: any,
     headers?: Record<string, string>
   ): Promise<ApiResponse<T>> {
-    const url = `${this.baseUrl}${endpoint}`
+    const url = endpoint.startsWith('/') ? endpoint : `${this.baseUrl}${endpoint}`;
     const requestId = generateRequestUniqueId();
     
     const requestHeaders = {
@@ -96,6 +96,7 @@ export class ApiClient {
       
       if (response.status !== 204) {
         const text = await response.text();
+        
         if (text) {
           try {
             data = JSON.parse(text);

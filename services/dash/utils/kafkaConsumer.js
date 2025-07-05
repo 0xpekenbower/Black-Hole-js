@@ -14,10 +14,10 @@ const kafkaConsumer = async (fastify) => {
                 
                 if (topic == 'newUser')
                 {
-                    const {id, username, email, first_name, last_name, is_oauth} = JSON.parse(message.value)
+                    const {id, username, email, first_name, last_name, is_oauth, avatar, background } = JSON.parse(message.value)
                     
-                    await pool.query('INSERT INTO player(id, username, email, first_name, last_name, is_oauth)  \
-                            VALUES($1, $2, $3, $4, $5, $6);', [id, username, email, first_name, last_name, is_oauth])
+                    await pool.query('INSERT INTO player(id, username, email, first_name, last_name, is_oauth, avatar, background)  \
+                            VALUES($1, $2, $3, $4, $5, $6, $7, $8);', [id, username, email, first_name, last_name, is_oauth, avatar, background])
                 }
             },
         })

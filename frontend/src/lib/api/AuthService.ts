@@ -3,6 +3,7 @@
  * @module lib/api/AuthService
  */
 
+import axios, { AxiosRequestConfig } from 'axios';
 import { ApiClient, ApiResponse } from './Client';
 import Endpoints from '@/constants/endpoints';
 import {
@@ -14,8 +15,7 @@ import {
   ResetPasswordRequest,
   ResetPasswordResponse,
   ChangePasswordRequest,
-  ChangePasswordResponse,
-  OAuthResponse
+  ChangePasswordResponse
 } from '@/types/Auth';
 
 /**
@@ -64,6 +64,7 @@ export class AuthService {
     const response = await this.client.post<any>(Endpoints.Auth.Register, data);
     return this.adaptResponse<RegisterResponse>(response);
   }
+  
   /**
    * Login a user
    * @param data - User login credentials
@@ -71,6 +72,15 @@ export class AuthService {
    */
   async login(data: LoginRequest): Promise<ApiResponse<LoginResponse>> {
     const response = await this.client.post<any>(Endpoints.Auth.Login, data);
+    return this.adaptResponse<LoginResponse>(response);
+  }
+
+  /**
+   * Login a user using intra42
+   * @returns Promise with login response containing token
+   */
+  async loginIntra(): Promise<ApiResponse<LoginResponse>> {
+    const response = await this.client.post<any>(Endpoints.Auth.FortyTwo);
     return this.adaptResponse<LoginResponse>(response);
   }
 
@@ -110,15 +120,13 @@ export class AuthService {
   }
 
   /**
-   * Handle OAuth callback
-   * @param code - Authorization code from OAuth provider
-   * @param provider - OAuth provider ('google' or '42')
-   * @returns Promise with response containing token
+   * Exchange Google OAuth code for JWT token via backend API
+   * @param code - OAuth code from Google
+   * @returns Promise with token response
    */
-  async handleOAuthCallback(code: string, provider: 'google' | '42'): Promise<ApiResponse<OAuthResponse>> {
-    const endpoint = provider === 'google' ? Endpoints.Auth.Google : Endpoints.Auth.FortyTwo;
-    const response = await this.client.get<any>(`${endpoint}?code=${code}`);
-    return this.adaptResponse<OAuthResponse>(response);
+  async googleOAuthLogin(code: string): Promise<{ token?: string; error?: string }> {
+    const response = await fetch(`/api/auth/oauth/google/?code=${code}`);
+    return response.json();
   }
 
   /**

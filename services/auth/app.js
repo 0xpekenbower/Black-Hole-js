@@ -60,11 +60,22 @@ const appBuilder = async () => {
     // await setupdb(process.env.DB_AUTH)
     await setupdb(process.env.db_name)
     const fastify = Fastify({
-        logger: {
-            transport: { target: 'pino-pretty',
-            options: { translateTime: 'HH:MM:ss Z', ignore: 'pid,hostname,reqId',
-                messageFormat: '{msg} {req.method} {req.url}',
-                levelFirst: true, colorize: true,singleLine: true,}}}})
+        logger:{
+            level: process.env.LOG_LEVEL || 'info',
+            ignore: 'pid,hostname,reqId',
+              formatters: {
+                level: (label) => ({ level: label }),
+                bindings: () => ({})
+            },
+            base: undefined,
+            timestamp: () => `,"timestamp":"${new Date().toISOString()}"`,
+            hostname: false
+        }})
+        // logger: {
+        //     transport: { target: 'pino-pretty',
+        //     options: { translateTime: 'HH:MM:ss Z', ignore: 'pid,hostname,reqId',
+        //         messageFormat: '{msg} {req.method} {req.url}',
+        //         levelFirst: true, colorize: false,singleLine: true,}}}})
 
     fastify.register(import ('@fastify/swagger'))
     fastify.register(import ('@fastify/swagger-ui'), {routePrefix: '/docs',})

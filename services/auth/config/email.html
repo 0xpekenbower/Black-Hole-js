@@ -2,69 +2,84 @@
 <html>
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Verification Code</title>
   <style>
     body {
-      font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
-      background-color: #f4f4f7;
-      color: #333;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen,
+        Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
+      background-color: #fafafa;
+      color: #222;
       margin: 0;
       padding: 0;
     }
     .container {
-      max-width: 600px;
+      max-width: 580px;
       margin: 40px auto;
       background: #ffffff;
-      border-radius: 8px;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.05);
-      overflow: hidden;
-    }
-    .header {
-      background-color: #4f46e5;
-      color: white;
-      padding: 20px 30px;
-      text-align: center;
-    }
-    .content {
+      border-radius: 6px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.08);
       padding: 30px;
     }
-    .code-box {
-      background-color: #f0f4ff;
-      border: 2px dashed #4f46e5;
+    .header {
+      font-weight: 600;
       font-size: 24px;
-      font-weight: bold;
-      color: #1e3a8a;
+      color: #1a1a1a;
+      margin-bottom: 20px;
       text-align: center;
-      padding: 20px;
+      border-bottom: 1px solid #ddd;
+      padding-bottom: 12px;
+    }
+    .content p {
+      font-size: 16px;
+      line-height: 1.5;
+      margin: 14px 0;
+    }
+    .code-box {
+      background-color: #f5f5f5;
+      border: 1px solid #ccc;
+      font-size: 28px;
+      font-weight: 700;
+      color: #333;
+      text-align: center;
+      padding: 18px 0;
       margin: 30px 0;
-      border-radius: 8px;
-      letter-spacing: 4px;
+      border-radius: 6px;
+      letter-spacing: 6px;
+      user-select: all;
+      font-family: monospace, monospace;
     }
     .button {
-      display: inline-block;
-      background-color: #4f46e5;
-      color: #fff;
+      display: block;
+      width: max-content;
+      background-color: #333;
+      color: #fff !important;
       text-decoration: none;
-      padding: 12px 24px;
+      padding: 12px 28px;
       font-size: 16px;
       border-radius: 6px;
-      margin: 20px 0;
+      margin: 20px auto;
       text-align: center;
+      font-weight: 600;
+      transition: background-color 0.3s ease;
+    }
+    .button:hover {
+      background-color: #555;
     }
     .footer {
-      text-align: center;
-      padding: 20px;
       font-size: 13px;
-      color: #888;
+      color: #777;
+      text-align: center;
+      margin-top: 40px;
+      border-top: 1px solid #eee;
+      padding-top: 15px;
+      user-select: none;
     }
   </style>
 </head>
 <body>
   <div class="container">
-    <div class="header">
-      <h2>Reset Your Password</h2>
-    </div>
+    <div class="header">Reset Your Password</div>
     <div class="content">
       <p>Hi there,</p>
       <p>You requested to reset your password. You can either:</p>
@@ -72,14 +87,12 @@
       <div class="code-box">${code}</div>
       <p><strong>2. Or click the button below to reset your password directly:</strong></p>
       <p style="text-align: center;">
-        <a href="http://localhost:3000/reset-password?email=${email}&code=${code}" class="button">Reset Password Now</a>
+        <a href="https://blackholejs.art/reset-password?email=${email}&code=${code}" class="button">Reset Password Now</a>
       </p>
       <p>If you didn't request this password reset, you can safely ignore this email.</p>
-      <p>Thanks,<br>The Support Team</p>
+      <p>Thanks,<br />The Support Team</p>
     </div>
-    <div class="footer">
-      &copy; 2025 BlackHoleJS. All rights reserved.
-    </div>
+    <div class="footer">&copy; 2025 BlackHoleJS. All rights reserved.</div>
   </div>
 </body>
 </html>

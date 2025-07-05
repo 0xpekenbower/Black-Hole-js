@@ -6,10 +6,22 @@ export const services = {
 };
 
 export const cors = {
-  origin: ['http://localhost:3000', 'http://frontend:3000'],
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
-  credentials: true
+  origin: [
+    'http://localhost:3000',
+    'http://frontend:3000',
+    'https://blackholejs.art',
+    'http://blackholejs.art'
+  ],
+  methods: ['GET', 'POST', 'OPTIONS'],
+  allowedHeaders: [
+    'Content-Type', 
+    'Authorization', 
+    'X-Requested-With',
+    'Upgrade',
+    'Connection'
+  ],
+  credentials: true,
+  preflightContinue: true
 };
 
 export const server = {
@@ -21,3 +33,14 @@ export const vector = {
   host: process.env.VECTOR_HOST || 'vector',
   port: parseInt(process.env.VECTOR_PORT || '9000', 10)
 }; 
+
+export const kafka = {
+  clientId: 'gateway',
+  brokers: ['kafka:9092']
+};
+
+export const redis = {
+  host: 'redis',
+  port: 6379,
+  password: process.env.REDIS_PASSWORD || 'redispassword'
+};

@@ -1,5 +1,6 @@
 DCM = docker compose -f docker-compose.yml
 
+all: build up
 # Core Stack
 core-build:
 	$(DCM) --profile core build
@@ -12,7 +13,9 @@ core-down:
 	$(DCM) --profile core down 
 
 core-restart:
-	$(DCM) --profile core restart
+	$(DCM) --profile core down frontend auth dash
+	$(DCM) --profile core build frontend auth dash
+	$(DCM) --profile core up -d frontend auth dash
 
 core-clean: core-down
 	$(DCM) --profile core down -v
@@ -34,7 +37,7 @@ obsy-up:
 		sleep 1; \
 	done
 	docker rm setup
-	$(DCM) --profile obsy up -d logstash apm-server
+	$(DCM) --profile obsy up -d apm-server logstash
 
 obsy-down:
 	$(DCM) --profile obsy down
@@ -62,29 +65,17 @@ monitoring-clean:
 	$(DCM) --profile monitoring down -v
 
 infra-build:
-	$(DCM) --profile infra build
+	$(DCM) --profile infra build 
 
 infra-up:
 	$(DCM) --profile infra up -d fluentd
 	until [ "$$(docker inspect -f '{{.State.Status}}' fluentd 2>/dev/null)" = "running" ]; do \
 		sleep 1; \
 	done
-	$(DCM) --profile infra up -d postgres_db
-	until [ "$$(docker inspect -f '{{.State.Status}}' postgres_db 2>/dev/null)" = "running" ]; do \
-		sleep 1; \
-	done
-	$(DCM) --profile infra up -d kafka
-	until [ "$$(docker inspect -f '{{.State.Status}}' kafka 2>/dev/null)" = "running" ]; do \
-		sleep 1; \
-	done
-	$(DCM) --profile infra up -d redis nginx
+	$(DCM) --profile infra up -d
 
 infra-down:
-	$(DCM) --profile infra down postgres_db
-	$(DCM) --profile infra down -v kafka
-	$(DCM) --profile infra down redis
-	$(DCM) --profile infra down nginx
-	$(DCM) --profile infra down fluentd
+	$(DCM) --profile infra down 
 
 infra-restart:
 	$(DCM) --profile infra restart
@@ -92,28 +83,20 @@ infra-restart:
 infra-clean: infra-down
 	$(DCM) --profile infra down -v
 
-# setup-run:
-# 	$(DCM) --profile setup up -d
-# 	until [ "$$(docker inspect -f '{{.State.Status}}' setup 2>/dev/null)" = "exited" ]; do \
-# 		sleep 1; \
-# 	done
-# 	docker rm setup
 
 build: infra-build core-build obsy-build monitoring-build
 
-up: infra-up core-up obsy-up monitoring-up
+up: infra-up obsy-up monitoring-up core-up 
 
 down: monitoring-down obsy-down core-down infra-down
 
-restart: monitoring-restart obsy-restart core-restart infra-restart
+restart: infra-restart obsy-restart monitoring-restart core-restart 
 
 clean: monitoring-clean obsy-clean core-clean infra-clean
 	docker volume prune -a
 
 logs:
 	$(DCM) logs -f
-
-all: build up
 
 fclean: clean
 	docker system prune -a

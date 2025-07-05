@@ -2,8 +2,8 @@ import bcrypt from 'bcrypt'
 import pool from '../config/pooling.js'
 import kafka from '../config/kafkaClient.js'
 
-const default_background = 'DEFAULT/BACKGROUND'
-const default_avatar = 'DEFAULT/avatar'
+const default_background = '/data/backgrounds/default.png'
+const default_avatar = '/data/avatars/default.png'
 
 function passValidator (password) {
     let errors = []
@@ -37,10 +37,10 @@ const registerS = async (username , email, password, repassword, first_name, las
         throw new Error(errors)
     
     // first_name = 
-    const tvals = [username , email, await bcrypt.hash(password, 10), first_name, last_name]
+    const tvals = [username , email, await bcrypt.hash(password, 10), first_name, last_name, default_avatar]
     
-    const id = await pool.query('INSERT INTO account(username, email, password, first_name, last_name)  \
-        VALUES($1, $2, $3, $4, $5) RETURNING id;', tvals)
+    const id = await pool.query('INSERT INTO account(username, email, password, first_name, last_name, avatar)  \
+        VALUES($1, $2, $3, $4, $5, $6) RETURNING id;', tvals)
 
     const prod = kafka.producer()
     

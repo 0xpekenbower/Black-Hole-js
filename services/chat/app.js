@@ -1,30 +1,45 @@
-'use strict'
+import Fastify from 'fastify'
+import setupdb from './config/setupDB.js';
 
-const path = require('node:path')
-const AutoLoad = require('@fastify/autoload')
+const appBuilder = async () => {
+    await setupdb(process.env.db_name)
 
-// Pass --options via CLI arguments in command to enable these options.
-const options = {}
+    const fastify = Fastify({
+        logger: {
+            transport: { target: 'pino-pretty',
+            options: { translateTime: 'HH:MM:ss Z', ignore: 'pid,hostname,reqId',
+                messageFormat: '{msg} {req.method} {req.url}',
+                levelFirst: true, colorize: true,singleLine: true,}}}})
 
-module.exports = async function (fastify, opts) {
-  // Place here your custom code!
+    fastify.register(import ('@fastify/swagger'))
+    fastify.register(import ('@fastify/swagger-ui'), {routePrefix: '/docs',})
 
-  // Do not touch the following lines
 
-  // This loads all plugins defined in plugins
-  // those should be support plugins that are reused
-  // through your application
-  fastify.register(AutoLoad, {
-    dir: path.join(__dirname, 'plugins'),
-    options: Object.assign({}, opts)
-  })
+    fastify.register(import ('@fastify/jwt'),
+    {secret: process.env.JWT_SECRET, sign: {expiresIn:'4h'}})
 
-  // This loads all plugins defined in routes
-  // define your routes in one of these
-  fastify.register(AutoLoad, {
-    dir: path.join(__dirname, 'routes'),
-    options: Object.assign({}, opts)
-  })
+
+    fastify.addHook('onRequest', async (req) => { 
+        if (req.url.startsWith('/docs') || req.url.startsWith('/documentation')) {
+            return
+          }
+        await req.jwtVerify() })
+
+
+    fastify.register(import('@fastify/cors'), {
+        origin: 'http://localhost:3000',
+        methods: ['GET', 'PUT', 'POST', 'DELETE', 'OPTIONS'],
+    });
+
+    if (process.env.db_name.search('test') == -1)
+    {
+        fastify.register(import ('./utils/kafkaConsumer.js'))
+        // fastify.register(import ('./utils/live_socket.js'))
+        fastify.register(import ('./routes/convR.js'))
+        fastify.register(import ('./routes/sideBarR.js'))
+        fastify.register(import ('./routes/sendMsgR.js'))
+    }
+    return fastify
 }
 
-module.exports.options = options
+export default appBuilder

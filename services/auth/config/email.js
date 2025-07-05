@@ -12,25 +12,35 @@ const htmlTemplate = fs.readFileSync(path.join(__dirname, 'email.html'), 'utf8')
 
 const send_mail = async (to_email, code) => {
 
+    // const transporter = nodemailer.createTransport({
+    //     service: 'gmail',
+    //     host: 'smtp.gmail.com',
+    //     port: 465,
+    //     secure: true,
+    //     auth: {
+    //         user: process.env.EMAIL_HOST_USER,
+    //         pass: process.env.EMAIL_HOST_PASSWORD
+    //     }
+    // })
     const transporter = nodemailer.createTransport({
-        service: 'gmail',
-        host: 'smtp.gmail.com',
+        host: 'mailserver',
         port: 465,
         secure: true,
         auth: {
             user: process.env.EMAIL_HOST_USER,
             pass: process.env.EMAIL_HOST_PASSWORD
+        },
+        tls: {
+            rejectUnauthorized: false
         }
-    })
-    
-    // Replace all occurrences of the code and email placeholders
+      })
     let htmlContent = htmlTemplate.replace(/\${code}/g, code)
     htmlContent = htmlContent.replace(/\${email}/g, encodeURIComponent(to_email))
     
     const details = {
         from: process.env.EMAIL_HOST_USER,
         to: to_email,
-        subject: `Your BlackHoleJS recovery code is ${code}`,
+        subject: `Welcome Back to BlackHoleJS! Your Verification Code Was Sent`,
         // text: `Enter this recovery code to continue: ${code}`,
         html: htmlContent
     }

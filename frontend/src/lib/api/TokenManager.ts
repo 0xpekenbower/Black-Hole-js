@@ -67,7 +67,6 @@ export class TokenManager {
 	 * @returns True if the user has a valid token, false otherwise
 	 */
 	static isAuthenticated(): boolean {
-		// return true;
 		return !!this.getToken() && !this.isTokenExpired();
 	}
 
@@ -91,7 +90,6 @@ export class TokenManager {
 		if (typeof window === 'undefined') return;
 
 		const expiryTime = Date.now() + expiresIn * 1000;
-
 		localStorage.setItem(TOKEN_KEYS.AUTH_TOKEN, token);
 		localStorage.setItem(TOKEN_KEYS.TOKEN_EXPIRY, expiryTime.toString());
 	}

@@ -142,9 +142,9 @@ export function ProfileComponent({ userId }: { userId?: string }) {
             src="/data/backgrounds/default.png" 
             alt="Default background" 
             fill
+            sizes="100vw"
             style={{ objectFit: 'cover' }}
             priority
-            sizes="100vw"
           />
         )}
         <div className="absolute inset-0 bg-gradient-to-b from-transparent to-background/70" />

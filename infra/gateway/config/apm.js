@@ -1,15 +1,47 @@
 import logger from '../logger/index.js';
 
-// APM configuration
 export const apmConfig = {
   serviceName: 'gateway',
   serverUrl: process.env.APM_SERVER_URL || 'http://apm-server:8200',
   environment: process.env.NODE_ENV || 'development',
-  active: process.env.APM_ACTIVE !== 'false',
-  logLevel: process.env.APM_LOG_LEVEL || 'info',
-  captureBody: 'off', // Don't capture request bodies
-  captureErrorLogStackTraces: 'always',
-  transactionSampleRate: 1.0, // Sample all transactions
+  
+  logUncaughtExceptions: true,
+  captureExceptions: true,
+  logLevel: 'info',
+  useElasticTraceparentHeader: true,
+  disableInstrumentations: [],
+  transactionSampleRate: 1.0,
+  centralConfig: false,
+  cloudProvider: 'none',
+  
+  // Fix for tag warnings
+  sanitizeFieldNames: [
+    'service.name',
+    'http.method', 
+    'http.url'
+  ],
+  
+  // Custom logger that handles special characters
+  logger: {
+    info(msg) {
+      logger.info(msg.replace(/[^\x20-\x7E]/g, ''));
+    },
+    warn(msg) {
+      logger.warn(msg.replace(/[^\x20-\x7E]/g, ''));
+    },
+    error(msg) {
+      logger.error(msg.replace(/[^\x20-\x7E]/g, ''));
+    },
+    fatal(msg) {
+      logger.error(msg.replace(/[^\x20-\x7E]/g, ''));
+    },
+    debug(msg) {
+      logger.debug(msg.replace(/[^\x20-\x7E]/g, ''));
+    },
+    trace(msg) {
+      logger.trace(msg.replace(/[^\x20-\x7E]/g, ''));
+    }
+  }
 };
 
 let apm = null;
@@ -28,4 +60,4 @@ export async function initializeApm() {
 
 export function getApm() {
   return apm;
-} 
+}

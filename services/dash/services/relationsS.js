@@ -1,5 +1,6 @@
 import pool from '../config/pooling.js'
 import add_notif from '../utils/add_notif.js'
+import kafkaProd from "../config/kafkaProd.js"
 
 const idToMiniData = async(accountID, relationrows) => {
     const fr_list = await Promise.all(relationrows.map(async (fr) => {
@@ -38,6 +39,12 @@ export default {
             
         await pool.query('INSERT INTO friends(sender, receiver) VALUES($1, $2);', [accountID, otherID])
         await add_notif(accountID, otherID, 1)
+        await kafkaProd('newRelation', {
+            sender: accountID,
+            receiver: otherID,
+            requestType: 1,
+            created_at: new Date()
+        })
     },
 
     async AcceptReq(accountID, otherID) {
@@ -57,6 +64,12 @@ export default {
             WHERE sender = $1 AND receiver = $2', [otherID, accountID])
 
         await add_notif(accountID, otherID, 2)
+        await kafkaProd('newRelation', {
+            sender: accountID,
+            receiver: otherID,
+            requestType: 2,
+            created_at: new Date()
+        })
     },
 
     async DenyReq(accountID, otherID)
@@ -75,6 +88,12 @@ export default {
 
         await pool.query('DELETE FROM friends WHERE     \
             sender = $1 AND receiver = $2 AND status = $3', [otherID, accountID, 0])
+        await kafkaProd('newRelation', {
+            sender: accountID,
+            receiver: otherID,
+            requestType: 3,
+            created_at: new Date()
+        })
     },
 
     async cancelMyReqS(accountID, otherID)
@@ -82,19 +101,32 @@ export default {
         const q = await pool.query('DELETE FROM friends WHERE     \
             sender = $1 AND receiver = $2 AND status = $3', [accountID, otherID, 0])
 
+        await kafkaProd('newRelation', {
+            sender: accountID,
+            receiver: otherID,
+            requestType: 4,
+            created_at: new Date()
+        })
         return q.rowCount
     },
     //TODO consider when the receiver is expected to be the sender
 
     async blockUser(accountID, otherID)
     {
-        const res = await pool.query('UPDATE friends SET status = -1 \
-            WHERE (sender = $1 AND receiver = $2) OR (sender = $2 AND receiver = $1)\
-            RETURNING sender', [accountID, otherID])
+        await pool.query('DELETE FROM friends WHERE \
+            (sender = $1 AND receiver = $2) OR (sender = $2 AND receiver = $1) \
+            ', [accountID, otherID])
 
-        if (!res.rowCount)
-            await pool.query('INSERT INTO friends(sender, receiver, status) \
-                VALUES($1, $2, $3);', [accountID, otherID, -1])
+
+        await pool.query('INSERT INTO friends(sender, receiver, status) \
+            VALUES($1, $2, $3);', [accountID, otherID, -1])
+                
+        await kafkaProd('newRelation', {
+            sender: accountID,
+            receiver: otherID,
+            requestType: -1,
+            created_at: new Date()
+        })
     },
 
 
@@ -102,6 +134,14 @@ export default {
     {
         const query = await pool.query('DELETE FROM friends WHERE  \
             (sender = $1 AND receiver = $2 AND status = $3)', [accountID, otherID, -1])
+        
+        await kafkaProd('newRelation', {
+            sender: accountID,
+            receiver: otherID,
+            requestType: -2,
+            created_at: new Date()
+        })
+
         return query.rowCount
     },
     

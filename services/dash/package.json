@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "start": "node server",
-    "dev" : "nodemon server",
+    "dev": "nodemon server",
     "test": "cross-env db_name=testdb node --env-file=./config/.env --experimental-vm-modules node_modules/jest/bin/jest.js",
     "lint": "eslint ."
   },
@@ -14,9 +14,10 @@
   "license": "ISC",
   "description": "",
   "dependencies": {
+    "@fastify/cookie": "^11.0.2",
+    "@fastify/jwt": "^9.1.0",
     "@fastify/swagger": "^9.5.0",
     "@fastify/swagger-ui": "^5.2.2",
-    "@fastify/jwt": "^9.1.0",
     "axios": "^1.9.0",
     "bcrypt": "^6.0.0",
     "connect-pg-simple": "^10.0.0",
