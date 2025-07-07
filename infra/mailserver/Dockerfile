@@ -1,6 +1,5 @@
 FROM ghcr.io/docker-mailserver/docker-mailserver:latest
 
-# COPY dkim.private.key /etc/exim4/dkim.private.key
 COPY dkim.private.key /tmp/docker-mailserver/opendkim/dkim.key
 
 ENV ENABLE_FAIL2BAN=1 \

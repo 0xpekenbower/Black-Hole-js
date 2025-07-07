@@ -72,14 +72,14 @@ const waitForKibana = async () => {
       const response = await apiClient.get('/api/status');
       
       if (response.status === 200) {
-        console.log('✅ Kibana is ready!');
+        console.log('Kibana is ready!');
         isReady = true;
       } else {
-        console.log('⏳ Kibana is not ready yet. Waiting...');
+        console.log('Kibana is not ready yet. Waiting...');
         await new Promise(resolve => setTimeout(resolve, CONFIG.retryInterval));
       }
     } catch (error) {
-      console.log('❌ Error connecting to Kibana:', error.message);
+      console.log('Error connecting to Kibana:', error.message);
       await new Promise(resolve => setTimeout(resolve, CONFIG.retryInterval));
     }
   }
@@ -106,13 +106,13 @@ const createKibanaObject = async (endpoint, data, objectType, nameField) => {
     });
     
     if (response.status >= 200 && response.status < 300) {
-      console.log(`✅ ${objectType} created: ${displayName}`);
+      console.log(`${objectType} created: ${displayName}`);
       return response.data;
     } else {
       throw new Error(`Status ${response.status}: ${JSON.stringify(response.data)}`);
     }
   } catch (error) {
-    console.error(`❌ Error creating ${objectType} ${displayName}:`, error.response?.data || error.message);
+    console.error(`Error creating ${objectType} ${displayName}:`, error.response?.data || error.message);
     throw error;
   }
 };
@@ -131,70 +131,6 @@ const createDataView = async (dataView) => {
   );
 };
 
-/**
- * Create a tag
- * @param {Object} tag - Tag configuration
- * @returns {Promise<Object>} Created tag
- */
-// const createTag = async (tag) => {
-//   return createKibanaObject(
-//     '/api/saved_objects/tag',
-//     tag,
-//     'tag',
-//     'attributes.name'
-//   );
-// };
-
-/**
- * Create a saved search
- * @param {Object} search - Search configuration
- * @returns {Promise<Object>} Created search
- */
-// const createSearch = async (search) => {
-//   return createKibanaObject(
-//     '/api/saved_objects/search',
-//     search,
-//     'search',
-//     'attributes.title'
-//   );
-// };
-
-/**
- * Create data views from configuration files
- */
-// const createCustomDataViews = async () => {
-//   try {
-//     const files = await fs.readdir(CONFIG.paths.dataviews);
-    
-//     for (const file of files) {
-//       if (!file.endsWith('.json')) continue;
-      
-//       console.log(`Processing file: ${file}`);
-//       const filePath = path.join(CONFIG.paths.dataviews, file);
-//       const fileData = await fs.readFile(filePath, 'utf8');
-//       const config = JSON.parse(fileData);
-      
-//       try {
-//         // Handle special files differently
-//         if (file === SPECIAL_FILES.gatewaySearch) {
-//           await createSearch(config);
-//           console.log(`✅ Gateway saved search created from ${file}`);
-//         } else {
-//           await createDataView(config);
-//           console.log(`✅ Custom data view created from ${file}`);
-//         }
-//       } catch (error) {
-//         console.error(`❌ Error processing ${file}:`, error.message);
-//       }
-//     }
-//   } catch (err) {
-//     if (err.code === 'ENOENT') {
-//       console.log('ℹ️ No dataviews directory found, skipping custom data views');
-//     } else {
-//       console.error('❌ Error processing custom data views:', err);
-//     }
-//   }
-// };
 
 /**
  * Create standard data views for predefined indices
@@ -206,19 +142,17 @@ const createStandardDataViews = async () => {
     const dataView = {
       name: index.name,
       title: index.index,
-      // timeFieldName: CONFIG.defaultTimeField,
       allowHidden: false
     };
     
     try {
       await createDataView(dataView);
-      console.log(`✅ Standard data view created: ${index.name}`);
+      console.log(`Standard data view created: ${index.name}`);
     } catch (error) {
-      // If it's a 409 conflict, the view already exists
       if (error.response?.status === 409) {
-        console.log(`ℹ️ Data view ${index.name} already exists, skipping`);
+        console.log(`Data view ${index.name} already exists, skipping`);
       } else {
-        console.error(`❌ Error creating data view ${index.name}:`, error.message);
+        console.error(`Error creating data view ${index.name}:`, error.message);
       }
     }
   }
@@ -231,20 +165,15 @@ const setupKibana = async () => {
   try {
     if (!CONFIG.kibana.password) {
       throw new Error('ELASTIC_PASSWORD environment variable is required');
-    }
-    
+    }    
     await waitForKibana();
-    await createStandardDataViews();    
-    // await createCustomDataViews();
-    
-    console.log('✅ Setup completed successfully!');
+    await createStandardDataViews();        
     process.exit(0);
   } catch (error) {
     if (error.response?.status === 400) {
-      console.log('ℹ️ Some objects already exist, continuing...');
       process.exit(0);
     } else {
-      console.error('❌ Setup failed:', error.message);
+      console.error('Setup failed:', error.message);
       process.exit(1);
     }
   }

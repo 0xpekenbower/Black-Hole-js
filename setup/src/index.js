@@ -19,7 +19,7 @@ const CONFIG = {
  */
 const runScript = (scriptPath) => {
   return new Promise((resolve, reject) => {
-    console.log(`🔄 Running setup script: ${scriptPath}`);
+    console.log(`Running setup script: ${scriptPath}`);
     
     const child = spawn('node', [scriptPath], {
       stdio: 'inherit',
@@ -28,10 +28,10 @@ const runScript = (scriptPath) => {
     
     child.on('close', (code) => {
       if (code === 0) {
-        console.log(`✅ Successfully completed: ${scriptPath}`);
+        console.log(`Successfully completed: ${scriptPath}`);
         resolve();
       } else {
-        console.error(`❌ Failed to run: ${scriptPath} with exit code: ${code}`);
+        console.error(`Failed to run: ${scriptPath} with exit code: ${code}`);
         reject(new Error(`Script ${scriptPath} exited with code ${code}`));
       }
     });
@@ -44,17 +44,17 @@ const runScript = (scriptPath) => {
 const main = async () => {
   try {
     // Set up Elasticsearch
-    console.log('🔄 Starting Elasticsearch setup...');
+    console.log('Starting Elasticsearch setup...');
     await setupElasticsearch();
-    console.log('✅ Elasticsearch setup completed successfully.');
+    console.log('Elasticsearch setup completed successfully.');
     for (const script of CONFIG.setupScripts) {
       await runScript(script);
     }
     
-    console.log('✅ All setup scripts completed successfully.');
+    console.log('All setup scripts completed successfully.');
     process.exit(0);
   } catch (error) {
-    console.error('❌ Setup failed:', error.message);
+    console.error('Setup failed:', error.message);
     process.exit(1);
   }
 };

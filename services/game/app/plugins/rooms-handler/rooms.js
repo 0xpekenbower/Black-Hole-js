@@ -29,18 +29,19 @@ class RoomsManager {
 		if (!Room)
 			return;
 		if (Room.add_player(socket)) {
-			console.log("rOOm is Playing");
 			this.playingRooms.push(Room);
 			this.curRooms.delete(roomId);
 			const [id1, id2] = Room.get_players_ids();
-			console.log("Users from game: ", id1, id2);
 			Room.start().then(async (data) => {
-				console.log("Game Over: ", data)
-				await this.app.UserDataBase.updateState(id1, 'lobby');
-				await this.app.UserDataBase.updateState(id2, 'lobby');
+				console.log("Game Over: ", { value: JSON.stringify({ id1, id2, points1: data.score[id1], points2: data.score[id2] }) })
 
-				this.app.UserDataBase.createHistory({ player_id: id1, rival_id: id2, winner_id: data.winner })
-				this.app.UserDataBase.createHistory({ player_id: id2, rival_id: id1, winner_id: data.winner })
+				this.app.kafka.send('newGame', [{ value: JSON.stringify({ id1, id2, points1: data.score[id1], points2: data.score[id2] }) }]);
+
+				// await this.app.UserDataBase.updateState(id1, 'lobby');
+				// await this.app.UserDataBase.updateState(id2, 'lobby');
+
+				// this.app.UserDataBase.createHistory({ player_id: id1, rival_id: id2, winner_id: data.winner })
+				// this.app.UserDataBase.createHistory({ player_id: id2, rival_id: id1, winner_id: data.winner })
 
 			});
 		}

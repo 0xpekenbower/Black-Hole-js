@@ -1,6 +1,8 @@
 import kafka from '../config/kafkaClient.js';
 import logger from '../logger/index.js';
 import { kafka as kafkaConfig } from '../config/index.js';
+import { sendNotificationToUser, broadcastNotification } from '../utils/notificationSender.js';
+import { isUserOnline } from '../utils/socketManager.js';
 
 /**
  * Initialize Kafka consumer for the gateway service
@@ -12,38 +14,29 @@ import { kafka as kafkaConfig } from '../config/index.js';
  */
 const initKafkaConsumer = async (app) => {
   try {
-    const consumer = kafka.consumer({ groupId: kafkaConfig.groupId });
+    const consumer = kafka.consumer({ groupId: 'gateway-group' });
     
     // Store the consumer instance on the app for later use
     app.decorate('kafkaConsumer', consumer);
     
     await consumer.connect();
     logger.info('Kafka consumer connected successfully');
-    
     // Subscribe to topics
-    await consumer.subscribe({ topic: kafkaConfig.topics.notifications, fromBeginning: false });
-    await consumer.subscribe({ topic: kafkaConfig.topics.userEvents, fromBeginning: false });
-    // await consumer.subscribe({ topic: 'newUser', fromBeginning: false });
-    // await consumer.subscribe({ topic: 'OTP', fromBeginning: false });
-
+    await consumer.subscribe({ topic: 'notifications', fromBeginning: false });
+    await consumer.subscribe({ topic: 'user-events', fromBeginning: false });
     
     await consumer.run({
       eachMessage: async ({ topic, partition, message }) => {
         try {
           const messageValue = JSON.parse(message.value.toString());
-          logger.info(`Received Kafka message on topic: ${topic}`);
-          
-          // Process different message types based on the topic
+          logger.info(`Received Kafka message on topic: ${topic}`);          
           switch (topic) {
-            case kafkaConfig.topics.notifications:
-              // Here you would process notification events
-              // Example: Send to connected WebSocket clients
-              logger.info(`Notification received: ${JSON.stringify(messageValue)}`);
+            case 'notifications':
+              await handleNotification(messageValue);
               break;
               
-            case kafkaConfig.topics.userEvents:
-              // Process user-related events
-              logger.info(`User event received: ${JSON.stringify(messageValue)}`);
+            case 'user-events':
+              await handleUserEvent(messageValue);
               break;
               
             default:
@@ -65,5 +58,69 @@ const initKafkaConsumer = async (app) => {
     logger.error(`Failed to initialize Kafka consumer: ${error.message}`);
   }
 };
+
+/**
+ * Handle notification messages from Kafka
+ * @param {Object} notification - The notification object
+ */
+async function handleNotification(notification) {
+  try {
+    const { notifType, senderId, receiverId, content } = notification;
+    
+    logger.info(`Processing notification: ${notifType} for user ${receiverId}`);
+    
+    // Check if the receiver is online
+    const isOnline = await isUserOnline(receiverId);
+    
+    if (isOnline) {
+      // Send notification via socket
+      await sendNotificationToUser(receiverId, 'notification', {
+        type: notifType,
+        senderId,
+        content,
+        timestamp: new Date().toISOString()
+      });
+      
+      logger.info(`Notification sent to online user ${receiverId}`);
+    } else {
+      logger.info(`User ${receiverId} is offline, notification will be stored`);
+    }
+    
+  } catch (error) {
+    logger.error(`Error handling notification: ${error.message}`);
+  }
+}
+
+/**
+ * Handle user events from Kafka
+ * @param {Object} event - The user event object
+ */
+async function handleUserEvent(event) {
+  try {
+    const { eventType, userId, data } = event;
+    
+    logger.info(`Processing user event: ${eventType} for user ${userId}`);
+    
+    switch (eventType) {
+      case 'user_login':
+        logger.info(`User ${userId} logged in`);
+        break;
+        
+      case 'user_logout':
+        logger.info(`User ${userId} logged out`);
+        break;
+        
+      case 'status_change':
+        logger.info(`User ${userId} changed status to ${data.status}`);
+        break;
+        
+      default:
+        logger.info(`Unhandled user event type: ${eventType}`);
+    }
+    
+  } catch (error) {
+    logger.error(`Error handling user event: ${error.message}`);
+  }
+}
 
 export default initKafkaConsumer; 

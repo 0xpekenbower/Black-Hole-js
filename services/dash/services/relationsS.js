@@ -24,6 +24,8 @@ const idToMiniData = async(accountID, relationrows) => {
     return fr_list
 }
 
+
+
 export default {
     async SendReq(accountID, otherID) {
 

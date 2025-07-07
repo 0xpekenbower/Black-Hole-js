@@ -6,8 +6,8 @@ datasources:
     url: http://prometheus:9090/prometheus
     withCredentials: true
     basicAuth: true
-    basicAuthUser: ${PROMETHEUS_USER}
-    basicAuthPassword: ${PROMETHEUS_PASSWORD}
+    basicAuthUser: aelmrabe
+    basicAuthPassword: "60325451mM@"
     isDefault: true
     editable: true
     jsonData:

@@ -104,6 +104,20 @@ services:
       options:
         tag: "{{.Name}}.log"
 
+  kafka-ui:
+    image: provectuslabs/kafka-ui:latest
+    container_name: kafka-ui
+    profiles: [infra]
+    networks:
+      - blackholejs
+    ports:
+      - "8090:8080"
+    depends_on:
+      - kafka
+    environment:
+      - KAFKA_CLUSTERS_0_NAME=local
+      - KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS=kafka:9092
+
   gateway:
     container_name: gateway
     build:
@@ -156,6 +170,9 @@ services:
     depends_on:
       - gateway
     restart: on-failure
+    volumes:
+      - ./services/chat:/chat
+      - /chat/node_modules
     networks:
       - blackholejs
     logging:

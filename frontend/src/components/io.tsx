@@ -1,5 +1,8 @@
 'use client'
 
+
+// TODO move to contexts 
+
 import { redirect } from "next/navigation";
 import { useEffect, useState, createContext, useRef } from "react";
 import { io, Socket } from "socket.io-client";
@@ -18,10 +21,10 @@ function GameSocketProvider({ children }: { children: React.ReactNode }) {
 		socketRef.current = io("http://localhost:8004", {
 			path: "/socket.io",
 			transports: ["websocket"],
+			secure: window.location.protocol === 'https:',
 			auth: { token },
 			withCredentials: true,
 		});
-
 		socketRef.current.on("connect", () => {
 			setConnected(true);
 			console.log("[GameSocket connected]");
@@ -43,7 +46,6 @@ function GameSocketProvider({ children }: { children: React.ReactNode }) {
 		window.addEventListener("unload", handleUnload);
 
 		return () => {
-			// Cleanup React unmount
 			socketRef.current?.disconnect();
 			socketRef.current = null;
 			window.removeEventListener("beforeunload", handleUnload);

@@ -32,10 +32,10 @@ export function registerApmHooks(fastify) {
       // Store transaction in request for later use
       request.apmTransaction = transaction;
       
-      // Add useful context to the transaction
-      transaction.setLabel('service.target', service);
-      transaction.setLabel('http.method', method);
-      transaction.setLabel('http.url', url);
+      // // Add useful context to the transaction
+      // transaction.setLabel('service.target', service);
+      // transaction.setLabel('http.method', method);
+      // transaction.setLabel('http.url', url);
       
       // Set user context if available
       const userId = extractUserId(request);
@@ -66,7 +66,6 @@ export function registerApmHooks(fastify) {
   // Capture errors
   fastify.addHook('onError', (request, reply, error, done) => {
     if (request.apmTransaction) {
-      // Capture the error with the current transaction
       apm.captureError(error, { 
         request: request.raw,
         response: reply.raw,
@@ -78,16 +77,12 @@ export function registerApmHooks(fastify) {
   });
 }
 
-// Helper function to extract user ID from JWT
 function extractUserId(request) {
   try {
     const authHeader = request.headers['authorization'];
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
       return null;
     }
-    
-    // We don't need to verify the token here as we're just extracting the ID
-    // The token was already verified in the auth service
     const token = authHeader.substring(7);
     const payload = Buffer.from(token.split('.')[1], 'base64').toString();
     const decoded = JSON.parse(payload);
@@ -98,22 +93,13 @@ function extractUserId(request) {
   }
 }
 
-// Helper to create spans for outgoing requests
 export function createProxySpan(apm, request, serviceName) {
   if (!apm || !request.apmTransaction) return null;
   
   const transaction = request.apmTransaction;
   const url = request.raw.url;
   const method = request.raw.method;
-  
-  // Create a span for the proxy request
   const span = transaction.startSpan(`${method} ${serviceName}`, 'external', 'http');
-  
-  if (span) {
-    span.setLabel('service.name', serviceName);
-    span.setLabel('http.method', method);
-    span.setLabel('http.url', url);
-  }
   
   return span;
 }

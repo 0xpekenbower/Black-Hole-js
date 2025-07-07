@@ -40,7 +40,7 @@ const DashboardHeader = () => {
     <div className="w-full">
       <header className="border-b border-border-1 bg-card/80 backdrop-blur-sm h-12 px-4">
         <div className="flex items-center justify-between h-full">
-          <div>
+          <div className="flex items-center gap-3">
             {mounted && <Wallet budget={budget} size="sm" />}
           </div>
           <div className="flex items-center gap-2">
@@ -53,7 +53,7 @@ const DashboardHeader = () => {
                   <p>Toggle Theme</p>
                 </TooltipContent>
               </Tooltip>
-
+              
               <Tooltip>
                 <TooltipTrigger asChild>
                   <Button 

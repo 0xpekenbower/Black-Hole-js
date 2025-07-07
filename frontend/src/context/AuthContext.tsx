@@ -11,6 +11,11 @@ import { AuthService } from '@/lib/api/AuthService';
 import { TokenManager } from '@/lib/api/TokenManager';
 import { LoginRequest, RegisterRequest } from '@/types/Auth';
 import { clearProfileData } from '@/utils/profileStorage';
+import { io, Socket } from 'socket.io-client';
+
+// Socket configuration for gateway
+const GATEWAY_SOCKET_URL = 'http://localhost:8000';
+const GATEWAY_SOCKET_PATH = '/socket.io';
 
 /**
  * User data structure
@@ -31,7 +36,7 @@ export interface User {
  * Authentication context state
  */
 interface AuthContextState {
-  loginWithToken: (token: string) => Promise<void>; // Add this method
+  loginWithToken: (token: string) => Promise<void>;
   user: User | null;
   isLoading: boolean;
   isAuthenticated: boolean;
@@ -42,6 +47,7 @@ interface AuthContextState {
   changePassword: (email: string, code: string, newPassword: string) => Promise<void>;
   error: string | null;
   clearError: () => void;
+  gatewaySocket: Socket | null;
 }
 
 /**
@@ -57,14 +63,47 @@ const AuthContext = createContext<AuthContextState | undefined>(undefined);
  * Authentication context provider component
  */
 export function AuthProvider({ children }: AuthProviderProps): React.ReactElement {
-  // ...existing state
-
-
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
+  const [gatewaySocket, setGatewaySocket] = useState<Socket | null>(null);
   const router = useRouter();
   const authService = new AuthService();
+
+  // Function to connect to gateway socket
+  const connectGatewaySocket = (token: string) => {
+    try {
+      // Disconnect existing socket if any
+      if (gatewaySocket) {
+        gatewaySocket.disconnect();
+      }
+
+      // Create new socket connection with token
+      const socket = io(GATEWAY_SOCKET_URL, {
+        path: GATEWAY_SOCKET_PATH,
+        transports: ['websocket'],
+        reconnectionAttempts: 5,
+        reconnectionDelay: 1000,
+        timeout: 20000,
+        secure: window.location.protocol === 'https:',
+        auth: { token },
+      });
+
+      setGatewaySocket(socket);
+      return socket;
+    } catch (err) {
+      console.error('Error creating gateway socket connection:', err);
+      return null;
+    }
+  };
+
+  // Disconnect gateway socket
+  const disconnectGatewaySocket = () => {
+    if (gatewaySocket) {
+      gatewaySocket.disconnect();
+      setGatewaySocket(null);
+    }
+  };
 
   useEffect(() => {
     const initAuth = async () => {
@@ -83,8 +122,9 @@ export function AuthProvider({ children }: AuthProviderProps): React.ReactElemen
               avatar: '',
               bio: '',
               background: '',
-            });            
-            // TODO: Implement profile fetching
+            });
+            
+            connectGatewaySocket(token);
           }
         };
       } catch (err) {
@@ -96,6 +136,9 @@ export function AuthProvider({ children }: AuthProviderProps): React.ReactElemen
     };
 
     initAuth();
+    return () => {
+      disconnectGatewaySocket();
+    };
   }, []);
 
   /**
@@ -122,6 +165,9 @@ export function AuthProvider({ children }: AuthProviderProps): React.ReactElemen
           bio: '',
           background: '',
         });
+
+        // Connect to gateway socket with token
+        connectGatewaySocket(token);
         router.replace('/dashboard');
       } else {
         throw new Error(response.status.message);
@@ -157,6 +203,9 @@ export function AuthProvider({ children }: AuthProviderProps): React.ReactElemen
           bio: '',
           background: '',
         });
+
+        // Connect to gateway socket with token
+        connectGatewaySocket(token);
         router.replace('/dashboard');
       } else {
         throw new Error(response.status.message);
@@ -193,6 +242,9 @@ export function AuthProvider({ children }: AuthProviderProps): React.ReactElemen
   const logout = async (): Promise<void> => {
     setIsLoading(true);    
     try {
+      // Disconnect gateway socket
+      disconnectGatewaySocket();
+      
       TokenManager.clearTokens();
       authService.removeAuthToken();
       clearProfileData();
@@ -281,6 +333,9 @@ export function AuthProvider({ children }: AuthProviderProps): React.ReactElemen
         bio: '',
         background: '',
       });
+
+      // Connect to gateway socket with token
+      connectGatewaySocket(token);
       router.replace('/dashboard');
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to login with token');
@@ -301,6 +356,7 @@ export function AuthProvider({ children }: AuthProviderProps): React.ReactElemen
     changePassword,
     error,
     clearError,
+    gatewaySocket,
   };
 
   return (

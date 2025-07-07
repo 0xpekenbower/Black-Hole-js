@@ -51,6 +51,7 @@ create_topics() {
   create_topic "OTP"
   create_topic "notifications"
   create_topic "userEvents"
+  create_topic "newRelation"
 }
 
 create_topics
@@ -64,4 +65,4 @@ wait $KAFKA_PID
 log "Kafka stopped. Starting Kafka in foreground with exec..."
 
 # Exec Kafka so PID 1 stays Kafka process (important for Docker container)
-exec /__cacert_entrypoint.sh /etc/kafka/docker/run
+exec /opt/kafka/bin/kafka-server-start.sh /opt/kafka/config/server.properties

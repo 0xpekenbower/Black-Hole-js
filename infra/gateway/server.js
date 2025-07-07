@@ -5,6 +5,9 @@ import { server as serverConfig, cors, redis as redisConfig } from './config/ind
 import logger from './logger/index.js';
 import { initializeApm } from './config/apm.js';
 import kafka from './config/kafkaClient.js';
+import { getRedisClient } from './config/redisClient.js';
+import { initializeNotificationSender } from './utils/notificationSender.js';
+import initKafkaConsumer from './kafka/consumer.js';
 
 const serviceUnavailableHandler = (service) => {
   return (request, reply) => {
@@ -18,18 +21,15 @@ const serviceUnavailableHandler = (service) => {
   };
 };
 
-// Initialize APM
-let apm;
-initializeApm().then(apmInstance => {
-  apm = apmInstance;
-}).catch(err => {
-  logger.error(`Failed to initialize APM: ${err.message}`);
-});
-
 async function start() {
   try {
-    const app = await createApp();
-    
+    const app = await createApp();    
+    let apm;
+    initializeApm().then(apmInstance => {
+      apm = apmInstance;
+    }).catch(err => {
+      logger.error(`Failed to initialize APM: ${err.message}`);
+    });
     app.addHook('onRequest', async (request, reply) => {
       if (!apm) return;
       
@@ -75,18 +75,27 @@ async function start() {
 
     await registerProxyRoutes(app, fastifyHttpProxy);
     
-    // Pre-decorate the app with an empty io property that will be populated later
-    app.decorate('io', null);
-    
-    // Start the server
+    app.decorate('io', null);    
     await app.listen(serverConfig);
-    
-    // Setup Socket.IO with the raw HTTP server and update the io decorator
     const io = setupSocketIO(app.server);
     app.io = io;
-
+    
+    initializeNotificationSender(io);
+    await initKafkaConsumer(app);
     logger.info(`Server started on port ${app.server.address().port}`);
-    logger.info(`Gateway Socket.IO initialized on path: /api/gateway/socket.io`);
+    logger.info(`Gateway Socket.IO initialized on path: /socket.io`);
+    const closeGracefully = async () => {
+      logger.info('Shutting down server...');
+      const redisClient = getRedisClient();
+      if (redisClient && redisClient.isOpen) {
+        logger.info('Closing Redis connection...');
+        await redisClient.quit();
+      }
+      await app.close();
+      process.exit(0);
+    };
+    process.on('SIGINT', closeGracefully);
+    process.on('SIGTERM', closeGracefully);
   } catch (err) {
     logger.error(`Server error: ${err.message}`);
     process.exit(1);

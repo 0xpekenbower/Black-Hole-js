@@ -31,14 +31,14 @@ const appBuilder = async () => {
         methods: ['GET', 'PUT', 'POST', 'DELETE', 'OPTIONS'],
     });
 
-    if (process.env.db_name.search('test') == -1)
-    {
+    // if (process.env.db_name.search('test') == -1)
+    // {
         fastify.register(import ('./utils/kafkaConsumer.js'))
         // fastify.register(import ('./utils/live_socket.js'))
         fastify.register(import ('./routes/convR.js'))
         fastify.register(import ('./routes/sideBarR.js'))
         fastify.register(import ('./routes/sendMsgR.js'))
-    }
+    // }
     return fastify
 }
 

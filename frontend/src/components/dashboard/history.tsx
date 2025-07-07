@@ -13,7 +13,10 @@ function History() {
 	useEffect(() => {
 		const fetchHistory = async () => {
 			try {
-				const res = await fetch("http://localhost:8004/api/game/history"); // FIXME change to the real api
+				// const res = await fetch("http://localhost:8004/api/game/history"); // FIXME change to the real api
+				const res = await fetch(process.env.NEXT_PUBLIC_API_URL + "/api/game/history"); // FIXME change to the real api
+				if (!res.ok)
+					throw new Error("failed to fetch data");
 				const data = await res.json();
 				console.log(data);
 				setHistory(data);

@@ -5,6 +5,7 @@
   "directories": {
     "test": "test"
   },
+  "type": "module",
   "scripts": {
     "start": "node server",
     "dev": "cross-env db_name=chatdb nodemon --env-file=./config/.env server",

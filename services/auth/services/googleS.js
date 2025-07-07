@@ -67,6 +67,7 @@ const googleS = async (jwt, code) => {
 	// 		})
 	// })
 
+	
 	// just n7awlo ndwzoha directy from google
 	const avatar = user_json.picture ? user_json.picture : '/data/avatars/default.png'
 

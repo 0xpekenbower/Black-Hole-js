@@ -1,16 +1,10 @@
 
-import { Kafka } from "kafkajs";
-// import pool from '../config/pooling.js'
-
-const kafka = new Kafka({
-	clientId: "blackholejs-dash",
-	brokers: ["kafka:9092"]
-});
+import kafka from "./connection.js";
 
 
 const kafkaConsumer = async (fastify) => {
 	try {
-		const consumer = kafka.consumer({ groupId: 'dashboard-grp' })
+		const consumer = kafka.consumer({ groupId: 'game-grp' })
 
 		await consumer.connect()
 		await consumer.subscribe({ topic: 'newUser', fromBeginning: false })
