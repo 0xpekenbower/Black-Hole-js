@@ -44,6 +44,7 @@ interface AuthContextState {
   register: (data: RegisterRequest) => Promise<void>;
   logout: () => Promise<void>;
   getOTP: (email: string) => Promise<boolean>;
+  verifyCode: (email: string, code: string) => Promise<boolean>;
   changePassword: (email: string, code: string, newPassword: string) => Promise<void>;
   error: string | null;
   clearError: () => void;
@@ -279,6 +280,27 @@ export function AuthProvider({ children }: AuthProviderProps): React.ReactElemen
   };
 
   /**
+   * Verify OTP code
+   */
+  const verifyCode = async (email: string, code: string): Promise<boolean> => {
+    try {
+      setIsLoading(true);
+      setError(null);
+      const response = await authService.verifyCode(email, code);
+      if (response.status.success) {
+        return true;
+      } else {
+        throw new Error(response.status.message);
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to verify code');
+      return false;
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  /**
    * Change user password
    */
   const changePassword = async (email: string, code: string, newPassword: string): Promise<void> => {
@@ -353,6 +375,7 @@ export function AuthProvider({ children }: AuthProviderProps): React.ReactElemen
     register,
     logout,
     getOTP,
+    verifyCode,
     changePassword,
     error,
     clearError,

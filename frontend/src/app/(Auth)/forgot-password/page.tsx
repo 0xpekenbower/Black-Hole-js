@@ -19,7 +19,6 @@ export default function ForgotPasswordPage() {
     try {
       const success = await getOTP(email)      
       if (success) {
-        // Allow navigation to the OTP page
         const otpPath = `/forgot-password/otp?email=${encodeURIComponent(email)}`
         allowNavigation(otpPath)
         router.push(otpPath)

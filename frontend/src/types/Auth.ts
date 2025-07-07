@@ -76,6 +76,17 @@ export interface ForgotPasswordResponse {
   Error?: string;
 }
 
+// Verify OTP Code
+export interface VerifyCodeRequest {
+  email: string;
+  code: string;
+}
+
+export interface VerifyCodeResponse {
+  Success: boolean;
+  Error?: string;
+}
+
 export interface ResetPasswordRequest {
   email: string;
   code: string;
