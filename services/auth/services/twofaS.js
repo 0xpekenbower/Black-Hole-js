@@ -1,18 +1,21 @@
 import pool from "../config/pooling.js"
+import {authenticator} from 'otplib'
 
-const twofaS = async(jwt, code, id) => {
-    const check = await pool.query("SELECT EXISTS(SELECT 1 FROM     \
-        twofa WHERE otp_code = $1 AND id = $2   \
-        AND created_at > NOW() - INTERVAL '10 minutes')", [code, id])
+const twofaS = async(code, username) => {
+    const query = await pool.query("SELECT otp_secret, id FROM account \
+        WHERE username = $1", [username])
 
-    console.log(check.rows[0])
-    if (check.rows[0].exists)
-    {
-        await pool.query('DELETE FROM twofa WHERE id = $1;', [id])
+    if (!query.rowCount)
+        throw new Error('User does not exist')
+
+    const {otp_secret, id} = query.rows[0]
+    
+    const verify = authenticator.check(code, otp_secret)
+
+    if (verify)
         return jwt.sign({id: id})
-    }
 
-    throw new Error('invalid/expired otp-code')
+    throw new Error('invalid otp-code')
 }
 
 export default twofaS

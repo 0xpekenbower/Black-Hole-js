@@ -1,9 +1,8 @@
 import bcrypt from 'bcrypt'
 import pool from '../config/pooling.js'
 import kafka from '../config/kafkaClient.js'
+import {authenticator} from 'otplib'
 
-const default_background = '/data/backgrounds/default.png'
-const default_avatar = '/data/avatars/default.png'
 
 function passValidator (password) {
     let errors = []
@@ -36,11 +35,11 @@ const registerS = async (username , email, password, repassword, first_name, las
     if (errors.length)
         throw new Error(errors)
     
-    // first_name = 
-    const tvals = [username , email, await bcrypt.hash(password, 10), first_name, last_name, default_avatar]
+    const otp_secret = authenticator.generateSecret()
+    const tvals = [username ,email, await bcrypt.hash(password, 10), otp_secret]
     
-    const id = await pool.query('INSERT INTO account(username, email, password, first_name, last_name, avatar)  \
-        VALUES($1, $2, $3, $4, $5, $6) RETURNING id;', tvals)
+    const id = await pool.query('INSERT INTO account(username, email, password, otp_secret) \
+        VALUES($1, $2, $3, $4) RETURNING id;', tvals)
 
     const prod = kafka.producer()
     
@@ -53,9 +52,8 @@ const registerS = async (username , email, password, repassword, first_name, las
                 email: email,
                 first_name: first_name,
                 last_name: last_name,
-                is_oauth: false,
-                avatar: default_avatar,
-                background: default_background
+                otp_secret: otp_secret,
+                is_oauth: false
             })
         }]
     })

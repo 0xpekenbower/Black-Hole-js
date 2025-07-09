@@ -21,7 +21,8 @@ const PaddleWidth = 10;
 const PaddleHeight = 90;
 const PaddleSpeed = 600;
 const FramesPerSecond = 30;
-const BallStartSpeed = 400;
+const BallStartSpeed = 200;
+const BallNormalSpeed = 400;
 // const BallMaxSpeed = 600;
 const finalScore = 5;
 
@@ -95,7 +96,6 @@ class PongGame {
 	}
 
 	already_joined(uid) {
-		assert(uid, "uid is falsy"); // TODO remove this 
 		const already = [...this.players.values()].some(player => player.socket.user === uid);
 		return already;
 	}
@@ -110,6 +110,7 @@ class PongGame {
 	}
 
 	bouncing_paddle(paddleY, isLeft) {
+		this.ball.speed = BallNormalSpeed;
 		const ball_inter = (this.ball.y - paddleY) / PaddleHeight;
 		const norm_inter = (ball_inter * 2) - 1;
 		this.ball.dx = -this.ball.dx;
@@ -135,7 +136,7 @@ class PongGame {
 			})
 
 			if (this.ball.x <= (PaddleWidth + BALL_RADIUS)
-				&& (this.ball.y >= this.paddles.left && this.ball.y <= this.paddles.left + PaddleHeight)) // TODO Only One Side is Playable for testing 
+				&& (this.ball.y >= this.paddles.left && this.ball.y <= this.paddles.left + PaddleHeight))
 				this.bouncing_paddle(this.paddles.left, true);
 			// this.ball.dx = -this.ball.dx;
 

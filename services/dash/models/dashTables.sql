@@ -1,4 +1,4 @@
--- Active: 1746933162460@@127.0.0.1@5999@dashdb
+-- Active: 1751886224793@@127.0.0.1@5432@postgres
 CREATE TABLE IF NOT EXISTS player(
     id SERIAL PRIMARY KEY,
     username VARCHAR(60) UNIQUE NOT NULL,
@@ -6,8 +6,8 @@ CREATE TABLE IF NOT EXISTS player(
     first_name VARCHAR(30),
     last_name VARCHAR(30),
     is_oauth BOOLEAN DEFAULT FALSE,
-    is_otp_active BOOLEAN DEFAULT FALSE,
-    is_otp_verified BOOLEAN DEFAULT FALSE,
+    is_otp BOOLEAN DEFAULT FALSE,
+    otp_secret VARCHAR(30),
     is_online BOOLEAN DEFAULT FALSE,
     level INT DEFAULT 1,
     rank INT DEFAULT 1,

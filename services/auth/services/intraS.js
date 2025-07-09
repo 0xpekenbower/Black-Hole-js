@@ -1,10 +1,7 @@
-import https from 'https'
-import fs from 'fs'
 import path from 'path'
 import pool from '../config/pooling.js'
 import kafka from '../config/kafkaClient.js'
-
-const DEFAULT_AVATAR = path.join(process.cwd(), 'media', 'avatar', 'default_avatar.jpg')
+import {authenticator} from 'otplib'
 
 
 const intraS = async (jwt, code) => {
@@ -51,7 +48,7 @@ const intraS = async (jwt, code) => {
     const lvalues = [user_json.login, user_json.email]
     let try_login = await pool.query('SELECT id FROM account WHERE username = $1 AND email = $2 AND is_oauth = true', lvalues)
     
-    if (try_login.rows[0])
+    if (try_login.rowCount)
         return jwt.sign({id: try_login.rows[0].id})
 
     const search = await pool.query('SELECT EXISTS(SELECT 1 FROM account WHERE username = $1 OR email = $2);', lvalues)
@@ -62,35 +59,11 @@ const intraS = async (jwt, code) => {
         err.status = 409
         throw err
     }
-    // NO NEED TO DOWNLOAD AVATAR IS AVAILABLE IN  user_json.image.link 
-    // let file_path = path.join(process.cwd(), 'media', 'avatar', `${user_json.login}.jpg`)
-    // let avatar_path = user_json.image.link;
-    // // in case
-    // console.log(avatar_path);
-    // if (fs.existsSync(file_path))
-    //     fs.unlink(file_path, (err) => {
-    //         if (err) throw new Error(`Cannot unlink ${file_path}`)
-    //         else console.log('File Deleted');
-    // })
 
-    // const file_fs = fs.createWriteStream(file_path)
-    // https.get(user_json.image.link, (response) => {
-    //     response.pipe(file_fs)
-    //     file_fs.on('finish', ()=>{
-    //         file_fs.close(() => {
-    //             console.log('File Downloaded Succesfuly')
-    //         })
-    //     })
-    //     .on('error', () => {
-    //         file_fs.unlink(file_path, () => {
-    //             console.log('Error downloading the file')
-    //             file_path = DEFAULT_AVATAR
-    //         })
-    //     })
-    // })
+    const otp_secret = authenticator.generateSecret()
 
-    const new_user = [user_json.login, user_json.email, 'R3ndom789KEPLERliok',user_json.first_name, user_json.last_name, true, user_json.image.link]
-    const created_user = await pool.query('INSERT INTO account(username, email, password, first_name, last_name, is_oauth, avatar) VALUES($1, $2, $3, $4, $5, $6, $7) RETURNING id;', new_user)
+    const new_user = [user_json.login, user_json.email, 'R3ndom789KEPLERliok', true, otp_secret]
+    const created_user = await pool.query('INSERT INTO account(username, email, password, is_oauth, otp_secret) VALUES($1, $2, $3, $4, $5) RETURNING id;', new_user)
     const prod = kafka.producer()
     
     await prod.connect()
@@ -102,6 +75,7 @@ const intraS = async (jwt, code) => {
                 email: user_json.email,
                 first_name: user_json.first_name,
                 last_name: user_json.last_name,
+                otp_secret: otp_secret,
                 is_oauth: true,
                 avatar: user_json.image.link,
                 background: '/data/backgrounds/default.png'

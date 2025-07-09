@@ -9,6 +9,7 @@ const sendMsgS = async (accountID, otherID, data) => {
     const user1 = Math.max(accountID, otherID)
     const user2 = Math.min(accountID, otherID)
 
+    const created = new Date()
 
     await kafkaProd('newMsg', {
         sender: accountID,

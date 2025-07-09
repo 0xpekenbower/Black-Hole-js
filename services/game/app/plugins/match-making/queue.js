@@ -6,7 +6,7 @@ class matchingQueue {
 		this.pool = [];
 	}
 
-	add(socket) {
+	add(socket) { // TODO add mutex protection 
 		this.pool.push({ time: Date.now(), socket });
 	}
 

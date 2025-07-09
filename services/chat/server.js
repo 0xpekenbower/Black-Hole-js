@@ -4,7 +4,7 @@ const start = async () => {
     try
     {
         const fastify = await appBuilder()
-        await fastify.listen({ port:8003, host: '0.0.0.0' })
+        await fastify.listen({ port:8005, host: '0.0.0.0' })
     }
     catch (err)
     {

@@ -1,10 +1,10 @@
 import twofaS from '../services/twofaS.js'
 
-const twofaC = (fastify) => async(req, res) => {
+const twofaC = async(req, res) => {
     try
     {
-        const {code, id} = req.body
-        const token = await twofaS(fastify.jwt, code, id)
+        const {code, username} = req.body
+        const token = await twofaS(code, username)
 
         res.status(200).send({token: token})
     }

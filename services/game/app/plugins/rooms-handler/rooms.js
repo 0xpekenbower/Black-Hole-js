@@ -32,7 +32,7 @@ class RoomsManager {
 			this.playingRooms.push(Room);
 			this.curRooms.delete(roomId);
 			const [id1, id2] = Room.get_players_ids();
-			Room.start().then(async (data) => {
+			Room.start().then((data) => {
 				console.log("Game Over: ", { value: JSON.stringify({ id1, id2, points1: data.score[id1], points2: data.score[id2] }) })
 
 				this.app.kafka.send('newGame', [{ value: JSON.stringify({ id1, id2, points1: data.score[id1], points2: data.score[id2] }) }]);

@@ -114,7 +114,7 @@ const forgetPassR = (fastify, options, done) => {
 
     fastify.post('/api/auth/send-mail/', send_mail_schema)
     fastify.post('/api/auth/forget-pass/', forgetPassSchema)
-    fastify.post('/api/auth/check/', checkCodeSchema)
+    fastify.post('/api/auth/check-code/', checkCodeSchema)
 
     done()
 }
