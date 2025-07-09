@@ -140,7 +140,7 @@ export function MessageButton({ userId, compact = false }: MessageButtonProps) {
       className={`${compact ? 'h-9' : ''} gap-1 bg-primary-1 text-primary-1-foreground hover:bg-card hover:text-card-foreground`}
       asChild
     >
-      <Link href={`/dashboard/chat?user=${userId}`}>
+      <Link href={`/dashboard/chat?userId=${userId}`}>
         <MessageSquare className={`${compact ? 'h-3 w-3' : 'h-4 w-4'}`} />
         <span className="hidden sm:inline">Message</span>
         <span className="sm:hidden">💬</span>

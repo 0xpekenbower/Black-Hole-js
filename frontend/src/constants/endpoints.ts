@@ -8,7 +8,7 @@ const Endpoints = {
     Register: "/api/auth/register/",
     Logout: "/api/auth/logout/",
     Send_mail: "/api/auth/send-mail/",
-    Verify_code: "/api/auth/check-code/",
+    Verify_code: "/api/auth/check/",
     Forget_pass: "/api/auth/forget-pass/",
     Change_password: "/api/auth/change-password/",
     FortyTwo: "/api/auth/oauth/42/",

@@ -3,9 +3,8 @@ import React, { useEffect, useRef, useContext } from "react";
 import { Merge, SmilePlus, Trophy, Users } from "lucide-react";
 import { useView } from './view'
 import { useState } from 'react';
+import LayoutContext from '@/context/BarContext'
 // import getSocket from '@/components/io';
-import { io, Socket } from 'socket.io-client'
-import { redirect } from "next/navigation";
 
 import { GameSocketProvider, GameSocketContext } from "@/components/io"
 
@@ -20,6 +19,7 @@ export default function Home() {
 	const { view, setView } = useView();
 	const [isQueueDisabled, setIsQueueDisabled] = useState(false);
 	const [canCancelQueue, setCanCancelQueue] = useState(false);
+	const { setShowSidebar } = useContext(LayoutContext);
 
 
 	function cancelQueueHandler() {
@@ -56,6 +56,7 @@ export default function Home() {
 			sessionStorage.setItem('roomId', event.roomid);
 			setIsQueueDisabled(false);
 			setCanCancelQueue(true);
+			setShowSidebar(false);
 			setView("game");
 		});
 
@@ -84,7 +85,7 @@ export default function Home() {
 		<>
 			{/* TODO add goback button */}
 
-			{view !== "game" && view !== "tournament" && socket && (
+			{view !== "game" && view !== "tournament" && (
 				<section className="py-16 text-center">
 					<h2 className="text-5xl font-bold mb-4">Welcome to Pong Arena</h2>
 					<p className="text-xl max-w-2xl mx-auto text-slate-700 dark:text-slate-300 ">
@@ -134,7 +135,6 @@ export default function Home() {
 										<Button
 											onClick={() => {
 												setIsQueueDisabled(true);
-												// setView("game");
 												quickStartHandler();
 											}}
 											className=" text-white font-bold bg-transparent hover:bg-black border"

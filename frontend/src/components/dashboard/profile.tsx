@@ -154,9 +154,9 @@ export function ProfileComponent({ userId }: { userId?: string }) {
         <CardHeader className="flex flex-col md:flex-row md:items-center gap-4">
           <Avatar className="h-24 w-24 border-4 border-background">
             {UserInfo.avatar ? (
-              <AvatarImage src={UserInfo.avatar} alt={UserInfo.username} />
+				<AvatarImage src={UserInfo.avatar} alt={UserInfo.username} />
             ) : (
-              <AvatarImage src="/data/avatars/default.png" alt={UserInfo.username} />
+				<AvatarImage src="/data/avatars/default.png" alt={UserInfo.username} />
             )}
             {UserInfo.is_online && (
               <span className="absolute bottom-1 right-1 h-4 w-4 rounded-full bg-green-500 border-2 border-background"></span>

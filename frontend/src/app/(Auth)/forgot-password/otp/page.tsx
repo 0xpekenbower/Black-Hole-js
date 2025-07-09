@@ -11,7 +11,7 @@ import { useNavigation } from '@/context/NavigationContext'
  * @returns OTP verification page UI
  */
 export default function OtpVerificationPage() {
-  const { verifyCode, changePassword, isLoading, error } = useAuth()
+  const { changePassword, isLoading, error } = useAuth()
   const [verificationStep, setVerificationStep] = useState<'otp' | 'password'>('otp')
   const [otpCode, setOtpCode] = useState('')
   const router = useRouter()
@@ -20,6 +20,7 @@ export default function OtpVerificationPage() {
   const { isNavigationAllowed } = useNavigation()
   const currentPath = `/forgot-password/otp?email=${encodeURIComponent(email)}`
 
+  // Redirect if no email is provided or if navigation is not allowed
   useEffect(() => {
     if (!email || !isNavigationAllowed(currentPath)) {
       router.push('/forgot-password')
@@ -31,13 +32,9 @@ export default function OtpVerificationPage() {
       if (otp.length !== 6) {
         throw new Error('Verification code must be 6 characters')
       }      
-      const success = await verifyCode(email, otp)
-      if (success) {
-        setOtpCode(otp)
-        setVerificationStep('password')
-        return true
-      }
-      return false
+      setOtpCode(otp)
+      setVerificationStep('password')
+      return true
     } catch (error) {
       return false
     }

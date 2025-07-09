@@ -3,6 +3,7 @@
  * @module lib/api/AuthService
  */
 
+import axios, { AxiosRequestConfig } from 'axios';
 import { ApiClient, ApiResponse } from './Client';
 import Endpoints from '@/constants/endpoints';
 import {
@@ -14,9 +15,7 @@ import {
   ResetPasswordRequest,
   ResetPasswordResponse,
   ChangePasswordRequest,
-  ChangePasswordResponse,
-  VerifyCodeRequest,
-  VerifyCodeResponse
+  ChangePasswordResponse
 } from '@/types/Auth';
 
 /**
@@ -34,33 +33,26 @@ export class AuthService {
   }
 
   /**
-   * Adapt API response to standardized format
-   * @param response - Raw API response
-   * @returns Standardized API response
+   * Adapts backend response format to frontend expected format
+   * @param response - API response from backend
+   * @returns Adapted response for frontend
    */
-  private adaptResponse<T>(response: any): ApiResponse<T> {
-    const success = response?.status === 200 || response?.status === 201;
-    const message = success
-      ? response?.data?.Success || 'Operation successful'
-      : response?.data?.Error || 'Operation failed';
-    const data = success ? response?.data : null;
-
+  private adaptResponse<T>(response: ApiResponse<any>): ApiResponse<T> {
+    if (!response.status.success) {
+      return response as ApiResponse<T>;
+    }
+    
+    if (response.data?.token) {
+      return {
+        data: response.data as T,
+        status: response.status
+      };
+    }
+    
     return {
-      status: {
-        success,
-        code: response?.status || 500,
-        message
-      },
-      data
+      data: response.data as T || null,
+      status: response.status
     };
-  }
-
-  /**
-   * Set authentication token for API client
-   * @param token - JWT token
-   */
-  setAuthToken(token: string): void {
-    this.client.setAuthToken(token);
   }
 
   /**
@@ -103,18 +95,6 @@ export class AuthService {
   }
 
   /**
-   * Verify OTP code
-   * @param email - User email
-   * @param code - Verification code
-   * @returns Promise with response
-   */
-  async verifyCode(email: string, code: string): Promise<ApiResponse<VerifyCodeResponse>> {
-    const data: VerifyCodeRequest = { email, code };
-    const response = await this.client.post<any>(Endpoints.Auth.Verify_code, data);
-    return this.adaptResponse<VerifyCodeResponse>(response);
-  }
-
-  /**
    * Reset password with verification code
    * @param data - Password reset data including email, code, and new password
    * @returns Promise with response
@@ -140,12 +120,21 @@ export class AuthService {
   }
 
   /**
-   * Login a user using Google
-   * @returns Promise with login response containing token
+   * Exchange Google OAuth code for JWT token via backend API
+   * @param code - OAuth code from Google
+   * @returns Promise with token response
    */
-  async loginGoogle(): Promise<ApiResponse<LoginResponse>> {
-    const response = await this.client.post<any>(Endpoints.Auth.Google);
-    return this.adaptResponse<LoginResponse>(response);
+  async googleOAuthLogin(code: string): Promise<{ token?: string; error?: string }> {
+    const response = await fetch(`/api/auth/oauth/google/?code=${code}`);
+    return response.json();
+  }
+
+  /**
+   * Set the auth token in the API client
+   * @param token - JWT token
+   */
+  setAuthToken(token: string): void {
+    this.client.setAuthToken(token);
   }
 
   /**

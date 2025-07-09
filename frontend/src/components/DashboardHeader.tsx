@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
 import { useWallet } from '@/context/walletContext'
 import Wallet from '@/components/ui/wallet'
+import { NotificationBell } from '@/components/dashboard/NotificationBell'
 
 /**
  * Small header component for dashboard layout
@@ -44,6 +45,8 @@ const DashboardHeader = () => {
             {mounted && <Wallet budget={budget} size="sm" />}
           </div>
           <div className="flex items-center gap-2">
+            <NotificationBell />
+            
             <TooltipProvider>
               <Tooltip>
                 <TooltipTrigger asChild>

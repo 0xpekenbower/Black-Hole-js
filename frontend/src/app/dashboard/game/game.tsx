@@ -5,6 +5,9 @@ import { useEffect, useRef, useContext, useState } from "react";
 import { GameSocketContext } from "@/components/io";
 import { useView } from './view';
 import { Button } from "@/components/ui/card";
+import LayoutContext from '@/context/BarContext'
+
+
 
 interface Score {
 	left: number,
@@ -41,6 +44,7 @@ export default function Game() {
 	const [isGameOver, setIsGameOver] = useState(false);
 	const canvasRef = useRef<HTMLCanvasElement | null>(null);
 	const ctxRef = useRef<CanvasRenderingContext2D | null>(null);
+	const { setShowSidebar } = useContext(LayoutContext);
 	const { setView } = useView();
 	const scaleX = useRef(1);
 	const scaleY = useRef(1);
@@ -299,7 +303,7 @@ export default function Game() {
 			/>
 			{isGameOver && (
 				<Button
-					onClick={() => setView("menu")}
+					onClick={() => { setView("menu"); setShowSidebar(true); }}
 					className="absolute top-1/2 translate-y-20 px-6 py-2 bg-emerald-700 hover:bg-emerald-800 text-white font-press-start rounded"
 				>
 					Lobby

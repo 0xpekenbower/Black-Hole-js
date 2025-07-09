@@ -4,15 +4,16 @@ import React, { useState, useEffect, useCallback } from 'react'
 import { useLang } from '@/context/langContext'
 import { Button } from '@/components/ui/button'
 import Link from 'next/link'
-import { Home, Gamepad2, MessageSquare, Users, Trophy, History, Settings, Search, ChevronLeft, ChevronRight, X, LogOut, ChartBar, Award, ShoppingCart } from 'lucide-react'
+import { Home, Gamepad2, MessageSquare, Users, Trophy, History, Settings, Search, ChevronLeft, ChevronRight, X, LogOut, ChartBar, ShoppingCart, Send } from 'lucide-react'
 import { Input } from '@/components/ui/input'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
 import { usePathname } from 'next/navigation'
 import { cn } from '@/utils/index'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { dashboardService } from '@/lib/api'
-import { UserCard, SearchUser } from '@/types/Dashboard'
+import { SearchUser } from '@/types/Dashboard'
 import { ThemeToggle } from '@/components/layouts/theme-toggle'
+import { NotificationBell } from '@/components/dashboard/NotificationBell'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -162,6 +163,7 @@ const DashboardSidebar = () => {
     { name: 'Home', href: '/dashboard', icon: <Home className="h-5 w-5" /> },
     { name: 'Game', href: '/dashboard/game', icon: <Gamepad2 className="h-5 w-5" /> },
     { name: 'Chat', href: '/dashboard/chat', icon: <MessageSquare className="h-5 w-5" /> },
+    // { name: 'Send Message', href: '/dashboard/chat/send-example', icon: <Send className="h-5 w-5" /> },
     { name: 'Friends', href: '/dashboard/friends', icon: <Users className="h-5 w-5" /> },
     { name: 'Leaderboard', href: '/dashboard/leaderboard', icon: <Trophy className="h-5 w-5" /> },
     { name: 'Store', href: '/dashboard/store', icon: <ShoppingCart className="h-5 w-5" /> },
@@ -203,6 +205,7 @@ const DashboardSidebar = () => {
           </DropdownMenu>
           
           <div className="flex items-center gap-2">
+            <NotificationBell />
             <TooltipProvider>
               <Tooltip>
                 <TooltipTrigger asChild>
